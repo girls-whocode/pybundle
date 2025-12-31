@@ -84,6 +84,7 @@ class BundleContext:
     metadir: Path
     runlog: Path
     summary_json: Path
+    manifest_json: Path
     archive_format: str
     name_prefix: str
     strict: bool
@@ -129,6 +130,7 @@ class BundleContext:
 
         runlog = workdir / "RUN_LOG.txt"
         summary_json = workdir / "SUMMARY.json"
+        manifest_json = workdir / "MANIFEST.json"
 
         tools = Tooling.detect()
         prefix = name_prefix or f"pybundle_{profile_name}_{ts}"
@@ -147,6 +149,7 @@ class BundleContext:
             metadir=metadir,
             runlog=runlog,
             summary_json=summary_json,
+            manifest_json=manifest_json,
             archive_format=archive_format,
             name_prefix=prefix,
             strict=strict,

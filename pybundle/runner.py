@@ -5,7 +5,8 @@ import shutil
 from dataclasses import asdict
 
 from .context import BundleContext
-from .packaging import make_archive
+from .packaging import archive_output_path, make_archive, resolve_archive_format
+from .manifest import write_manifest
 from .steps.base import StepResult
 
 
@@ -45,7 +46,18 @@ def run_profile(ctx: BundleContext, profile) -> int:
     )
 
     ctx.results = results
-    archive_path = make_archive(ctx)
+
+    # Write the manifest BEFORE archiving so it's included inside the bundle.
+    archive_fmt_used = resolve_archive_format(ctx)
+    archive_path = archive_output_path(ctx, archive_fmt_used)
+    write_manifest(
+        ctx=ctx,
+        profile_name=profile.name,
+        archive_path=archive_path,
+        archive_format_used=archive_fmt_used,
+    )
+
+    archive_path, archive_fmt_used = make_archive(ctx)
     ctx.write_runlog(f"ARCHIVE: {archive_path}")
 
     print(f"✅ Archive created: {archive_path}")
