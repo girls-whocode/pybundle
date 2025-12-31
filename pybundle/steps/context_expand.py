@@ -177,8 +177,8 @@ class ErrorContextExpandStep:
         queue: list[tuple[Path, int]] = []
 
         # Seed with referenced python files only
-        for rel in rels:
-            p = (ctx.root / rel).resolve()
+        for rel_str in rels:
+            p = (ctx.root / rel_str).resolve()
             if p.is_file() and p.suffix == ".py" and _is_under(ctx.root, p):
                 queue.append((p, 0))
                 to_copy.add(p)
@@ -229,10 +229,10 @@ class ErrorContextExpandStep:
                 break
             # copy under src/_error_context/<repo-relative-path>
             try:
-                rel = p.resolve().relative_to(ctx.root.resolve())
+                rel_path = p.resolve().relative_to(ctx.root.resolve())
             except Exception:
                 continue
-            dst = dest_root / rel
+            dst = dest_root / rel_path
             if _copy_file(p, dst):
                 copied += 1
 

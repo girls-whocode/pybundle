@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sys
 import argparse
 from pathlib import Path
 import shlex
@@ -49,6 +48,8 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="pybundle", description="Build portable diagnostic bundles for projects.")
     sub = p.add_subparsers(dest="cmd", required=True)
+    sub.add_parser("version", help="Show version")
+    sub.add_parser("list-profiles", help="List available profiles")
 
     runp = sub.add_parser("run", help="Run a profile and build an archive")
     runp.add_argument("profile", choices=["analysis", "debug", "backup"])

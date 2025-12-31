@@ -8,9 +8,12 @@ import sys
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, TYPE_CHECKING
 
 from .tools import which
+
+if TYPE_CHECKING:
+    from .steps.base import StepResult
 
 def relpath(self, p: str) -> str:
     return p
@@ -102,6 +105,7 @@ class BundleContext:
     spinner: bool
     keep_workdir: bool
     tools: Tooling
+    results: list["StepResult"] = field(default_factory=list)
 
     def have(self, cmd: str) -> bool:
         return getattr(self.tools, cmd, None) is not None

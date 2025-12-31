@@ -36,7 +36,7 @@ def _is_excluded(rel: Path, excludes: set[str]) -> bool:
 class TreeStep:
     name: str = "tree (filtered)"
     max_depth: int = 4
-    excludes: list[str] = None
+    excludes: list[str] | None = None
 
     def run(self, ctx: BundleContext) -> StepResult:
         import time
@@ -108,7 +108,7 @@ class TreeStep:
 class LargestFilesStep:
     name: str = "largest files"
     limit: int = 80
-    excludes: list[str] = None
+    excludes: list[str] | None = None
 
     def run(self, ctx: BundleContext) -> StepResult:
         import time

@@ -29,7 +29,7 @@ def _has_tests(root: Path) -> bool:
 @dataclass
 class PytestStep:
     name: str = "pytest"
-    args: list[str] = None
+    args: list[str] | None = None
     outfile: str = "logs/34_pytest_q.txt"
 
     def run(self, ctx: BundleContext) -> StepResult:

@@ -149,24 +149,24 @@ class CuratedCopyStep:
         pruned = 0
 
         # 1) Include well-known top-level files if present
-        for rel in include_files:
-            sp = ctx.root / rel
+        for rel_file in include_files:
+            sp = ctx.root / rel_file
             if sp.is_file():
-                if _is_excluded_path(Path(rel), exclude):
+                if _is_excluded_path(Path(rel_file), exclude):
                     continue
                 try:
-                    _safe_copy_file(sp, dst_root / rel)
+                    _safe_copy_file(sp, dst_root / rel_file)
                     copied += 1
                 except OSError:
                     pass
 
         # 2) Include common top-level dirs (src/tests/tools)
-        for rel in include_dirs:
-            sp = ctx.root / rel
-            if sp.is_dir() and rel not in exclude:
-                if _is_excluded_path(Path(rel), exclude):
+        for rel_dir in include_dirs:
+            sp = ctx.root / rel_dir
+            if sp.is_dir() and rel_dir not in exclude:
+                if _is_excluded_path(Path(rel_file), exclude):
                     continue
-                files_copied, dirs_pruned = _copy_tree_filtered(sp, dst_root / rel, exclude)
+                files_copied, dirs_pruned = _copy_tree_filtered(sp, dst_root / rel_dir, exclude)
                 copied += files_copied
                 pruned += dirs_pruned
                 if copied >= self.max_files:
@@ -175,10 +175,10 @@ class CuratedCopyStep:
         # 3) Include detected package dirs at root (if not already copied)
         if copied < self.max_files:
             for pkg_dir in _guess_package_dirs(ctx.root, exclude):
-                rel = pkg_dir.name
-                if (dst_root / rel).exists():
+                rel_pkg_name = pkg_dir.name
+                if (dst_root / rel_pkg_name).exists():
                     continue
-                files_copied, dirs_pruned = _copy_tree_filtered(pkg_dir, dst_root / rel, exclude)
+                files_copied, dirs_pruned = _copy_tree_filtered(pkg_dir, dst_root / rel_pkg_name, exclude)
                 copied += files_copied
                 pruned += dirs_pruned
                 if copied >= self.max_files:
@@ -192,15 +192,15 @@ class CuratedCopyStep:
                     try:
                         if not sp.exists():
                             continue
-                        rel = sp.relative_to(ctx.root)
-                        if _is_excluded_path(rel, exclude):
+                        rel_path = sp.relative_to(ctx.root)
+                        if _is_excluded_path(rel_path, exclude):
                             continue
 
                         if sp.is_file():
-                            _safe_copy_file(sp, dst_root / rel)
+                            _safe_copy_file(sp, dst_root / rel_file)
                             copied += 1
                         elif sp.is_dir():
-                            files_copied, dirs_pruned = _copy_tree_filtered(sp, dst_root / rel, exclude)
+                            files_copied, dirs_pruned = _copy_tree_filtered(sp, dst_root / rel_dir, exclude)
                             copied += files_copied
                             pruned += dirs_pruned
                         if copied >= self.max_files:

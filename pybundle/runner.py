@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .context import BundleContext
 from .packaging import make_archive
+from .steps.base import StepResult
 
 
 def run_profile(ctx: BundleContext, profile) -> int:
@@ -14,8 +15,8 @@ def run_profile(ctx: BundleContext, profile) -> int:
     ctx.write_runlog(f"ROOT: {ctx.root}")
     ctx.write_runlog(f"WORK: {ctx.workdir}")
 
-    results = []
-    ctx.results = results
+    ctx.results.clear()
+    results: list[StepResult] = ctx.results
     any_fail = False
 
     for step in profile.steps:
