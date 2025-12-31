@@ -1,0 +1,144 @@
+from __future__ import annotations
+
+import sys
+import argparse
+from pathlib import Path
+import shlex
+
+from .context import BundleContext, RunOptions
+from .profiles import get_profile
+from .root_detect import detect_project_root
+from .runner import run_profile
+
+
+def add_common_args(sp: argparse.ArgumentParser) -> None:
+    sp.add_argument("--project-root", type=Path, default=None, help="Explicit project root (skip auto-detect)")
+    sp.add_argument("--outdir", type=Path, default=None, help="Output directory (default: <root>/artifacts)")
+    sp.add_argument("--name", default=None, help="Override archive name prefix")
+    sp.add_argument("--strict", action="store_true", help="Fail non-zero if any step fails")
+    sp.add_argument("--no-spinner", action="store_true", help="Disable spinner output (CI-friendly)")
+    sp.add_argument("--redact", action=argparse.BooleanOptionalAction, default=True, help="Redact secrets in logs/text")
+
+
+def add_run_only_args(sp: argparse.ArgumentParser) -> None:
+    sp.add_argument("--format", choices=["auto", "zip", "tar.gz"], default="auto", help="Archive format")
+    sp.add_argument("--clean-workdir", action="store_true", help="Delete expanded workdir after packaging")
+
+
+def add_knobs(sp: argparse.ArgumentParser) -> None:
+    # selective skips
+    sp.add_argument("--no-ruff", action="store_true")
+    sp.add_argument("--no-mypy", action="store_true")
+    sp.add_argument("--no-pytest", action="store_true")
+    sp.add_argument("--no-rg", action="store_true")
+    sp.add_argument("--no-error-refs", action="store_true")
+    sp.add_argument("--no-context", action="store_true")
+
+    # targets / args
+    sp.add_argument("--ruff-target", default=".")
+    sp.add_argument("--mypy-target", default=".")
+    sp.add_argument("--pytest-args", default="-q",
+                    help='Pytest args as a single string, e.g. "--maxfail=1 -q"')
+
+    # caps
+    sp.add_argument("--error-max-files", type=int, default=250)
+    sp.add_argument("--context-depth", type=int, default=2)
+    sp.add_argument("--context-max-files", type=int, default=600)
+
+
+def build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(prog="pybundle", description="Build portable diagnostic bundles for projects.")
+    sub = p.add_subparsers(dest="cmd", required=True)
+
+    runp = sub.add_parser("run", help="Run a profile and build an archive")
+    runp.add_argument("profile", choices=["analysis", "debug", "backup"])
+    add_common_args(runp)
+    add_run_only_args(runp)
+    add_knobs(runp)
+
+    docp = sub.add_parser("doctor", help="Show tool availability and what would run")
+    docp.add_argument("profile", choices=["analysis", "debug", "backup"], nargs="?", default="analysis")
+    add_common_args(docp)
+    add_knobs(docp)
+
+    return p
+
+
+def _build_options(args) -> RunOptions:
+    pytest_args = shlex.split(args.pytest_args) if getattr(args, "pytest_args", None) else ["-q"]
+    return RunOptions(
+        no_ruff=getattr(args, "no_ruff", False),
+        no_mypy=getattr(args, "no_mypy", False),
+        no_pytest=getattr(args, "no_pytest", False),
+        no_rg=getattr(args, "no_rg", False),
+        no_error_refs=getattr(args, "no_error_refs", False),
+        no_context=getattr(args, "no_context", False),
+        ruff_target=getattr(args, "ruff_target", "."),
+        mypy_target=getattr(args, "mypy_target", "."),
+        pytest_args=pytest_args,
+        error_max_files=getattr(args, "error_max_files", 250),
+        context_depth=getattr(args, "context_depth", 2),
+        context_max_files=getattr(args, "context_max_files", 600),
+    )
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+
+    if args.cmd == "version":
+        print("pybundle 0.1.0")
+        return 0
+
+    if args.cmd == "list-profiles":
+        print("analysis  - neutral diagnostic bundle (humans, tools, assistants)")
+        print("debug     - deeper diagnostics for developers")
+        print("backup    - portable snapshot (scaffold)")
+        return 0
+
+    # run + doctor need a root
+    root = args.project_root or detect_project_root(Path.cwd())
+    if root is None:
+        print("❌ Could not detect project root. Use --project-root PATH.")
+        return 20
+
+    outdir = args.outdir or (root / "artifacts")
+
+    options = _build_options(args)
+    profile = get_profile(args.profile, options)
+
+    if args.cmd == "doctor":
+        ctx = BundleContext.create(
+            root=root,
+            outdir=outdir,
+            profile_name=args.profile,
+            archive_format="auto",
+            name_prefix=args.name,
+            strict=args.strict,
+            redact=args.redact,
+            spinner=not args.no_spinner,
+            keep_workdir=True,
+            options=options,
+        )
+        ctx.print_doctor(profile)
+        return 0
+
+    # cmd == run
+    keep_workdir = not args.clean_workdir
+
+    ctx = BundleContext.create(
+        root=root,
+        outdir=outdir,
+        profile_name=args.profile,
+        archive_format=args.format,
+        name_prefix=args.name,
+        strict=args.strict,
+        redact=args.redact,
+        spinner=not args.no_spinner,
+        keep_workdir=keep_workdir,
+        options=options,
+    )
+
+    return run_profile(ctx, profile)
+
+if __name__ == "__main__":
+    raise SystemExit(main())

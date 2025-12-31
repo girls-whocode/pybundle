@@ -1,0 +1,6 @@
+.pybundle/
+artifacts/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd

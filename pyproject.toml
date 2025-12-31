@@ -1,0 +1,9 @@
+[project.scripts]
+pybundle = "pybundle.cli:main"
+
+[project]
+name = "pybundle"
+version = "0.1.0"
+
+[tool.setuptools.packages.find]
+include = ["pybundle*"]
