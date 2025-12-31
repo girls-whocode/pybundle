@@ -11,17 +11,45 @@ from .runner import run_profile
 
 
 def add_common_args(sp: argparse.ArgumentParser) -> None:
-    sp.add_argument("--project-root", type=Path, default=None, help="Explicit project root (skip auto-detect)")
-    sp.add_argument("--outdir", type=Path, default=None, help="Output directory (default: <root>/artifacts)")
+    sp.add_argument(
+        "--project-root",
+        type=Path,
+        default=None,
+        help="Explicit project root (skip auto-detect)",
+    )
+    sp.add_argument(
+        "--outdir",
+        type=Path,
+        default=None,
+        help="Output directory (default: <root>/artifacts)",
+    )
     sp.add_argument("--name", default=None, help="Override archive name prefix")
-    sp.add_argument("--strict", action="store_true", help="Fail non-zero if any step fails")
-    sp.add_argument("--no-spinner", action="store_true", help="Disable spinner output (CI-friendly)")
-    sp.add_argument("--redact", action=argparse.BooleanOptionalAction, default=True, help="Redact secrets in logs/text")
+    sp.add_argument(
+        "--strict", action="store_true", help="Fail non-zero if any step fails"
+    )
+    sp.add_argument(
+        "--no-spinner", action="store_true", help="Disable spinner output (CI-friendly)"
+    )
+    sp.add_argument(
+        "--redact",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Redact secrets in logs/text",
+    )
 
 
 def add_run_only_args(sp: argparse.ArgumentParser) -> None:
-    sp.add_argument("--format", choices=["auto", "zip", "tar.gz"], default="auto", help="Archive format")
-    sp.add_argument("--clean-workdir", action="store_true", help="Delete expanded workdir after packaging")
+    sp.add_argument(
+        "--format",
+        choices=["auto", "zip", "tar.gz"],
+        default="auto",
+        help="Archive format",
+    )
+    sp.add_argument(
+        "--clean-workdir",
+        action="store_true",
+        help="Delete expanded workdir after packaging",
+    )
 
 
 def add_knobs(sp: argparse.ArgumentParser) -> None:
@@ -36,8 +64,11 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
     # targets / args
     sp.add_argument("--ruff-target", default=".")
     sp.add_argument("--mypy-target", default=".")
-    sp.add_argument("--pytest-args", default="-q",
-                    help='Pytest args as a single string, e.g. "--maxfail=1 -q"')
+    sp.add_argument(
+        "--pytest-args",
+        default="-q",
+        help='Pytest args as a single string, e.g. "--maxfail=1 -q"',
+    )
 
     # caps
     sp.add_argument("--error-max-files", type=int, default=250)
@@ -46,7 +77,9 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="pybundle", description="Build portable diagnostic bundles for projects.")
+    p = argparse.ArgumentParser(
+        prog="pybundle", description="Build portable diagnostic bundles for projects."
+    )
     sub = p.add_subparsers(dest="cmd", required=True)
     sub.add_parser("version", help="Show version")
     sub.add_parser("list-profiles", help="List available profiles")
@@ -58,7 +91,12 @@ def build_parser() -> argparse.ArgumentParser:
     add_knobs(runp)
 
     docp = sub.add_parser("doctor", help="Show tool availability and what would run")
-    docp.add_argument("profile", choices=["analysis", "debug", "backup"], nargs="?", default="analysis")
+    docp.add_argument(
+        "profile",
+        choices=["analysis", "debug", "backup"],
+        nargs="?",
+        default="analysis",
+    )
     add_common_args(docp)
     add_knobs(docp)
 
@@ -66,7 +104,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _build_options(args) -> RunOptions:
-    pytest_args = shlex.split(args.pytest_args) if getattr(args, "pytest_args", None) else ["-q"]
+    pytest_args = (
+        shlex.split(args.pytest_args) if getattr(args, "pytest_args", None) else ["-q"]
+    )
     return RunOptions(
         no_ruff=getattr(args, "no_ruff", False),
         no_mypy=getattr(args, "no_mypy", False),
@@ -140,6 +180,7 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     return run_profile(ctx, profile)
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

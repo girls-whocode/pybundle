@@ -10,6 +10,7 @@ from .base import StepResult
 from ..context import BundleContext
 from ..tools import which
 
+
 @dataclass
 class ReproMarkdownStep:
     name: str = "generate REPRO.md"
@@ -20,7 +21,17 @@ class ReproMarkdownStep:
         repro = ctx.workdir / self.outfile
 
         # ---- tool detection ----
-        tool_names = ["python", "pip", "git", "ruff", "mypy", "pytest", "rg", "zip", "tar"]
+        tool_names = [
+            "python",
+            "pip",
+            "git",
+            "ruff",
+            "mypy",
+            "pytest",
+            "rg",
+            "zip",
+            "tar",
+        ]
         detected = {t: which(t) for t in tool_names}
 
         # Prefer ctx.tools.python if you have it
@@ -31,14 +42,21 @@ class ReproMarkdownStep:
         def list_txt(dirpath: Path) -> list[str]:
             if not dirpath.is_dir():
                 return []
-            return sorted(str(p.relative_to(ctx.workdir)) for p in dirpath.rglob("*.txt"))
+            return sorted(
+                str(p.relative_to(ctx.workdir)) for p in dirpath.rglob("*.txt")
+            )
 
         logs_list = list_txt(ctx.logdir)
         meta_list = list_txt(ctx.metadir)
 
         # Also include key top-level files if present
         top_files = []
-        for name in ["RUN_LOG.txt", "SUMMARY.json", "error_files_from_logs.txt", "error_refs_count.txt"]:
+        for name in [
+            "RUN_LOG.txt",
+            "SUMMARY.json",
+            "error_files_from_logs.txt",
+            "error_refs_count.txt",
+        ]:
             p = ctx.workdir / name
             if p.exists():
                 top_files.append(name)
@@ -46,7 +64,7 @@ class ReproMarkdownStep:
         # ---- step summary (best-effort, never crash) ----
         results = getattr(ctx, "results", [])
         ctx.results = results  # ensure it's set for future steps
-        
+
         summary_lines = []
         for r in results:
             note = f" ({r.note})" if getattr(r, "note", "") else ""
@@ -112,8 +130,16 @@ class ReproMarkdownStep:
         if top_files:
             md += ["### Top-level", *[f"- `{p}`" for p in top_files], ""]
 
-        md += ["### logs/", *(f"- `{p}`" for p in logs_list)] if logs_list else ["### logs/", "- (none)", ""]
-        md += ["", "### meta/", *(f"- `{p}`" for p in meta_list)] if meta_list else ["", "### meta/", "- (none)"]
+        md += (
+            ["### logs/", *(f"- `{p}`" for p in logs_list)]
+            if logs_list
+            else ["### logs/", "- (none)", ""]
+        )
+        md += (
+            ["", "### meta/", *(f"- `{p}`" for p in meta_list)]
+            if meta_list
+            else ["", "### meta/", "- (none)"]
+        )
 
         md += [
             "",

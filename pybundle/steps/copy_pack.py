@@ -5,7 +5,6 @@ import shutil
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
 
 from .base import StepResult
 from ..context import BundleContext
@@ -70,7 +69,9 @@ def _safe_copy_file(src: Path, dst: Path) -> None:
     shutil.copy2(src, dst)
 
 
-def _copy_tree_filtered(src_dir: Path, dst_dir: Path, exclude_dirs: set[str]) -> tuple[int, int]:
+def _copy_tree_filtered(
+    src_dir: Path, dst_dir: Path, exclude_dirs: set[str]
+) -> tuple[int, int]:
     """
     Copy directory tree while pruning excluded directories.
     Returns: (files_copied, dirs_pruned)
@@ -166,7 +167,9 @@ class CuratedCopyStep:
             if sp.is_dir() and rel_dir not in exclude:
                 if _is_excluded_path(Path(rel_file), exclude):
                     continue
-                files_copied, dirs_pruned = _copy_tree_filtered(sp, dst_root / rel_dir, exclude)
+                files_copied, dirs_pruned = _copy_tree_filtered(
+                    sp, dst_root / rel_dir, exclude
+                )
                 copied += files_copied
                 pruned += dirs_pruned
                 if copied >= self.max_files:
@@ -178,7 +181,9 @@ class CuratedCopyStep:
                 rel_pkg_name = pkg_dir.name
                 if (dst_root / rel_pkg_name).exists():
                     continue
-                files_copied, dirs_pruned = _copy_tree_filtered(pkg_dir, dst_root / rel_pkg_name, exclude)
+                files_copied, dirs_pruned = _copy_tree_filtered(
+                    pkg_dir, dst_root / rel_pkg_name, exclude
+                )
                 copied += files_copied
                 pruned += dirs_pruned
                 if copied >= self.max_files:
@@ -200,7 +205,9 @@ class CuratedCopyStep:
                             _safe_copy_file(sp, dst_root / rel_file)
                             copied += 1
                         elif sp.is_dir():
-                            files_copied, dirs_pruned = _copy_tree_filtered(sp, dst_root / rel_dir, exclude)
+                            files_copied, dirs_pruned = _copy_tree_filtered(
+                                sp, dst_root / rel_dir, exclude
+                            )
                             copied += files_copied
                             pruned += dirs_pruned
                         if copied >= self.max_files:

@@ -20,7 +20,11 @@ def _safe_read(path: Path) -> str:
 
 
 def _tool_table(tools_obj: Any) -> list[str]:
-    d = asdict(tools_obj) if hasattr(tools_obj, "__dataclass_fields__") else dict(tools_obj)
+    d = (
+        asdict(tools_obj)
+        if hasattr(tools_obj, "__dataclass_fields__")
+        else dict(tools_obj)
+    )
     lines = ["| Tool | Status |", "|------|--------|"]
     for k in sorted(d.keys()):
         v = d[k]
@@ -62,7 +66,9 @@ class HandoffMarkdownStep(Step):
 
         # tool table
         tools_obj = getattr(ctx, "tools", None) or getattr(ctx, "tooling", None)
-        tools_table = _tool_table(tools_obj) if tools_obj is not None else ["(no tools detected)"]
+        tools_table = (
+            _tool_table(tools_obj) if tools_obj is not None else ["(no tools detected)"]
+        )
 
         command_used = getattr(ctx, "command_used", "") or "(not captured)"
 
@@ -70,7 +76,9 @@ class HandoffMarkdownStep(Step):
         lines.append("# Bundle Handoff")
         lines.append("")
         lines.append("## Overview")
-        lines.append(f"- **Bundle tool:** pybundle {getattr(ctx, 'version', '<unknown>')}")
+        lines.append(
+            f"- **Bundle tool:** pybundle {getattr(ctx, 'version', '<unknown>')}"
+        )
         lines.append(f"- **Profile:** {profile}")
         lines.append(f"- **Created (UTC):** {created_utc}")
         lines.append(f"- **Project:** {project}")
@@ -84,7 +92,9 @@ class HandoffMarkdownStep(Step):
         lines.append("")
         lines.append("## At a glance")
         lines.append(f"- **Overall status:** {overall}")
-        lines.append(f"- **Steps:** {total_n} total — {pass_n} PASS, {fail_n} FAIL, {skip_n} SKIP")
+        lines.append(
+            f"- **Steps:** {total_n} total — {pass_n} PASS, {fail_n} FAIL, {skip_n} SKIP"
+        )
         lines.append("")
         lines.append("## Tools")
         lines.extend(tools_table)
@@ -102,4 +112,6 @@ class HandoffMarkdownStep(Step):
         out_path.write_text("\n".join(lines), encoding="utf-8")
 
         secs = int(time.time() - start)
-        return StepResult(name=self.name, status="PASS", seconds=secs, note="wrote HANDOFF.md")
+        return StepResult(
+            name=self.name, status="PASS", seconds=secs, note="wrote HANDOFF.md"
+        )

@@ -1,10 +1,6 @@
 from __future__ import annotations
 
-import json
-import os
 import re
-import shutil
-import sys
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -15,21 +11,12 @@ from .tools import which
 if TYPE_CHECKING:
     from .steps.base import StepResult
 
-def relpath(self, p: str) -> str:
-    return p
 
 def fmt_tool(path: str | None) -> str:
     if path:
         return path
     return "\x1b[31m<missing>\x1b[0m"
 
-def have(self, cmd: str) -> bool:
-    # 1) Check known tools in Tooling dataclass
-    if hasattr(self.tools, cmd):
-        return bool(getattr(self.tools, cmd))
-
-    # 2) Fallback: check PATH
-    return which(cmd) is not None
 
 @dataclass(frozen=True)
 class Tooling:
@@ -57,7 +44,6 @@ class Tooling:
             zip=which("zip"),
             tar=which("tar"),
             uname=which("uname"),
-
             ruff=which("ruff"),
             mypy=which("mypy"),
             pytest=which("pytest"),
@@ -181,7 +167,10 @@ class BundleContext:
             return text
         # Minimal default redaction rules (you can expand with a rules file later)
         rules: Iterable[tuple[str, str]] = [
-            (r"(?i)(api[_-]?key)\s*[:=]\s*['\"]?([A-Za-z0-9_\-]{10,})", r"\1=<REDACTED>"),
+            (
+                r"(?i)(api[_-]?key)\s*[:=]\s*['\"]?([A-Za-z0-9_\-]{10,})",
+                r"\1=<REDACTED>",
+            ),
             (r"(?i)(token)\s*[:=]\s*['\"]?([A-Za-z0-9_\-\.]{10,})", r"\1=<REDACTED>"),
             (r"(?i)(password|passwd|pwd)\s*[:=]\s*['\"]?([^'\"\s]+)", r"\1=<REDACTED>"),
             (r"(?i)(dsn)\s*[:=]\s*['\"]?([^'\"\s]+)", r"\1=<REDACTED>"),
@@ -225,6 +214,7 @@ class BundleContext:
 
         # Plan
         from .doctor import plan_for_profile  # local import avoids circulars
+
         plan = plan_for_profile(self, profile)
 
         print(f"Plan ({profile.name}):")
@@ -235,4 +225,3 @@ class BundleContext:
             else:
                 why = f" ({item.reason})" if item.reason else ""
                 print(f"  SKIP {item.name:<28}{out}{why}")
-

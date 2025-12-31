@@ -26,7 +26,9 @@ class ShellStep:
         if self.require_cmd and not getattr(ctx.tools, self.require_cmd, None):
             out = ctx.workdir / self.outfile_rel
             out.parent.mkdir(parents=True, exist_ok=True)
-            out.write_text(f"{self.require_cmd} not found; skipping\n", encoding="utf-8")
+            out.write_text(
+                f"{self.require_cmd} not found; skipping\n", encoding="utf-8"
+            )
             return StepResult(self.name, "SKIP", 0, f"missing {self.require_cmd}")
 
         out = ctx.workdir / self.outfile_rel
@@ -48,10 +50,16 @@ class ShellStep:
             )
             text = header + (cp.stdout or "") + ("\n" + cp.stderr if cp.stderr else "")
             out.write_text(ctx.redact_text(text), encoding="utf-8")
-            status = "PASS" if cp.returncode == 0 else ("FAIL" if not self.allow_fail else "PASS")
+            status = (
+                "PASS"
+                if cp.returncode == 0
+                else ("FAIL" if not self.allow_fail else "PASS")
+            )
             note = "" if cp.returncode == 0 else f"exit={cp.returncode}"
         except Exception as e:
-            out.write_text(ctx.redact_text(header + f"\nEXCEPTION: {e}\n"), encoding="utf-8")
+            out.write_text(
+                ctx.redact_text(header + f"\nEXCEPTION: {e}\n"), encoding="utf-8"
+            )
             status = "FAIL" if not self.allow_fail else "PASS"
             note = str(e)
 

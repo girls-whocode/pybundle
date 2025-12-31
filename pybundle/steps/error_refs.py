@@ -160,7 +160,9 @@ class ErrorReferencedFilesStep:
         allowed = sorted([p for p in candidates if _is_allowed_repo_file(ctx.root, p)])
 
         # Write list file (even if empty)
-        out_list.write_text("\n".join(allowed) + ("\n" if allowed else ""), encoding="utf-8")
+        out_list.write_text(
+            "\n".join(allowed) + ("\n" if allowed else ""), encoding="utf-8"
+        )
 
         # Copy up to max_files
         copied = 0
@@ -188,7 +190,7 @@ class ErrorReferencedFilesStep:
                     f"allowed_repo_files={len(allowed)}",
                     f"copied={copied}",
                     f"max_files={self.max_files}",
-                    f"dest=src/_error_refs",
+                    "dest=src/_error_refs",
                 ]
             )
             + "\n",

@@ -62,16 +62,27 @@ class TreeStep:
             try:
                 import subprocess
 
-                cp = subprocess.run(cmd, cwd=str(ctx.root), text=True, capture_output=True, check=False)
+                cp = subprocess.run(
+                    cmd, cwd=str(ctx.root), text=True, capture_output=True, check=False
+                )
                 text += (cp.stdout or "") + ("\n" + cp.stderr if cp.stderr else "")
                 out.write_text(ctx.redact_text(text), encoding="utf-8")
                 dur = int(time.time() - start)
                 # tree returns 0 even if it prints warnings; treat nonzero as PASS unless strict later
-                return StepResult(self.name, "PASS", dur, "" if cp.returncode == 0 else f"exit={cp.returncode}")
+                return StepResult(
+                    self.name,
+                    "PASS",
+                    dur,
+                    "" if cp.returncode == 0 else f"exit={cp.returncode}",
+                )
             except Exception as e:
-                out.write_text(ctx.redact_text(text + f"\nEXCEPTION: {e}\n"), encoding="utf-8")
+                out.write_text(
+                    ctx.redact_text(text + f"\nEXCEPTION: {e}\n"), encoding="utf-8"
+                )
                 dur = int(time.time() - start)
-                return StepResult(self.name, "PASS", dur, f"fallback (tree exception: {e})")
+                return StepResult(
+                    self.name, "PASS", dur, f"fallback (tree exception: {e})"
+                )
 
         # Fallback: find-like listing implemented in Python
         lines: list[str] = []
@@ -79,6 +90,7 @@ class TreeStep:
 
         for dirpath, dirnames, filenames in os.walk(root):
             dp = Path(dirpath)
+            # Relative path for depth computation (root -> ".")
             rel_dp = dp.relative_to(root)
 
             # prune excluded directories
@@ -123,7 +135,6 @@ class LargestFilesStep:
 
         for dirpath, dirnames, filenames in os.walk(root):
             dp = Path(dirpath)
-            rel_dp = dp.relative_to(root)
 
             dirnames[:] = [d for d in dirnames if d not in excludes]
 

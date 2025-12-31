@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import shutil
 from dataclasses import asdict
-from pathlib import Path
 
 from .context import BundleContext
 from .packaging import make_archive
@@ -24,7 +23,9 @@ def run_profile(ctx: BundleContext, profile) -> int:
         r = step.run(ctx)
         results.append(r)
         ctx.results = results
-        ctx.write_runlog(f"-- DONE:  {step.name} [{r.status}] ({r.seconds}s) {r.note}".rstrip())
+        ctx.write_runlog(
+            f"-- DONE:  {step.name} [{r.status}] ({r.seconds}s) {r.note}".rstrip()
+        )
         if r.status == "FAIL":
             any_fail = True
             if ctx.strict:

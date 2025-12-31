@@ -16,6 +16,7 @@ from .steps.copy_pack import CuratedCopyStep
 from .steps.repro_md import ReproMarkdownStep
 from .steps.handoff_md import HandoffMarkdownStep
 
+
 @dataclass(frozen=True)
 class Profile:
     name: str
@@ -24,9 +25,15 @@ class Profile:
 
 def _analysis_steps(options: RunOptions) -> list:
     steps: list = [
-        ShellStep("git status", "meta/00_git_status.txt", ["git", "status"], require_cmd="git"),
-        ShellStep("git diff", "meta/01_git_diff.txt", ["git", "diff"], require_cmd="git"),
-        ShellStep("uname -a", "meta/21_uname.txt", ["uname", "-a"], require_cmd="uname"),
+        ShellStep(
+            "git status", "meta/00_git_status.txt", ["git", "status"], require_cmd="git"
+        ),
+        ShellStep(
+            "git diff", "meta/01_git_diff.txt", ["git", "diff"], require_cmd="git"
+        ),
+        ShellStep(
+            "uname -a", "meta/21_uname.txt", ["uname", "-a"], require_cmd="uname"
+        ),
         TreeStep(max_depth=4),
         LargestFilesStep(limit=80),
         CompileAllStep(),
@@ -66,8 +73,18 @@ def _analysis_steps(options: RunOptions) -> list:
         CuratedCopyStep(),
         ReproMarkdownStep(),
         HandoffMarkdownStep(),
-        ShellStep("python -V", "meta/20_python_version.txt", ["python", "-V"], require_cmd="python"),
-        ShellStep("pip freeze", "meta/22_pip_freeze.txt", ["python", "-m", "pip", "freeze"], require_cmd="python"),
+        ShellStep(
+            "python -V",
+            "meta/20_python_version.txt",
+            ["python", "-V"],
+            require_cmd="python",
+        ),
+        ShellStep(
+            "pip freeze",
+            "meta/22_pip_freeze.txt",
+            ["python", "-m", "pip", "freeze"],
+            require_cmd="python",
+        ),
     ]
 
     return steps
@@ -81,7 +98,12 @@ def get_profile(name: str, options: RunOptions) -> Profile:
         # debug inherits analysis but keeps the same options
         steps = list(_analysis_steps(options))
         steps.append(
-            ShellStep("pip check", "logs/25_pip_check.txt", ["python", "-m", "pip", "check"], require_cmd="python")
+            ShellStep(
+                "pip check",
+                "logs/25_pip_check.txt",
+                ["python", "-m", "pip", "check"],
+                require_cmd="python",
+            )
         )
         return Profile(name="debug", steps=steps)
 
@@ -90,7 +112,12 @@ def get_profile(name: str, options: RunOptions) -> Profile:
         return Profile(
             name="backup",
             steps=[
-                ShellStep("python -V", "meta/20_python_version.txt", ["python", "-V"], require_cmd="python"),
+                ShellStep(
+                    "python -V",
+                    "meta/20_python_version.txt",
+                    ["python", "-V"],
+                    require_cmd="python",
+                ),
             ],
         )
 

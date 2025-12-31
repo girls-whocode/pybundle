@@ -24,7 +24,7 @@ def _has_mypy_config(root: Path) -> bool:
 @dataclass
 class MypyStep:
     name: str = "mypy"
-    target: str = "."
+    target: str = "pybundle"
     outfile: str = "logs/33_mypy.txt"
 
     def run(self, ctx: BundleContext) -> StepResult:
@@ -34,17 +34,24 @@ class MypyStep:
 
         mypy = which("mypy")
         if not mypy:
-            out.write_text("mypy not found; skipping (pip install mypy)\n", encoding="utf-8")
+            out.write_text(
+                "mypy not found; skipping (pip install mypy)\n", encoding="utf-8"
+            )
             return StepResult(self.name, "SKIP", 0, "missing mypy")
 
         if not _has_mypy_config(ctx.root):
-            out.write_text("no mypy config detected (mypy.ini/setup.cfg/pyproject.toml); skipping\n", encoding="utf-8")
+            out.write_text(
+                "no mypy config detected (mypy.ini/setup.cfg/pyproject.toml); skipping\n",
+                encoding="utf-8",
+            )
             return StepResult(self.name, "SKIP", 0, "no config")
 
-        cmd = [mypy, self.target]
+        cmd = [mypy, "--exclude", "^artifacts/", self.target]
         header = f"## PWD: {ctx.root}\n## CMD: {' '.join(cmd)}\n\n"
 
-        cp = subprocess.run(cmd, cwd=str(ctx.root), text=True, capture_output=True, check=False)
+        cp = subprocess.run(
+            cmd, cwd=str(ctx.root), text=True, capture_output=True, check=False
+        )
         text = header + (cp.stdout or "") + ("\n" + cp.stderr if cp.stderr else "")
         out.write_text(ctx.redact_text(text), encoding="utf-8")
 

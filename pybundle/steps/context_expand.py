@@ -4,7 +4,6 @@ import ast
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
 
 from .base import StepResult
 from ..context import BundleContext
@@ -13,7 +12,11 @@ from ..context import BundleContext
 def _read_lines(p: Path) -> list[str]:
     if not p.is_file():
         return []
-    return [ln.strip() for ln in p.read_text(encoding="utf-8", errors="replace").splitlines() if ln.strip()]
+    return [
+        ln.strip()
+        for ln in p.read_text(encoding="utf-8", errors="replace").splitlines()
+        if ln.strip()
+    ]
 
 
 def _is_under(root: Path, p: Path) -> bool:
@@ -57,7 +60,9 @@ def _module_to_path(roots: list[Path], module: str) -> Path | None:
     return None
 
 
-def _relative_module_to_path(roots: list[Path], base_file: Path, module: str | None, level: int) -> Path | None:
+def _relative_module_to_path(
+    roots: list[Path], base_file: Path, module: str | None, level: int
+) -> Path | None:
     """
     Resolve relative imports like:
       from . import x      (level=1, module=None)
@@ -218,7 +223,15 @@ class ErrorContextExpandStep:
                     break
 
         # Always include top-level config files if present (small but high value)
-        for cfg in ["pyproject.toml", "mypy.ini", "ruff.toml", ".ruff.toml", "pytest.ini", "setup.cfg", "requirements.txt"]:
+        for cfg in [
+            "pyproject.toml",
+            "mypy.ini",
+            "ruff.toml",
+            ".ruff.toml",
+            "pytest.ini",
+            "setup.cfg",
+            "requirements.txt",
+        ]:
             p = ctx.root / cfg
             if p.is_file():
                 to_copy.add(p)
@@ -245,7 +258,7 @@ class ErrorContextExpandStep:
                     f"max_files={self.max_files}",
                     f"resolved_total={len(to_copy)}",
                     f"copied={copied}",
-                    f"dest=src/_error_context",
+                    "dest=src/_error_context",
                 ]
             )
             + "\n",

@@ -39,11 +39,15 @@ class PytestStep:
 
         pytest_bin = which("pytest")
         if not pytest_bin:
-            out.write_text("pytest not found; skipping (pip install pytest)\n", encoding="utf-8")
+            out.write_text(
+                "pytest not found; skipping (pip install pytest)\n", encoding="utf-8"
+            )
             return StepResult(self.name, "SKIP", 0, "missing pytest")
 
         if not _has_tests(ctx.root):
-            out.write_text("no tests directory detected; skipping pytest\n", encoding="utf-8")
+            out.write_text(
+                "no tests directory detected; skipping pytest\n", encoding="utf-8"
+            )
             return StepResult(self.name, "SKIP", 0, "no tests")
 
         args = self.args or ["-q"]
@@ -51,7 +55,9 @@ class PytestStep:
 
         header = f"## PWD: {ctx.root}\n## CMD: {' '.join(cmd)}\n\n"
 
-        cp = subprocess.run(cmd, cwd=str(ctx.root), text=True, capture_output=True, check=False)
+        cp = subprocess.run(
+            cmd, cwd=str(ctx.root), text=True, capture_output=True, check=False
+        )
         text = header + (cp.stdout or "") + ("\n" + cp.stderr if cp.stderr else "")
         out.write_text(ctx.redact_text(text), encoding="utf-8")
 

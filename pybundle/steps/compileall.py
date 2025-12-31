@@ -26,7 +26,7 @@ def _guess_targets(root: Path) -> list[str]:
             targets.append(p.name)
 
     return targets or ["."]
-    
+
 
 @dataclass
 class CompileAllStep:
@@ -49,7 +49,9 @@ class CompileAllStep:
             cmd.append("-q")
         cmd.extend(targets)
 
-        header = f"## PWD: {ctx.root}\n## CMD: {' '.join(cmd)}\n## TARGETS: {targets}\n\n"
+        header = (
+            f"## PWD: {ctx.root}\n## CMD: {' '.join(cmd)}\n## TARGETS: {targets}\n\n"
+        )
 
         try:
             cp = subprocess.run(
@@ -67,6 +69,8 @@ class CompileAllStep:
             note = "" if cp.returncode == 0 else f"exit={cp.returncode} (recorded)"
             return StepResult(self.name, "PASS", dur, note)
         except Exception as e:
-            out.write_text(ctx.redact_text(header + f"\nEXCEPTION: {e}\n"), encoding="utf-8")
+            out.write_text(
+                ctx.redact_text(header + f"\nEXCEPTION: {e}\n"), encoding="utf-8"
+            )
             dur = int(time.time() - start)
             return StepResult(self.name, "PASS", dur, f"exception recorded: {e}")

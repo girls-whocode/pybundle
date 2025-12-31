@@ -3,7 +3,6 @@ from __future__ import annotations
 import subprocess
 import time
 from dataclasses import dataclass
-from pathlib import Path
 
 from .base import StepResult
 from ..context import BundleContext
@@ -25,7 +24,9 @@ class RipgrepScanStep:
 
         rg = which("rg")
         if not rg:
-            out.write_text("rg (ripgrep) not found; skipping (install ripgrep)\n", encoding="utf-8")
+            out.write_text(
+                "rg (ripgrep) not found; skipping (install ripgrep)\n", encoding="utf-8"
+            )
             return StepResult(self.name, "SKIP", 0, "missing rg")
 
         args = self.extra_args or []
@@ -33,7 +34,9 @@ class RipgrepScanStep:
         cmd = [rg, "-n", "--no-heading", "-S", *args, self.pattern, self.target]
         header = f"## PWD: {ctx.root}\n## CMD: {' '.join(cmd)}\n\n"
 
-        cp = subprocess.run(cmd, cwd=str(ctx.root), text=True, capture_output=True, check=False)
+        cp = subprocess.run(
+            cmd, cwd=str(ctx.root), text=True, capture_output=True, check=False
+        )
         # rg exit codes:
         # 0 = matches found
         # 1 = no matches found (not an error!)
