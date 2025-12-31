@@ -52,7 +52,7 @@ Another script can fully understand a bundle **without reading markdown**.
 
 We recommend using a Python virtual environment for development tooling.
 
-### Quick installation (pybundle tooling)
+### Quick installation (pybundle tooling) - RECOMMENDED
 
 Create a dedicated requirements file in the root of your project:
 
@@ -95,7 +95,7 @@ See **Usage** for more details.
 
 ### Advanced installation
 
-#### From GitHub (recommended)
+#### From GitHub
 
 ```bash
 pip install "pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.3.0"
