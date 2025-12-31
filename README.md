@@ -50,7 +50,52 @@ Another script can fully understand a bundle **without reading markdown**.
 
 ## 🚀 Installation
 
-### From GitHub (recommended)
+We recommend using a Python virtual environment for development tooling.
+
+### Quick installation (pybundle tooling)
+
+Create a dedicated requirements file in the root of your project:
+
+```txt
+# requirements-pybundle.txt
+ruff
+mypy
+pytest
+pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.3.0
+```
+
+Then install:
+
+```bash
+pip install -r requirements-pybundle.txt
+```
+
+> **System dependency:**
+> pybundle uses `ripgrep (rg)` for source scanning and expects the system binary.
+>
+> * macOS: `brew install ripgrep`
+> * Ubuntu/Debian: `sudo apt install ripgrep`
+> * Fedora: `sudo dnf install ripgrep`
+
+After installation, run:
+
+```bash
+pybundle run analysis
+```
+
+A new `artifacts/` directory will be created containing:
+
+* the compressed bundle
+* an extracted working directory
+* machine-readable metadata (`MANIFEST.json`, `SUMMARY.json`)
+
+See **Usage** for more details.
+
+---
+
+### Advanced installation
+
+#### From GitHub (recommended)
 
 ```bash
 pip install "pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.3.0"
@@ -58,7 +103,7 @@ pip install "pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.3.0
 
 Pinning to a tag ensures reproducible behavior.
 
-### Editable install (for development)
+#### Editable install (for development)
 
 ```bash
 pip install -e .
@@ -68,26 +113,105 @@ pip install -e .
 
 ## 🧪 Usage
 
-From the root of a Python project:
+From the root of a Python project, run a profile using the `run` command:
 
 ```bash
-pybundle analysis
+pybundle run analysis
 ```
 
-This creates a timestamped archive under `artifacts/`.
+This builds a timestamped diagnostic bundle under the default `artifacts/` directory.
+
+### Profiles
+
+Profiles define *what* pybundle collects and *which tools* are run.
+
+Available profiles include:
+
+* `analysis`
+* `debug`
+* `backup`
+
+To list all available profiles:
+
+```bash
+pybundle list-profiles
+```
+
+Profiles are always invoked via:
+
+```bash
+pybundle run <profile>
+```
+
+---
 
 ### Common options
 
+Most usage customizations are done through flags on `pybundle run`.
+
+Example:
+
 ```bash
-pybundle analysis \
+pybundle run analysis \
   --format zip \
   --outdir ./artifacts \
   --name myproject-bundle \
-  --strict \
-  --no-spinner
+  --strict
 ```
 
-Run with `--help` to see all profiles and flags.
+Commonly used options:
+
+* `--format {auto,zip,tar.gz}` — archive format
+* `--outdir PATH` — output directory (default: `<project>/artifacts`)
+* `--name NAME` — override archive name prefix
+* `--strict` — fail with non-zero exit code if any step fails
+* `--no-spinner` — disable spinner output (CI-friendly)
+* `--redact / --no-redact` — control secret redaction
+
+Tool execution can be selectively disabled:
+
+```bash
+--no-ruff
+--no-mypy
+--no-pytest
+--no-rg
+--no-error-refs
+--no-context
+```
+
+For the full list of options:
+
+```bash
+pybundle run --help
+```
+
+---
+
+### Doctor mode
+
+To see which tools are available and what *would* run (without creating a bundle):
+
+```bash
+pybundle doctor
+```
+
+You may optionally specify a profile to preview:
+
+```bash
+pybundle doctor analysis
+```
+
+This is useful for validating environment readiness (CI, fresh machines, etc.).
+
+---
+
+### Version
+
+To check the installed version:
+
+```bash
+pybundle version
+```
 
 ---
 
