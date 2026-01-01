@@ -55,12 +55,13 @@ class Tooling:
 
 @dataclass(frozen=True)
 class RunOptions:
-    no_ruff: bool = False
-    no_mypy: bool = False
-    no_pytest: bool = False
-    no_rg: bool = False
-    no_error_refs: bool = False
-    no_context: bool = False
+    no_ruff: bool | None = None
+    no_mypy: bool | None = None
+    no_pytest: bool | None = None
+    no_rg: bool | None = None
+    no_error_refs: bool | None = None
+    no_context: bool | None = None
+    no_compileall: bool | None = None
 
     ruff_target: str = "."
     mypy_target: str = "."

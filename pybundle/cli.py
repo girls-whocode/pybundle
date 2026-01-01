@@ -54,12 +54,18 @@ def add_run_only_args(sp: argparse.ArgumentParser) -> None:
 
 def add_knobs(sp: argparse.ArgumentParser) -> None:
     # selective skips
-    sp.add_argument("--no-ruff", action="store_true")
-    sp.add_argument("--no-mypy", action="store_true")
-    sp.add_argument("--no-pytest", action="store_true")
-    sp.add_argument("--no-rg", action="store_true")
-    sp.add_argument("--no-error-refs", action="store_true")
-    sp.add_argument("--no-context", action="store_true")
+    sp.add_argument("--ruff", dest="no_ruff", action="store_false", default=None)
+    sp.add_argument("--no-ruff", dest="no_ruff", action="store_true", default=None)
+    sp.add_argument("--mypy", dest="no_mypy", action="store_false", default=None)
+    sp.add_argument("--no-mypy", dest="no_mypy", action="store_true", default=None)
+    sp.add_argument("--pytest", dest="no_pytest", action="store_false", default=None)
+    sp.add_argument("--no-pytest", dest="no_pytest", action="store_true", default=None)
+    sp.add_argument("--rg", dest="no_rg", action="store_false", default=None)
+    sp.add_argument("--no-rg", dest="no_rg", action="store_true", default=None)
+    sp.add_argument("--error-refs", dest="no_error_refs", action="store_false", default=None)
+    sp.add_argument("--no-error-refs", dest="no_error_refs", action="store_true", default=None)
+    sp.add_argument("--context", dest="no_context", action="store_false", default=None)
+    sp.add_argument("--no-context", dest="no_context", action="store_true", default=None)
 
     # targets / args
     sp.add_argument("--ruff-target", default=".")
@@ -85,17 +91,17 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("list-profiles", help="List available profiles")
 
     runp = sub.add_parser("run", help="Run a profile and build an archive")
-    runp.add_argument("profile", choices=["analysis", "debug", "backup"])
+    runp.add_argument("profile", choices=["analysis", "debug", "backup", "ai"])
     add_common_args(runp)
     add_run_only_args(runp)
     add_knobs(runp)
 
     docp = sub.add_parser("doctor", help="Show tool availability and what would run")
     docp.add_argument(
-        "profile",
-        choices=["analysis", "debug", "backup"],
-        nargs="?",
-        default="analysis",
+        "profile", 
+        choices=["analysis", "debug", "backup", "ai"], 
+        nargs="?", 
+        default="analysis"
     )
     add_common_args(docp)
     add_knobs(docp)
@@ -131,9 +137,10 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.cmd == "list-profiles":
+        print("ai        - AI-friendly context bundle (fast, low-flake defaults)")
+        print("backup    - portable snapshot (scaffold)")
         print("analysis  - neutral diagnostic bundle (humans, tools, assistants)")
         print("debug     - deeper diagnostics for developers")
-        print("backup    - portable snapshot (scaffold)")
         return 0
 
     # run + doctor need a root

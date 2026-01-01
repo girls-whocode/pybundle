@@ -165,7 +165,7 @@ class CuratedCopyStep:
         for rel_dir in include_dirs:
             sp = ctx.root / rel_dir
             if sp.is_dir() and rel_dir not in exclude:
-                if _is_excluded_path(Path(rel_file), exclude):
+                if _is_excluded_path(Path(rel_dir), exclude):
                     continue
                 files_copied, dirs_pruned = _copy_tree_filtered(
                     sp, dst_root / rel_dir, exclude
@@ -202,11 +202,11 @@ class CuratedCopyStep:
                             continue
 
                         if sp.is_file():
-                            _safe_copy_file(sp, dst_root / rel_file)
+                            _safe_copy_file(sp, dst_root / rel_path)
                             copied += 1
                         elif sp.is_dir():
                             files_copied, dirs_pruned = _copy_tree_filtered(
-                                sp, dst_root / rel_dir, exclude
+                                sp, dst_root / rel_path, exclude
                             )
                             copied += files_copied
                             pruned += dirs_pruned

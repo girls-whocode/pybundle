@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-
+import dataclasses
 from .context import RunOptions
 from .steps.shell import ShellStep
 from .steps.tree import TreeStep, LargestFilesStep
@@ -22,6 +22,18 @@ class Profile:
     name: str
     steps: list
 
+def resolve_defaults(profile: str, opts: RunOptions) -> RunOptions:
+    if profile == "ai":
+        return dataclasses.replace(
+            opts,
+            no_ruff = opts.no_ruff if opts.no_ruff is not None else True,
+            no_mypy = opts.no_mypy if opts.no_mypy is not None else True,
+            no_pytest = opts.no_pytest if opts.no_pytest is not None else True,
+            no_rg = opts.no_rg if opts.no_rg is not None else True,
+            no_error_refs = opts.no_error_refs if opts.no_error_refs is not None else True,
+            no_context = opts.no_context if opts.no_context is not None else True,
+        )
+    return opts
 
 def _analysis_steps(options: RunOptions) -> list:
     steps: list = [
@@ -67,6 +79,9 @@ def _analysis_steps(options: RunOptions) -> list:
                 max_files=options.context_max_files,
             )
         ]
+    
+    if not options.no_compileall:
+        steps.append(CompileAllStep())
 
     # Curated pack + repro doc
     steps += [
@@ -120,5 +135,9 @@ def get_profile(name: str, options: RunOptions) -> Profile:
                 ),
             ],
         )
+
+    if name == "ai":
+        opts = resolve_defaults("ai", options)
+        return Profile(name="ai", steps=_analysis_steps(opts))
 
     raise ValueError(f"unknown profile: {name}")
