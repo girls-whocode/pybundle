@@ -3,7 +3,7 @@ pybundle = "pybundle.cli:main"
 
 [project]
 name = "pybundle"
-version = "0.3.0"
+version = "0.3.2"
 
 [tool.setuptools.packages.find]
 include = ["pybundle*"]

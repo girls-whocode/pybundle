@@ -32,6 +32,7 @@ def resolve_defaults(profile: str, opts: RunOptions) -> RunOptions:
             no_rg = opts.no_rg if opts.no_rg is not None else True,
             no_error_refs = opts.no_error_refs if opts.no_error_refs is not None else True,
             no_context = opts.no_context if opts.no_context is not None else True,
+            no_compileall = opts.no_compileall if opts.no_compileall is not None else True,
         )
     return opts
 
@@ -48,7 +49,6 @@ def _analysis_steps(options: RunOptions) -> list:
         ),
         TreeStep(max_depth=4),
         LargestFilesStep(limit=80),
-        CompileAllStep(),
     ]
 
     # Lint/type/test (CLI-overridable)
@@ -103,7 +103,6 @@ def _analysis_steps(options: RunOptions) -> list:
     ]
 
     return steps
-
 
 def get_profile(name: str, options: RunOptions) -> Profile:
     if name == "analysis":
