@@ -1,5 +1,5 @@
 # 🧳 pybundle
-
+ 
 **pybundle** is a deterministic, automation-friendly tool for collecting Python project context into a single, shareable bundle — ideal for debugging, audits, AI assistance, CI artifacts, or handoff between engineers.
 
 It produces **machine-readable outputs first**, with optional human-readable summaries layered on top.
