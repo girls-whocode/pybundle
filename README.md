@@ -61,7 +61,7 @@ Create a dedicated requirements file in the root of your project:
 ruff
 mypy
 pytest
-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.3.0
+pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.3.2
 ```
 
 Then install:

@@ -38,6 +38,23 @@ def add_common_args(sp: argparse.ArgumentParser) -> None:
     )
 
 
+def _resolve_profile_defaults(profile: str, o: RunOptions) -> RunOptions:
+    if profile == "ai":
+        # AI defaults: skip slow/flake-prone tools unless explicitly enabled
+        return RunOptions(
+            **{
+              **o.__dict__,
+              "no_ruff":  o.no_ruff  if o.no_ruff  is not None else True,
+              "no_mypy":  o.no_mypy  if o.no_mypy  is not None else True,
+              "no_pytest":o.no_pytest if o.no_pytest is not None else True,
+              "no_rg":    o.no_rg    if o.no_rg    is not None else True,
+              "no_error_refs": o.no_error_refs if o.no_error_refs is not None else True,
+              "no_context":    o.no_context    if o.no_context    is not None else True,
+            }
+        )
+    return o
+
+
 def add_run_only_args(sp: argparse.ArgumentParser) -> None:
     sp.add_argument(
         "--format",
@@ -114,12 +131,12 @@ def _build_options(args) -> RunOptions:
         shlex.split(args.pytest_args) if getattr(args, "pytest_args", None) else ["-q"]
     )
     return RunOptions(
-        no_ruff=getattr(args, "no_ruff", False),
-        no_mypy=getattr(args, "no_mypy", False),
-        no_pytest=getattr(args, "no_pytest", False),
-        no_rg=getattr(args, "no_rg", False),
-        no_error_refs=getattr(args, "no_error_refs", False),
-        no_context=getattr(args, "no_context", False),
+        no_ruff=getattr(args, "no_ruff", None),
+        no_mypy=getattr(args, "no_mypy", None),
+        no_pytest=getattr(args, "no_pytest", None),
+        no_rg=getattr(args, "no_rg", None),
+        no_error_refs=getattr(args, "no_error_refs", None),
+        no_context=getattr(args, "no_context", None),
         ruff_target=getattr(args, "ruff_target", "."),
         mypy_target=getattr(args, "mypy_target", "."),
         pytest_args=pytest_args,
@@ -151,7 +168,7 @@ def main(argv: list[str] | None = None) -> int:
 
     outdir = args.outdir or (root / "artifacts")
 
-    options = _build_options(args)
+    options = _resolve_profile_defaults(args.profile, _build_options(args))
     profile = get_profile(args.profile, options)
 
     if args.cmd == "doctor":

@@ -38,12 +38,23 @@ DEFAULT_INCLUDE_FILES = [
     "pytest.ini",
     "tox.ini",
     ".python-version",
+    "README.md",
+    "README.rst",
+    "README.txt",
+    "CHANGELOG.md",
+    "LICENSE",
+    "LICENSE.md",
+    ".tox",
+    ".nox",
+    ".direnv",
 ]
 
 DEFAULT_INCLUDE_DIRS = [
     "src",
     "tests",
     "tools",
+    "docs",
+    ".github",
 ]
 
 DEFAULT_INCLUDE_GLOBS = [
@@ -54,6 +65,29 @@ DEFAULT_INCLUDE_GLOBS = [
     "templates/**/*",
     "static/**/*",
 ]
+
+def _is_venv_root(p: Path) -> bool:
+    if not p.is_dir():
+        return False
+    # Standard venv marker
+    if (p / "pyvenv.cfg").is_file():
+        return True
+    # Common activation scripts (covers odd venv layouts)
+    if (p / "bin" / "activate").is_file():
+        return True
+    if (p / "Scripts" / "activate").is_file():
+        return True
+    return False
+
+
+def _is_under_venv(root: Path, rel_path: Path) -> bool:
+    # walk ancestors: a/b/c.py -> check a, a/b, a/b/c
+    cur = root
+    for part in rel_path.parts:
+        cur = cur / part
+        if _is_venv_root(cur):
+            return True
+    return False
 
 
 def _is_excluded_path(rel: Path, exclude_dirs: set[str]) -> bool:
@@ -86,7 +120,8 @@ def _copy_tree_filtered(
         # prune excluded dirs
         kept = []
         for d in dirnames:
-            if d in exclude_dirs:
+            dp_child = dp / d
+            if d in exclude_dirs or _is_venv_root(dp_child):
                 pruned += 1
             else:
                 kept.append(d)
@@ -165,6 +200,9 @@ class CuratedCopyStep:
         for rel_dir in include_dirs:
             sp = ctx.root / rel_dir
             if sp.is_dir() and rel_dir not in exclude:
+                if _is_venv_root(sp):
+                    pruned += 1
+                    continue
                 if _is_excluded_path(Path(rel_dir), exclude):
                     continue
                 files_copied, dirs_pruned = _copy_tree_filtered(
@@ -201,13 +239,19 @@ class CuratedCopyStep:
                         if _is_excluded_path(rel_path, exclude):
                             continue
 
+                        if _is_under_venv(ctx.root, rel_path):
+                            pruned += 1
+                            continue
+
+                        dst = dst_root / rel_path
+                        if dst.exists():
+                            continue
+
                         if sp.is_file():
-                            _safe_copy_file(sp, dst_root / rel_path)
+                            _safe_copy_file(sp, dst)
                             copied += 1
                         elif sp.is_dir():
-                            files_copied, dirs_pruned = _copy_tree_filtered(
-                                sp, dst_root / rel_path, exclude
-                            )
+                            files_copied, dirs_pruned = _copy_tree_filtered(sp, dst, exclude)
                             copied += files_copied
                             pruned += dirs_pruned
                         if copied >= self.max_files:
