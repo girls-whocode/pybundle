@@ -98,7 +98,7 @@ See **Usage** for more details.
 #### From GitHub
 
 ```bash
-pip install "pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.3.0"
+pip install "pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.3.2"
 ```
 
 Pinning to a tag ensures reproducible behavior.
@@ -127,9 +127,10 @@ Profiles define *what* pybundle collects and *which tools* are run.
 
 Available profiles include:
 
-* `analysis`
-* `debug`
-* `backup`
+* `analysis` — **full diagnostics** (lint, type-check, tests, scans)
+* `debug` — **analysis + additional environment validation**
+* `backup` — **minimal environment snapshot**
+* `ai` — **AI-optimized context bundle** (lean, source-first)
 
 To list all available profiles:
 
@@ -142,6 +143,47 @@ Profiles are always invoked via:
 ```bash
 pybundle run <profile>
 ```
+---
+
+### 🤖 AI profile (NEW)
+
+The `ai` profile is optimized for handing a project to AI tooling
+(ChatGPT, local LLMs, code assistants, etc.).
+
+It prioritizes **source code and reproducible context**, while skipping
+expensive or noisy steps by default.
+
+Run it with:
+
+```bash
+pybundle run ai
+```
+
+#### What `ai` does by default
+
+* ✅ Includes full curated source snapshot (`src/`)
+* ✅ Includes environment + git metadata
+* ✅ Generates `REPRO.md` and `HANDOFF.md`
+* ❌ Skips linting, type-checking, tests
+* ❌ Skips ripgrep scans and error-context expansion
+* ❌ Skips `compileall` unless explicitly enabled
+
+The result is a **small, fast, AI-friendly bundle** that still preserves
+determinism and traceability.
+
+You may selectively re-enable tools:
+
+```bash
+pybundle run ai --ruff --mypy
+pybundle run ai --compileall
+```
+
+This makes `ai` suitable for:
+
+* AI-assisted refactoring
+* Large-context summarization
+* Code review handoff
+* Offline or local LLM workflows
 
 ---
 
@@ -277,6 +319,7 @@ pybundle is designed for:
 * feeding a codebase to AI tooling
 * generating CI artifacts
 * preserving “what exactly did we run?”
+* producing **AI-consumable project context** without guesswork
 
 It prioritizes **determinism, traceability, and automation** over clever heuristics.
 
@@ -307,7 +350,7 @@ pybundle follows **Semantic Versioning**.
 Pinned Git tags are recommended when used as a dependency:
 
 ```txt
-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.3.0
+pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.3.2
 ```
 
 ---
