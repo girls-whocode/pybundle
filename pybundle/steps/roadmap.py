@@ -7,7 +7,8 @@ from pathlib import Path
 from .base import StepResult
 from ..context import BundleContext
 from ..roadmap_scan import build_roadmap
-from ..steps.copy_pack import DEFAULT_EXCLUDE_DIRS  # reuse your excludes
+from ..steps.copy_pack import DEFAULT_EXCLUDE_DIRS
+from ..policy import AIContextPolicy
 
 @dataclass
 class RoadmapStep:
@@ -16,6 +17,7 @@ class RoadmapStep:
     out_json: str = "meta/70_roadmap.json"
     include: list[str] | None = None
     max_files: int = 20000
+    policy: AIContextPolicy | None = None
 
     def run(self, ctx: BundleContext) -> StepResult:
         start = time.time()
@@ -46,15 +48,16 @@ class RoadmapStep:
                 if not include_dirs:
                     include_dirs = [ctx.root]
 
+        policy = self.policy or AIContextPolicy()
+        include_dirs = [p for p in policy.include_dir_candidates(ctx.root)]
+        exclude_dirs = set(policy.exclude_dirs)
+
         graph = build_roadmap(
             root=ctx.root,
             include_dirs=include_dirs,
-            exclude_dirs = set(DEFAULT_EXCLUDE_DIRS) | {
-                ".pybundle-venv", ".venv", "venv", ".direnv",
-                ".sentra_venv", ".freeze-venv", ".gaslog-venv",
-                "node_modules", "dist", "build", "target", "__pycache__",
-            },
-            max_files=self.max_files,
+            exclude_dirs=exclude_dirs,
+            max_files=policy.roadmap_max_files,
+            # later: depth=policy.roadmap_depth
         )
 
         # Write JSON
@@ -66,6 +69,17 @@ class RoadmapStep:
         out_md_path = ctx.workdir / self.out_md
         out_md_path.parent.mkdir(parents=True, exist_ok=True)
         out_md_path.write_text(self._render_md(graph), encoding="utf-8")
+
+        langs = sorted({n.lang for n in graph.nodes if getattr(n, "lang", None)})
+        summary = {
+            "languages": langs,
+            "entrypoints": [ep.node for ep in graph.entrypoints[:50]],
+            "stats": graph.stats,
+        }
+        (ctx.workdir / "meta" / "71_roadmap_summary.json").write_text(
+            json.dumps(summary, indent=2),
+            encoding="utf-8",
+        )
 
         dur = int(time.time() - start)
         note = f"nodes={len(graph.nodes)} edges={len(graph.edges)} entrypoints={len(graph.entrypoints)}"
@@ -83,36 +97,20 @@ class RoadmapStep:
                 lines.append(f"- `{ep.node}` — {ep.reason} (confidence {ep.confidence}/3)")
         lines.append("")
         lines.append("## High-level map")
+
+        depth = 2
+        max_edges = 180
+        try:
+            # if policy is passed through, prefer it
+            if hasattr(self, "policy") and self.policy is not None:
+                depth = self.policy.roadmap_mermaid_depth
+                max_edges = self.policy.roadmap_mermaid_max_edges
+        except Exception:
+            pass
+
         lines.append("```mermaid")
         lines.append("flowchart LR")
-
-        # Keep graph readable: only show edges from entrypoints + top N by frequency
-        shown = 0
-        if graph.entrypoints:
-            # readable: show edges originating from entrypoints
-            ep_nodes = {ep.node for ep in graph.entrypoints}
-            for e in graph.edges:
-                if e.src in ep_nodes:
-                    lines.append(f'  "{e.src}" --> "{e.dst}"')
-                    shown += 1
-                    if shown >= 120:
-                        break
-        else:
-            # fallback: show a few "hub" sources by out-degree
-            outdeg: dict[str, int] = {}
-            for e in graph.edges:
-                outdeg[e.src] = outdeg.get(e.src, 0) + 1
-            hubs = [k for k, _ in sorted(outdeg.items(), key=lambda kv: (-kv[1], kv[0]))[:5]]
-            hubset = set(hubs)
-            for e in graph.edges:
-                if e.src in hubset:
-                    lines.append(f'  "{e.src}" --> "{e.dst}"')
-                    shown += 1
-                    if shown >= 120:
-                        break
-
-        if shown == 0:
-            lines.append('  A["(no edges rendered)"]')
+        lines.extend(self._render_mermaid_bfs(graph, max_depth=depth, max_edges=max_edges))
         lines.append("```")
         lines.append("")
         lines.append("## Stats")
@@ -124,3 +122,37 @@ class RoadmapStep:
         lines.append("- This is designed to be deterministic and readable, not a perfect compiler-grade call graph.")
         lines.append("")
         return "\n".join(lines)
+
+    def _render_mermaid_bfs(self, graph, max_depth: int = 2, max_edges: int = 180) -> list[str]:
+        from collections import deque
+
+        adj: dict[str, list[str]] = {}
+        for e in graph.edges:
+            adj.setdefault(e.src, []).append(e.dst)
+
+        entry = [ep.node for ep in graph.entrypoints]
+        if not entry:
+            return ['  A["(no entrypoints)"]']
+
+        q = deque([(n, 0) for n in entry])
+        seen_edges: set[tuple[str, str]] = set()
+        shown: list[str] = []
+        seen_nodes: set[str] = set(entry)
+
+        while q and len(shown) < max_edges:
+            node, depth = q.popleft()
+            if depth >= max_depth:
+                continue
+            for dst in adj.get(node, []):
+                key = (node, dst)
+                if key in seen_edges:
+                    continue
+                seen_edges.add(key)
+                shown.append(f'  "{node}" --> "{dst}"')
+                if dst not in seen_nodes:
+                    seen_nodes.add(dst)
+                    q.append((dst, depth + 1))
+                if len(shown) >= max_edges:
+                    break
+
+        return shown or ['  A["(no edges rendered)"]']

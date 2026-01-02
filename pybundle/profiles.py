@@ -16,6 +16,7 @@ from .steps.copy_pack import CuratedCopyStep
 from .steps.repro_md import ReproMarkdownStep
 from .steps.handoff_md import HandoffMarkdownStep
 from .steps.roadmap import RoadmapStep
+from .policy import AIContextPolicy
 
 
 @dataclass(frozen=True)
@@ -51,12 +52,15 @@ def resolve_defaults(profile: str, opts: RunOptions) -> RunOptions:
     return opts
 
 def _analysis_steps(options: RunOptions) -> list:
+    policy = AIContextPolicy()
+
     steps: list = [
         ShellStep("git status", "meta/00_git_status.txt", ["git", "status"], require_cmd="git"),
         ShellStep("git diff", "meta/01_git_diff.txt", ["git", "diff"], require_cmd="git"),
         ShellStep("uname -a", "meta/21_uname.txt", ["uname", "-a"], require_cmd="uname"),
-        TreeStep(max_depth=4),
-        LargestFilesStep(limit=80),
+
+        TreeStep(max_depth=policy.tree_max_depth, policy=policy),
+        LargestFilesStep(limit=policy.largest_limit, policy=policy),
     ]
 
     # Lint/type/test (CLI-overridable)
@@ -93,15 +97,14 @@ def _analysis_steps(options: RunOptions) -> list:
 
     # Curated pack + repro doc
     steps += [
-        CuratedCopyStep(),
-        ReproMarkdownStep(),
-        HandoffMarkdownStep(),
         ShellStep("python -V", "meta/20_python_version.txt", ["python", "-V"], require_cmd="python"),
         ShellStep("pip freeze", "meta/22_pip_freeze.txt", ["python", "-m", "pip", "freeze"], require_cmd="python"),
-    ]
 
-    # Always include a 50-foot view map for humans + deterministic JSON for AI/tools.
-    steps.append(RoadmapStep())
+        CuratedCopyStep(policy=policy),
+        ReproMarkdownStep(),
+        RoadmapStep(policy=policy),
+        HandoffMarkdownStep(),
+    ]
 
     return _dedupe_steps(steps)
 

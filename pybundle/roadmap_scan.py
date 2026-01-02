@@ -156,9 +156,12 @@ def build_roadmap(root: Path, include_dirs: list[Path], exclude_dirs: set[str], 
     files: list[Path] = []
     root_res = root.resolve()
 
+    skipped_big = 0
+
     for d in include_dirs:
         if not d.exists():
             continue
+
         if _is_venv_root(d):
             continue
 
@@ -188,6 +191,7 @@ def build_roadmap(root: Path, include_dirs: list[Path], exclude_dirs: set[str], 
 
                 try:
                     if p.stat().st_size > 2_000_000:
+                        skipped_big += 1
                         continue
                 except OSError:
                     continue
@@ -241,6 +245,7 @@ def build_roadmap(root: Path, include_dirs: list[Path], exclude_dirs: set[str], 
         stats[f"nodes_{n.lang}"] = stats.get(f"nodes_{n.lang}", 0) + 1
     for e in edges:
         stats[f"edges_{e.type}"] = stats.get(f"edges_{e.type}", 0) + 1
+    stats["skipped_big_files"] = skipped_big
 
     # determinism: sort
     node_list = sorted(nodes.values(), key=lambda x: x.id)

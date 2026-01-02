@@ -1,13 +1,21 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
+import time
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from .base import StepResult
 from ..context import BundleContext
 from ..tools import which
+from ..policy import AIContextPolicy, PathFilter
 
+BIN_EXTS = {
+    ".appimage", ".deb", ".rpm", ".exe", ".msi", ".dmg", ".pkg",
+    ".so", ".dll", ".dylib",
+}
+DB_EXTS = {".db", ".sqlite", ".sqlite3"}
+ARCHIVE_EXTS = {".zip", ".tar", ".gz", ".tgz", ".bz2", ".xz", ".7z"}
 
 DEFAULT_EXCLUDES = [
     ".git",
@@ -23,7 +31,6 @@ DEFAULT_EXCLUDES = [
     ".cache",
 ]
 
-
 def _is_excluded(rel: Path, excludes: set[str]) -> bool:
     # Exclude if any path component matches
     for part in rel.parts:
@@ -31,102 +38,69 @@ def _is_excluded(rel: Path, excludes: set[str]) -> bool:
             return True
     return False
 
-
 @dataclass
 class TreeStep:
     name: str = "tree (filtered)"
     max_depth: int = 4
     excludes: list[str] | None = None
+    policy: AIContextPolicy | None = None
 
     def run(self, ctx: BundleContext) -> StepResult:
-        import time
-
         start = time.time()
-        excludes = set(self.excludes or DEFAULT_EXCLUDES)
+        policy = self.policy or AIContextPolicy()
+
+        # allow overrides
+        exclude_dirs = set(self.excludes) if self.excludes else set(policy.exclude_dirs)
+        filt = PathFilter(exclude_dirs=exclude_dirs, exclude_file_exts=set(policy.exclude_file_exts))
+
         out = ctx.metadir / "10_tree.txt"
         out.parent.mkdir(parents=True, exist_ok=True)
 
-        tree_bin = which("tree")
-        if tree_bin:
-            # Prefer `tree` if available
-            exclude_pat = "|".join(self.excludes or DEFAULT_EXCLUDES)
-            cmd = [
-                tree_bin,
-                "-a",
-                "-L",
-                str(self.max_depth),
-                "-I",
-                exclude_pat,
-            ]
-            text = "## CMD: " + " ".join(cmd) + "\n\n"
-            try:
-                import subprocess
-
-                cp = subprocess.run(
-                    cmd, cwd=str(ctx.root), text=True, capture_output=True, check=False
-                )
-                text += (cp.stdout or "") + ("\n" + cp.stderr if cp.stderr else "")
-                out.write_text(ctx.redact_text(text), encoding="utf-8")
-                dur = int(time.time() - start)
-                # tree returns 0 even if it prints warnings; treat nonzero as PASS unless strict later
-                return StepResult(
-                    self.name,
-                    "PASS",
-                    dur,
-                    "" if cp.returncode == 0 else f"exit={cp.returncode}",
-                )
-            except Exception as e:
-                out.write_text(
-                    ctx.redact_text(text + f"\nEXCEPTION: {e}\n"), encoding="utf-8"
-                )
-                dur = int(time.time() - start)
-                return StepResult(
-                    self.name, "PASS", dur, f"fallback (tree exception: {e})"
-                )
-
-        # Fallback: find-like listing implemented in Python
-        lines: list[str] = []
         root = ctx.root
+        lines: list[str] = []
 
         for dirpath, dirnames, filenames in os.walk(root):
             dp = Path(dirpath)
-            # Relative path for depth computation (root -> ".")
             rel_dp = dp.relative_to(root)
-
-            # prune excluded directories
-            dirnames[:] = [d for d in dirnames if d not in excludes]
-
             depth = 0 if rel_dp == Path(".") else len(rel_dp.parts)
+
             if depth > self.max_depth:
                 dirnames[:] = []
                 continue
 
+            # prune dirs (name + venv-structure)
+            kept = []
+            for d in dirnames:
+                if filt.should_prune_dir(dp, d):
+                    continue
+                kept.append(d)
+            dirnames[:] = kept
+
             for fn in filenames:
                 p = dp / fn
-                rel = p.relative_to(root)
-                if _is_excluded(rel, excludes):
+                if not filt.should_include_file(root, p):
                     continue
-                # Only list files up to max_depth (depth is dir depth; file is within it)
-                if depth <= self.max_depth:
-                    lines.append(str(rel))
+                lines.append(str(p.relative_to(root)))
 
         lines.sort()
         out.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
         dur = int(time.time() - start)
-        return StepResult(self.name, "PASS", dur, "python-walk fallback")
-
+        return StepResult(self.name, "PASS", dur, "python-walk")
 
 @dataclass
 class LargestFilesStep:
     name: str = "largest files"
     limit: int = 80
     excludes: list[str] | None = None
+    policy: AIContextPolicy | None = None
 
     def run(self, ctx: BundleContext) -> StepResult:
-        import time
-
         start = time.time()
-        excludes = set(self.excludes or DEFAULT_EXCLUDES)
+        policy = self.policy or AIContextPolicy()
+
+        exclude_dirs = set(self.excludes) if self.excludes else set(policy.exclude_dirs)
+        filt = PathFilter(exclude_dirs=exclude_dirs, exclude_file_exts=set(policy.exclude_file_exts))
+
         out = ctx.metadir / "11_largest_files.txt"
         out.parent.mkdir(parents=True, exist_ok=True)
 
@@ -136,18 +110,22 @@ class LargestFilesStep:
         for dirpath, dirnames, filenames in os.walk(root):
             dp = Path(dirpath)
 
-            dirnames[:] = [d for d in dirnames if d not in excludes]
+            kept = []
+            for d in dirnames:
+                if filt.should_prune_dir(dp, d):
+                    continue
+                kept.append(d)
+            dirnames[:] = kept
 
             for fn in filenames:
                 p = dp / fn
-                rel = p.relative_to(root)
-                if _is_excluded(rel, excludes):
+                if not filt.should_include_file(root, p):
                     continue
                 try:
                     size = p.stat().st_size
                 except OSError:
                     continue
-                files.append((size, str(rel)))
+                files.append((size, str(p.relative_to(root))))
 
         files.sort(key=lambda x: x[0], reverse=True)
         lines = [f"{size}\t{path}" for size, path in files[: self.limit]]
@@ -155,3 +133,4 @@ class LargestFilesStep:
 
         dur = int(time.time() - start)
         return StepResult(self.name, "PASS", dur, f"count={len(files)}")
+

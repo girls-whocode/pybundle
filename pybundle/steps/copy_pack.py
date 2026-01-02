@@ -8,6 +8,7 @@ from pathlib import Path
 
 from .base import StepResult
 from ..context import BundleContext
+from ..policy import AIContextPolicy, PathFilter
 
 
 DEFAULT_EXCLUDE_DIRS = {
@@ -20,6 +21,9 @@ DEFAULT_EXCLUDE_DIRS = {
     "node_modules",
     "dist",
     "build",
+    "target",
+    ".next",
+    ".nuxt",
     "artifacts",
     ".cache",
 }
@@ -108,19 +112,16 @@ def _is_under_venv(root: Path, rel_path: Path) -> bool:
             return True
     return False
 
-
 def _is_excluded_path(rel: Path, exclude_dirs: set[str]) -> bool:
     for part in rel.parts:
         if part in exclude_dirs:
             return True
     return False
 
-
 def _safe_copy_file(src: Path, dst: Path) -> None:
     dst.parent.mkdir(parents=True, exist_ok=True)
     # preserve mode + timestamps where possible
     shutil.copy2(src, dst)
-
 
 def _copy_tree_filtered(
     src_dir: Path, dst_dir: Path, exclude_dirs: set[str]
@@ -163,7 +164,6 @@ def _copy_tree_filtered(
 
     return files, pruned
 
-
 def _guess_package_dirs(root: Path, exclude_dirs: set[str]) -> list[Path]:
     """
     Heuristic: top-level dirs containing __init__.py are packages.
@@ -180,7 +180,6 @@ def _guess_package_dirs(root: Path, exclude_dirs: set[str]) -> list[Path]:
             out.append(p)
     return out
 
-
 @dataclass
 class CuratedCopyStep:
     name: str = "copy curated source pack"
@@ -188,17 +187,21 @@ class CuratedCopyStep:
     include_dirs: list[str] | None = None
     include_globs: list[str] | None = None
     exclude_dirs: set[str] | None = None
-    max_files: int = 20000  # safety valve
+    max_files: int = 20000
+    policy: AIContextPolicy | None = None
 
     def run(self, ctx: BundleContext) -> StepResult:
         start = time.time()
         dst_root = ctx.srcdir  # bundle/src
         dst_root.mkdir(parents=True, exist_ok=True)
 
-        exclude = set(self.exclude_dirs or DEFAULT_EXCLUDE_DIRS)
-        include_files = self.include_files or DEFAULT_INCLUDE_FILES
-        include_dirs = self.include_dirs or DEFAULT_INCLUDE_DIRS
-        include_globs = self.include_globs or DEFAULT_INCLUDE_GLOBS
+        policy = self.policy or AIContextPolicy()
+
+        exclude = set(self.exclude_dirs) if self.exclude_dirs else set(policy.exclude_dirs)
+        filt = PathFilter(exclude_dirs=exclude, exclude_file_exts=set(policy.exclude_file_exts))
+        include_files = self.include_files or list(policy.include_files)
+        include_dirs = self.include_dirs or list(policy.include_dirs)
+        include_globs = self.include_globs or list(policy.include_globs)
 
         copied = 0
         pruned = 0
@@ -206,6 +209,8 @@ class CuratedCopyStep:
         # 1) Include well-known top-level files if present
         for rel_file in include_files:
             sp = ctx.root / rel_file
+            if not filt.should_include_file(ctx.root, sp):
+                continue
             if sp.is_file():
                 if _is_excluded_path(Path(rel_file), exclude):
                     continue

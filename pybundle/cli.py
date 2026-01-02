@@ -62,7 +62,6 @@ def add_common_args(sp: argparse.ArgumentParser) -> None:
         help="Redact secrets in logs/text",
     )
 
-
 def _resolve_profile_defaults(profile: str, o: RunOptions) -> RunOptions:
     if profile == "ai":
         # AI defaults: skip slow/flake-prone tools unless explicitly enabled
@@ -79,7 +78,6 @@ def _resolve_profile_defaults(profile: str, o: RunOptions) -> RunOptions:
         )
     return o
 
-
 def add_run_only_args(sp: argparse.ArgumentParser) -> None:
     sp.add_argument(
         "--format",
@@ -92,7 +90,6 @@ def add_run_only_args(sp: argparse.ArgumentParser) -> None:
         action="store_true",
         help="Delete expanded workdir after packaging",
     )
-
 
 def add_knobs(sp: argparse.ArgumentParser) -> None:
     # selective skips
@@ -123,7 +120,6 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
     sp.add_argument("--context-depth", type=int, default=2)
     sp.add_argument("--context-max-files", type=int, default=600)
 
-
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="pybundle", description="Build portable diagnostic bundles for projects."
@@ -150,7 +146,6 @@ def build_parser() -> argparse.ArgumentParser:
 
     return p
 
-
 def _build_options(args) -> RunOptions:
     pytest_args = (
         shlex.split(args.pytest_args) if getattr(args, "pytest_args", None) else ["-q"]
@@ -169,7 +164,6 @@ def _build_options(args) -> RunOptions:
         context_depth=getattr(args, "context_depth", 2),
         context_max_files=getattr(args, "context_max_files", 600),
     )
-
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
@@ -229,7 +223,6 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     return run_profile(ctx, profile)
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

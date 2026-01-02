@@ -91,6 +91,55 @@ class HandoffMarkdownStep(Step):
         lines.append(f"- **Redaction:** {redact_status}")
         lines.append("")
         lines.append("## At a glance")
+
+        roadmap_json = _safe_read(workdir_path / "meta" / "70_roadmap.json")
+        copy_manifest = _safe_read(workdir_path / "meta" / "50_copy_manifest.txt")
+        pip_freeze = _safe_read(workdir_path / "meta" / "22_pip_freeze.txt")
+
+        lines.append("## AI context summary")
+
+        copy_manifest = _safe_read(workdir_path / "meta" / "50_copy_manifest.txt").strip()
+        if copy_manifest:
+            lines.append("### Curated copy")
+            lines.append("```")
+            lines.append(copy_manifest)
+            lines.append("```")
+        else:
+            lines.append("- Curated copy manifest not found.")
+
+        roadmap_json = _safe_read(workdir_path / "meta" / "70_roadmap.json").strip()
+        if roadmap_json:
+            try:
+                import json
+                rj = json.loads(roadmap_json)
+                langs = set()
+                for n in rj.get("nodes", []):
+                    if isinstance(n, dict):
+                        lang = n.get("lang")
+                        if lang:
+                            langs.add(lang)
+                eps = rj.get("entrypoints", []) or []
+                lines.append(f"- **Languages detected:** {', '.join(sorted(langs)) if langs else '(none)'}")
+                if eps:
+                    lines.append("- **Entrypoints:**")
+                    for ep in eps[:10]:
+                        node = ep.get("node") if isinstance(ep, dict) else None
+                        reason = ep.get("reason") if isinstance(ep, dict) else None
+                        conf = ep.get("confidence") if isinstance(ep, dict) else None
+                        if node:
+                            extra = ""
+                            if reason is not None and conf is not None:
+                                extra = f" — {reason} ({conf}/3)"
+                            lines.append(f"  - `{node}`{extra}")
+                else:
+                    lines.append("- **Entrypoints:** (none detected)")
+            except Exception:
+                lines.append("- Roadmap JSON present but could not be parsed.")
+        else:
+            lines.append("- Roadmap not found.")
+
+        lines.append("")
+
         lines.append(f"- **Overall status:** {overall}")
         lines.append(
             f"- **Steps:** {total_n} total — {pass_n} PASS, {fail_n} FAIL, {skip_n} SKIP"
