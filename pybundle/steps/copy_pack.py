@@ -69,16 +69,35 @@ DEFAULT_INCLUDE_GLOBS = [
 def _is_venv_root(p: Path) -> bool:
     if not p.is_dir():
         return False
-    # Standard venv marker
+
+    # Strong marker: standard venv metadata
     if (p / "pyvenv.cfg").is_file():
         return True
-    # Common activation scripts (covers odd venv layouts)
-    if (p / "bin" / "activate").is_file():
-        return True
-    if (p / "Scripts" / "activate").is_file():
-        return True
-    return False
 
+    # Typical venv executables (Linux/macOS)
+    if (p / "bin").is_dir():
+        # venv/virtualenv always has python here
+        if (p / "bin" / "python").exists() or (p / "bin" / "python3").exists():
+            # activation script is common but not guaranteed; still strong signal
+            if (p / "bin" / "activate").is_file():
+                return True
+            # also accept presence of site-packages under lib
+            if any((p / "lib").glob("python*/site-packages")):
+                return True
+
+    # Windows venv layout
+    if (p / "Scripts").is_dir():
+        if (p / "Scripts" / "python.exe").is_file() or (p / "Scripts" / "python").exists():
+            if (p / "Scripts" / "activate").is_file():
+                return True
+            if (p / "Lib" / "site-packages").is_dir():
+                return True
+
+    # Some virtualenvs keep a .Python marker (macOS, older tooling)
+    if (p / ".Python").exists():
+        return True
+
+    return False
 
 def _is_under_venv(root: Path, rel_path: Path) -> bool:
     # walk ancestors: a/b/c.py -> check a, a/b, a/b/c

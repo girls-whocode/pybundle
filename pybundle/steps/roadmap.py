@@ -25,12 +25,35 @@ class RoadmapStep:
             include_dirs = [ctx.root / p for p in self.include]
         else:
             # sane defaults: mimic your curated source approach
-            include_dirs = [ctx.root / "src", ctx.root]
+            include_dirs: list[Path] = []
+            if self.include:
+                include_dirs = [ctx.root / p for p in self.include]
+            else:
+                # sane defaults: scan source trees, not the whole repo
+                candidates = [
+                    ctx.root / "src",
+                    ctx.root / "pybundle",        # in case this repo isn't src-layout
+                    ctx.root / "src-tauri",
+                    ctx.root / "frontend",
+                    ctx.root / "web",
+                    ctx.root / "ui",
+                    ctx.root / "templates",
+                    ctx.root / "static",
+                ]
+                include_dirs = [p for p in candidates if p.exists()]
+
+                # fallback if none exist
+                if not include_dirs:
+                    include_dirs = [ctx.root]
 
         graph = build_roadmap(
             root=ctx.root,
             include_dirs=include_dirs,
-            exclude_dirs=set(DEFAULT_EXCLUDE_DIRS),
+            exclude_dirs = set(DEFAULT_EXCLUDE_DIRS) | {
+                ".pybundle-venv", ".venv", "venv", ".direnv",
+                ".sentra_venv", ".freeze-venv", ".gaslog-venv",
+                "node_modules", "dist", "build", "target", "__pycache__",
+            },
             max_files=self.max_files,
         )
 
@@ -64,14 +87,29 @@ class RoadmapStep:
         lines.append("flowchart LR")
 
         # Keep graph readable: only show edges from entrypoints + top N by frequency
-        ep_nodes = {ep.node for ep in graph.entrypoints}
         shown = 0
-        for e in graph.edges:
-            if e.src in ep_nodes:
-                lines.append(f'  "{e.src}" --> "{e.dst}"')
-                shown += 1
-                if shown >= 120:
-                    break
+        if graph.entrypoints:
+            # readable: show edges originating from entrypoints
+            ep_nodes = {ep.node for ep in graph.entrypoints}
+            for e in graph.edges:
+                if e.src in ep_nodes:
+                    lines.append(f'  "{e.src}" --> "{e.dst}"')
+                    shown += 1
+                    if shown >= 120:
+                        break
+        else:
+            # fallback: show a few "hub" sources by out-degree
+            outdeg: dict[str, int] = {}
+            for e in graph.edges:
+                outdeg[e.src] = outdeg.get(e.src, 0) + 1
+            hubs = [k for k, _ in sorted(outdeg.items(), key=lambda kv: (-kv[1], kv[0]))[:5]]
+            hubset = set(hubs)
+            for e in graph.edges:
+                if e.src in hubset:
+                    lines.append(f'  "{e.src}" --> "{e.dst}"')
+                    shown += 1
+                    if shown >= 120:
+                        break
 
         if shown == 0:
             lines.append('  A["(no edges rendered)"]')

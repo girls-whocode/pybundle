@@ -1,10 +1,12 @@
 from __future__ import annotations
 import ast
+import os
 import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Optional
+from .steps.copy_pack import _is_venv_root, _is_under_venv
 
 from .roadmap_model import Node, Edge, EntryPoint, RoadmapGraph
 
@@ -81,24 +83,118 @@ def detect_entrypoints(root: Path) -> list[EntryPoint]:
 
     return eps
 
+def detect_entrypoints_from_nodes(nodes: dict[str, Node]) -> list[EntryPoint]:
+    """Derive entrypoints from the scanned node list (deterministic, no FS scope issues)."""
+    eps: list[EntryPoint] = []
+
+    for nid, n in nodes.items():
+        path = n.path
+        if path.endswith("__main__.py"):
+            eps.append(EntryPoint(node=nid, reason="python __main__.py", confidence=3))
+        elif path.endswith("main.rs"):
+            eps.append(EntryPoint(node=nid, reason="rust main.rs", confidence=3))
+        elif path == "package.json":
+            eps.append(EntryPoint(node=nid, reason="node package.json scripts", confidence=2))
+        elif path == "pyproject.toml":
+            eps.append(EntryPoint(node=nid, reason="python pyproject.toml (scripts/entrypoints likely)", confidence=1))
+
+    # Optional hints (useful for library-ish layouts)
+    for hint in ("src/pybundle/cli.py", "src/pybundle/__init__.py"):
+        if hint in nodes:
+            eps.append(EntryPoint(node=hint, reason="likely CLI/module entry", confidence=1))
+
+    # Deduplicate deterministically
+    uniq = {(e.node, e.reason, e.confidence) for e in eps}
+    eps = [EntryPoint(node=a, reason=b, confidence=c) for (a, b, c) in uniq]
+    return sorted(eps, key=lambda e: (e.node, -e.confidence, e.reason))
+
+def _resolve_py_to_node(root: Path, src_rel: str, mod: str) -> Optional[str]:
+    """
+    Resolve a Python import module string to a local file node (relative path),
+    if it exists in the scanned repo. Deterministic, no sys.path tricks.
+    """
+    # Normalize relative imports like ".cli" or "..utils"
+    # We only support relative imports within the src file's package directory.
+    if mod.startswith("."):
+        # count leading dots
+        dots = 0
+        for ch in mod:
+            if ch == ".":
+                dots += 1
+            else:
+                break
+        tail = mod[dots:]  # remaining name after dots
+        src_dir = Path(src_rel).parent  # e.g. pybundle/
+        # go up (dots-1) levels: from . = same package, .. = parent, etc
+        base = src_dir
+        for _ in range(max(dots - 1, 0)):
+            base = base.parent
+        if tail:
+            parts = tail.split(".")
+            cand = base.joinpath(*parts)
+        else:
+            cand = base
+    else:
+        cand = Path(*mod.split("."))
+
+    # candidate file paths relative to root
+    py_file = (root / cand).with_suffix(".py")
+    init_file = root / cand / "__init__.py"
+
+    if py_file.is_file():
+        return _rel(root, py_file)
+    if init_file.is_file():
+        return _rel(root, init_file)
+    return None
+
 def build_roadmap(root: Path, include_dirs: list[Path], exclude_dirs: set[str], max_files: int = 20000) -> RoadmapGraph:
     nodes: dict[str, Node] = {}
     edges: list[Edge] = []
 
     # Walk selected dirs
     files: list[Path] = []
+    root_res = root.resolve()
+
     for d in include_dirs:
         if not d.exists():
             continue
-        for p in d.rglob("*"):
-            if p.is_dir():
-                if p.name in exclude_dirs:
-                    # skip subtree
+        if _is_venv_root(d):
+            continue
+
+        for dirpath, dirnames, filenames in os.walk(d):
+            dirpath_p = Path(dirpath)
+
+            # 1) prune excluded dirs by name
+            dirnames[:] = [dn for dn in dirnames if dn not in exclude_dirs]
+
+            # 2) prune venv dirs by structure (ANY name)
+            dirnames[:] = [dn for dn in dirnames if dn not in exclude_dirs and dn != ".pybundle-venv"]
+            dirnames[:] = [dn for dn in dirnames if not _is_venv_root(dirpath_p / dn)]
+
+            for fn in filenames:
+                p = dirpath_p / fn
+
+                # 3️⃣ skip anything under a venv (belt + suspenders)
+                rel = Path(_rel(root, p))
+                if _is_under_venv(root, rel):
                     continue
-                continue
-            if p.stat().st_size > 2_000_000:  # 2MB safety; tune later
-                continue
-            files.append(p)
+
+                rel_s = _rel(root, p)
+                if rel_s.startswith(".pybundle-venv/") or "/site-packages/" in rel_s:
+                    continue
+                if _is_under_venv(root, Path(rel_s)):
+                    continue
+
+                try:
+                    if p.stat().st_size > 2_000_000:
+                        continue
+                except OSError:
+                    continue
+
+                files.append(p)
+                if len(files) >= max_files:
+                    break
+
             if len(files) >= max_files:
                 break
 
@@ -118,7 +214,11 @@ def build_roadmap(root: Path, include_dirs: list[Path], exclude_dirs: set[str], 
 
         if lang == "python":
             for mod in scan_python_imports(root, f):
-                edges.append(Edge(src=rel, dst=f"py:{mod}", type="import"))
+                resolved = _resolve_py_to_node(root, rel, mod)
+                if resolved and resolved in nodes:
+                    edges.append(Edge(src=rel, dst=resolved, type="import"))
+                else:
+                    edges.append(Edge(src=rel, dst=f"py:{mod}", type="import"))
         elif lang in {"js", "ts"} and text is not None:
             for spec in scan_js_imports(text):
                 edges.append(Edge(src=rel, dst=f"js:{spec}", type="import"))
@@ -132,7 +232,7 @@ def build_roadmap(root: Path, include_dirs: list[Path], exclude_dirs: set[str], 
         # TODO: add template includes, docker compose, pyproject scripts, etc.
 
     # Entrypoints
-    eps = detect_entrypoints(root)
+    eps = detect_entrypoints_from_nodes(nodes)
 
     # Stats
     stats: dict[str, int] = {}
