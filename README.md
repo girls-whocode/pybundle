@@ -4,7 +4,7 @@
 
 It produces **machine-readable outputs first**, with optional human-readable summaries layered on top.
 
-> Think “`git archive` + diagnostics + metadata”, without guessing or magic.
+> Think “`git archive` + diagnostics + metadata”, without guessing or heuristics.
 
 ---
 
