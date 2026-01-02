@@ -124,10 +124,10 @@ def _safe_copy_file(src: Path, dst: Path) -> None:
     shutil.copy2(src, dst)
 
 def _copy_tree_filtered(
-    src_dir: Path, dst_dir: Path, exclude_dirs: set[str]
+    root: Path, src_dir: Path, dst_dir: Path, filt: PathFilter
 ) -> tuple[int, int]:
     """
-    Copy directory tree while pruning excluded directories.
+    Copy directory tree while pruning excluded directories and skipping excluded files.
     Returns: (files_copied, dirs_pruned)
     """
     files = 0
@@ -137,21 +137,20 @@ def _copy_tree_filtered(
         dp = Path(dirpath)
         rel = dp.relative_to(src_dir)
 
-        # prune excluded dirs
-        kept = []
+        # prune dirs (name-based + venv-structure)
+        kept: list[str] = []
         for d in dirnames:
-            dp_child = dp / d
-            if d in exclude_dirs or _is_venv_root(dp_child):
+            if filt.should_prune_dir(dp, d):
                 pruned += 1
-            else:
-                kept.append(d)
+                continue
+            kept.append(d)
         dirnames[:] = kept
 
         for fn in filenames:
             sp = dp / fn
-            rel_file = (src_dir / rel / fn).relative_to(src_dir)
-            # skip files that live under excluded dirs (paranoia)
-            if _is_excluded_path(rel_file, exclude_dirs):
+
+            # apply policy filter (extensions + excluded dirs, etc.)
+            if not filt.should_include_file(root, sp):
                 continue
 
             tp = dst_dir / rel / fn
@@ -159,7 +158,6 @@ def _copy_tree_filtered(
                 _safe_copy_file(sp, tp)
                 files += 1
             except OSError:
-                # keep going; bundle is best-effort
                 continue
 
     return files, pruned
@@ -230,7 +228,7 @@ class CuratedCopyStep:
                 if _is_excluded_path(Path(rel_dir), exclude):
                     continue
                 files_copied, dirs_pruned = _copy_tree_filtered(
-                    sp, dst_root / rel_dir, exclude
+                    ctx.root, sp, dst_root / rel_dir, filt
                 )
                 copied += files_copied
                 pruned += dirs_pruned
@@ -244,7 +242,7 @@ class CuratedCopyStep:
                 if (dst_root / rel_pkg_name).exists():
                     continue
                 files_copied, dirs_pruned = _copy_tree_filtered(
-                    pkg_dir, dst_root / rel_pkg_name, exclude
+                    ctx.root, pkg_dir, dst_root / rel_pkg_name, filt
                 )
                 copied += files_copied
                 pruned += dirs_pruned
@@ -275,7 +273,9 @@ class CuratedCopyStep:
                             _safe_copy_file(sp, dst)
                             copied += 1
                         elif sp.is_dir():
-                            files_copied, dirs_pruned = _copy_tree_filtered(sp, dst, exclude)
+                            files_copied, dirs_pruned = _copy_tree_filtered(
+                                ctx.root, sp, dst_root / rel_path, filt
+                            )
                             copied += files_copied
                             pruned += dirs_pruned
                         if copied >= self.max_files:

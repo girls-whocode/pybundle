@@ -6,9 +6,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .base import StepResult
-from ..context import BundleContext
-from ..tools import which
-from ..policy import AIContextPolicy, PathFilter
+from pybundle.context import BundleContext
+from pybundle.tools import which
+from pybundle.policy import AIContextPolicy, PathFilter
 
 BIN_EXTS = {
     ".appimage", ".deb", ".rpm", ".exe", ".msi", ".dmg", ".pkg",

@@ -8,14 +8,10 @@ from typing import Iterable
 
 # Common junk that AI should not ingest by default
 DEFAULT_EXCLUDE_DIRS: set[str] = {
-    ".git", ".hg", ".svn",
-    ".venv", "venv", ".direnv",
+    ".git", ".hg", ".svn", ".venv", "venv", ".direnv", ".cache",
     ".mypy_cache", ".ruff_cache", ".pytest_cache", "__pycache__",
-    "node_modules",
-    "dist", "build", "target", "out",
-    ".next", ".nuxt", ".svelte-kit",
-    "artifacts",
-    ".cache",
+    "node_modules", ".pybundle-venv", "binaries", "dist", "build", 
+    "target", "out", ".next", ".nuxt", ".svelte-kit", "artifacts",
 }
 
 # File extensions that commonly produce noise or massive distraction in AI mode
@@ -78,27 +74,12 @@ DEFAULT_INCLUDE_FILES: list[str] = [
 
 DEFAULT_INCLUDE_DIRS: list[str] = [
     # Python-ish
-    "src",
-    "app",
-    "tests",
-    "tools",
-    "docs",
-    ".github",
-    "templates",
-    "static",
-
-    # Polyglot/common
-    "frontend",
-    "web",
-    "ui",
-    "gaslog-desktop",  # important for Gaslog, harmless elsewhere
+    "src", "app", "tests", "tools", "docs", ".github", "templates",
+    "static", "src-tauri", "frontend", "web", "ui",
 ]
 
 DEFAULT_INCLUDE_GLOBS: list[str] = [
-    "*.py",
-    "*/**/*.py",
-    "templates/**/*",
-    "static/**/*",
+    "*.py", "*/**/*.py", "templates/**/*", "static/**/*",
 ]
 
 

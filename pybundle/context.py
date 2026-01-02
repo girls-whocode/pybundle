@@ -94,6 +94,7 @@ class BundleContext:
     keep_workdir: bool
     tools: Tooling
     results: list["StepResult"] = field(default_factory=list)
+    command_used: str = ""
 
     def have(self, cmd: str) -> bool:
         return getattr(self.tools, cmd, None) is not None
