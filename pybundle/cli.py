@@ -7,16 +7,33 @@ import shlex
 from .context import BundleContext, RunOptions
 from .profiles import get_profile
 from .root_detect import detect_project_root
+from importlib.metadata import PackageNotFoundError, version as pkg_version
 from .runner import run_profile
-import tomllib
 
 def get_version() -> str:
-    pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    # 1) Canonical for installed distributions (including editable)
     try:
-        data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
-        return data["project"]["version"]
+        return pkg_version("pybundle")
+    except PackageNotFoundError:
+        pass
+
+    # 2) Dev fallback: locate pyproject.toml by walking up from this file
+    try:
+        import tomllib  # py3.11+
     except Exception:
         return "unknown"
+
+    here = Path(__file__).resolve()
+    for parent in [here.parent] + list(here.parents):
+        pp = parent / "pyproject.toml"
+        if pp.is_file():
+            try:
+                data = tomllib.loads(pp.read_text(encoding="utf-8"))
+                return data.get("project", {}).get("version", "unknown")
+            except Exception:
+                return "unknown"
+
+    return "unknown"
 
 def add_common_args(sp: argparse.ArgumentParser) -> None:
     sp.add_argument(
