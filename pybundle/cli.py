@@ -150,7 +150,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
     if args.cmd == "version":
-        print("pybundle 0.3.2")
+        print("pybundle 0.3.3")
         return 0
 
     if args.cmd == "list-profiles":
