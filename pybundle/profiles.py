@@ -15,6 +15,7 @@ from .steps.context_expand import ErrorContextExpandStep
 from .steps.copy_pack import CuratedCopyStep
 from .steps.repro_md import ReproMarkdownStep
 from .steps.handoff_md import HandoffMarkdownStep
+from .steps.roadmap import RoadmapStep
 
 
 @dataclass(frozen=True)
@@ -48,6 +49,7 @@ def _analysis_steps(options: RunOptions) -> list:
             "uname -a", "meta/21_uname.txt", ["uname", "-a"], require_cmd="uname"
         ),
         TreeStep(max_depth=4),
+        RoadmapStep(),
         LargestFilesStep(limit=80),
     ]
 
@@ -100,7 +102,11 @@ def _analysis_steps(options: RunOptions) -> list:
             ["python", "-m", "pip", "freeze"],
             require_cmd="python",
         ),
+        RoadmapStep(),
     ]
+
+    # Always include a 50-foot view map for humans + deterministic JSON for AI/tools.
+    steps.append(RoadmapStep())
 
     return steps
 
