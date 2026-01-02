@@ -1,10 +1,56 @@
 # 🧳 pybundle
  
-**pybundle** is a deterministic, automation-friendly tool for collecting Python project context into a single, shareable bundle — ideal for debugging, audits, AI assistance, CI artifacts, or handoff between engineers.
+**pybundle** is a deterministic, automation-friendly tool for collecting Python project context into a single, shareable bundle - ideal for debugging, audits, AI assistance, CI artifacts, or handoff between engineers.
 
 It produces **machine-readable outputs first**, with optional human-readable summaries layered on top.
 
 > Think “`git archive` + diagnostics + metadata”, without guessing or magic.
+
+---
+
+## 🧠 Why pybundle exists
+
+Modern software development compresses what used to be entire teams into a single role.
+
+Today, one developer is often responsible for:
+- application code
+- build systems
+- test tooling
+- deployment logic
+- CI/CD behavior
+- environment differences
+- security implications
+- and increasingly, AI-assisted workflows
+
+The problem is no longer *how* to write code.
+
+It’s answering:
+
+> **“Why is this system behaving the way it is?”**
+
+That question is hard to answer when:
+- context is scattered
+- tooling output is ephemeral
+- environment details are lost
+- source snapshots are incomplete or noisy
+
+AI didn’t create this problem - it exposed it.
+
+Large language models don’t fail because they lack intelligence.
+They fail because we give them **uncurated context**.
+
+Humans don’t fail because they can’t debug.
+They fail because the **cost of reconstructing context** exceeds the time they have.
+
+**pybundle exists to reduce context debt.**
+
+It captures *what matters*, ignores what doesn’t, and produces a deterministic artifact that explains:
+- what code exists
+- what tools ran
+- what environment was used
+- and why the outputs exist
+
+For humans, automation, and AI alike.
 
 ---
 
@@ -127,10 +173,10 @@ Profiles define *what* pybundle collects and *which tools* are run.
 
 Available profiles include:
 
-* `analysis` — **full diagnostics** (lint, type-check, tests, scans)
-* `debug` — **analysis + additional environment validation**
-* `backup` — **minimal environment snapshot**
-* `ai` — **AI-optimized context bundle** (lean, source-first)
+* `analysis` - **full diagnostics** (lint, type-check, tests, scans)
+* `debug` - **analysis + additional environment validation**
+* `backup` - **minimal environment snapshot**
+* `ai` - **AI-optimized context bundle** (lean, source-first)
 
 To list all available profiles:
 
@@ -203,12 +249,12 @@ pybundle run analysis \
 
 Commonly used options:
 
-* `--format {auto,zip,tar.gz}` — archive format
-* `--outdir PATH` — output directory (default: `<project>/artifacts`)
-* `--name NAME` — override archive name prefix
-* `--strict` — fail with non-zero exit code if any step fails
-* `--no-spinner` — disable spinner output (CI-friendly)
-* `--redact / --no-redact` — control secret redaction
+* `--format {auto,zip,tar.gz}` - archive format
+* `--outdir PATH` - output directory (default: `<project>/artifacts`)
+* `--name NAME` - override archive name prefix
+* `--strict` - fail with non-zero exit code if any step fails
+* `--no-spinner` - disable spinner output (CI-friendly)
+* `--redact / --no-redact` - control secret redaction
 
 Tool execution can be selectively disabled:
 
@@ -295,7 +341,7 @@ Example profiles:
 * `source`
 * `minimal`
 
-Profiles are extensible — add your own without modifying core logic.
+Profiles are extensible - add your own without modifying core logic.
 
 ---
 
