@@ -8,7 +8,15 @@ from .context import BundleContext, RunOptions
 from .profiles import get_profile
 from .root_detect import detect_project_root
 from .runner import run_profile
+import tomllib
 
+def get_version() -> str:
+    pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+    try:
+        data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+        return data["project"]["version"]
+    except Exception:
+        return "unknown"
 
 def add_common_args(sp: argparse.ArgumentParser) -> None:
     sp.add_argument(
@@ -150,7 +158,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
     if args.cmd == "version":
-        print("pybundle 0.3.3")
+        print(f"pybundle {get_version()}")
         return 0
 
     if args.cmd == "list-profiles":

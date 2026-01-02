@@ -23,6 +23,19 @@ class Profile:
     name: str
     steps: list
 
+def _dedupe_steps(steps: list) -> list:
+    seen = set()
+    out = []
+    for s in steps:
+        key = getattr(s, "out", None) or getattr(s, "out_md", None) or getattr(s, "name", None)
+        # fallback to class name if needed
+        key = key or s.__class__.__name__
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(s)
+    return out
+
 def resolve_defaults(profile: str, opts: RunOptions) -> RunOptions:
     if profile == "ai":
         return dataclasses.replace(
@@ -39,17 +52,10 @@ def resolve_defaults(profile: str, opts: RunOptions) -> RunOptions:
 
 def _analysis_steps(options: RunOptions) -> list:
     steps: list = [
-        ShellStep(
-            "git status", "meta/00_git_status.txt", ["git", "status"], require_cmd="git"
-        ),
-        ShellStep(
-            "git diff", "meta/01_git_diff.txt", ["git", "diff"], require_cmd="git"
-        ),
-        ShellStep(
-            "uname -a", "meta/21_uname.txt", ["uname", "-a"], require_cmd="uname"
-        ),
+        ShellStep("git status", "meta/00_git_status.txt", ["git", "status"], require_cmd="git"),
+        ShellStep("git diff", "meta/01_git_diff.txt", ["git", "diff"], require_cmd="git"),
+        ShellStep("uname -a", "meta/21_uname.txt", ["uname", "-a"], require_cmd="uname"),
         TreeStep(max_depth=4),
-        RoadmapStep(),
         LargestFilesStep(limit=80),
     ]
 
@@ -90,25 +96,14 @@ def _analysis_steps(options: RunOptions) -> list:
         CuratedCopyStep(),
         ReproMarkdownStep(),
         HandoffMarkdownStep(),
-        ShellStep(
-            "python -V",
-            "meta/20_python_version.txt",
-            ["python", "-V"],
-            require_cmd="python",
-        ),
-        ShellStep(
-            "pip freeze",
-            "meta/22_pip_freeze.txt",
-            ["python", "-m", "pip", "freeze"],
-            require_cmd="python",
-        ),
-        RoadmapStep(),
+        ShellStep("python -V", "meta/20_python_version.txt", ["python", "-V"], require_cmd="python"),
+        ShellStep("pip freeze", "meta/22_pip_freeze.txt", ["python", "-m", "pip", "freeze"], require_cmd="python"),
     ]
 
     # Always include a 50-foot view map for humans + deterministic JSON for AI/tools.
     steps.append(RoadmapStep())
 
-    return steps
+    return _dedupe_steps(steps)
 
 def get_profile(name: str, options: RunOptions) -> Profile:
     if name == "analysis":
