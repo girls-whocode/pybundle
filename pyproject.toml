@@ -6,7 +6,7 @@ name = "gwc-pybundle"
 description = "Deterministic Python project context bundling for humans, automation, and AI"
 readme = "README.md"
 license = { file = "LICENSE.md" }
-version = "0.4.1"
+version = "0.4.2"
 requires-python = ">=3.9"
 
 authors = [

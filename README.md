@@ -108,7 +108,7 @@ Create a dedicated requirements file in the root of your project:
 ruff
 mypy
 pytest
-gwc-pybundle==0.4.1
+gwc-pybundle==0.4.2
 ```
 
 Then install:
@@ -145,7 +145,7 @@ See **Usage** for more details.
 #### From GitHub
 
 ```bash
-pip install "gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.4.1"
+pip install "gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.4.2"
 ```
 
 Pinning to a tag ensures reproducible behavior.
@@ -397,7 +397,7 @@ pybundle follows **Semantic Versioning**.
 Pinned Git tags are recommended when used as a dependency:
 
 ```txt
-gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.4.1
+gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.4.2
 ```
 
 ---
