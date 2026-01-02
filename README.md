@@ -1,5 +1,13 @@
 # 🧳 pybundle
- 
+[![PyPI version](https://img.shields.io/pypi/v/gwc-pybundle.svg)](https://pypi.org/project/gwc-pybundle/)
+[![Python versions](https://img.shields.io/pypi/pyversions/gwc-pybundle.svg)](https://pypi.org/project/gwc-pybundle/)
+[![License](https://img.shields.io/pypi/l/gwc-pybundle.svg)](LICENSE.md)
+[![Downloads](https://pepy.tech/badge/gwc-pybundle)](https://pepy.tech/project/gwc-pybundle)
+
+[![CI](https://github.com/girls-whocode/pybundle/actions/workflows/publish.yml/badge.svg)](https://github.com/girls-whocode/pybundle/actions)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-261230.svg)](https://github.com/astral-sh/ruff)
+[![Type checked](https://img.shields.io/badge/type%20checked-mypy-blue.svg)](https://mypy-lang.org/)
+
 **pybundle** is a deterministic, automation-friendly tool for collecting Python project context into a single, shareable bundle - ideal for debugging, audits, AI assistance, CI artifacts, or handoff between engineers.
 
 It produces **machine-readable outputs first**, with optional human-readable summaries layered on top.
