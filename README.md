@@ -4,8 +4,9 @@
 
 It produces **machine-readable outputs first**, with optional human-readable summaries layered on top.
 
-> Think “`git archive` + diagnostics + metadata”, without guessing or heuristics.
+> Think “`git archive` + diagnostics + metadata”, without guessing or heuristics.  
 
+> **Note:** The PyPI package name is `gwc-pybundle`, but the tool is installed and used as `pybundle`.
 ---
 
 ## 🧠 Why pybundle exists
@@ -107,7 +108,7 @@ Create a dedicated requirements file in the root of your project:
 ruff
 mypy
 pytest
-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.4.0
+gwc-pybundle==0.4.1
 ```
 
 Then install:
@@ -144,7 +145,7 @@ See **Usage** for more details.
 #### From GitHub
 
 ```bash
-pip install "pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.4.0"
+pip install "gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.4.1"
 ```
 
 Pinning to a tag ensures reproducible behavior.
@@ -396,7 +397,7 @@ pybundle follows **Semantic Versioning**.
 Pinned Git tags are recommended when used as a dependency:
 
 ```txt
-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.4.0
+gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.4.1
 ```
 
 ---
@@ -408,6 +409,18 @@ pybundle @ git+https://github.com/girls-whocode/pybundle.git@v0.4.0
 pybundle treats context as a first-class artifact.
 
 ---
+
+## 📦 Package naming note
+
+The distribution name on PyPI is **`gwc-pybundle`** to avoid conflicts with existing packages.
+
+The project name, imports, and CLI remain **`pybundle`**.
+
+```bash
+pip install gwc-pybundle
+pybundle run analysis
+```
+ Look in the autocreated `artifacts/` folder
 
 ## 📄 License
 
