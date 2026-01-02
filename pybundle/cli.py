@@ -13,7 +13,7 @@ from .runner import run_profile
 def get_version() -> str:
     # 1) Canonical for installed distributions (including editable)
     try:
-        return pkg_version("pybundle")
+        return pkg_version("gwc-pybundle")
     except PackageNotFoundError:
         pass
 
