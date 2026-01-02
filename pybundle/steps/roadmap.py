@@ -14,7 +14,7 @@ class RoadmapStep:
     name: str = "roadmap (project map)"
     out_md: str = "meta/70_roadmap.md"
     out_json: str = "meta/70_roadmap.json"
-    include: list[str] = None
+    include: list[str] | None = None
     max_files: int = 20000
 
     def run(self, ctx: BundleContext) -> StepResult:

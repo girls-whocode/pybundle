@@ -5,7 +5,7 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Literal
 from .steps.copy_pack import _is_venv_root, _is_under_venv
 
 from .roadmap_model import Node, Edge, EntryPoint, RoadmapGraph
@@ -14,6 +14,7 @@ PY_EXT = {".py"}
 JS_EXT = {".js", ".jsx", ".mjs", ".cjs"}
 TS_EXT = {".ts", ".tsx"}
 RUST_EXT = {".rs"}
+Lang = Literal["python", "js", "ts", "rust", "html", "css", "config", "unknown"]
 
 IMPORT_RE = re.compile(r'^\s*import\s+.*?\s+from\s+[\'"](.+?)[\'"]\s*;?\s*$', re.M)
 REQUIRE_RE = re.compile(r'require\(\s*[\'"](.+?)[\'"]\s*\)')
@@ -23,7 +24,7 @@ RUST_MOD_RE = re.compile(r'^\s*mod\s+([a-zA-Z0-9_]+)\s*;', re.M)
 def _rel(root: Path, p: Path) -> str:
     return str(p.resolve().relative_to(root.resolve())).replace("\\", "/")
 
-def guess_lang(p: Path) -> str:
+def guess_lang(p: Path) -> Lang:
     suf = p.suffix.lower()
     if suf in PY_EXT: return "python"
     if suf in TS_EXT: return "ts"
