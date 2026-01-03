@@ -2,7 +2,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/gwc-pybundle.svg)](https://pypi.org/project/gwc-pybundle/)
 [![Python versions](https://img.shields.io/pypi/pyversions/gwc-pybundle.svg)](https://pypi.org/project/gwc-pybundle/)
 [![License](https://img.shields.io/pypi/l/gwc-pybundle.svg)](LICENSE.md)
-[![Downloads](https://pepy.tech/badge/gwc-pybundle)](https://pepy.tech/project/gwc-pybundle)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/gwc-pybundle?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/gwc-pybundle)
 
 [![CI](https://github.com/girls-whocode/pybundle/actions/workflows/publish.yml/badge.svg)](https://github.com/girls-whocode/pybundle/actions)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-261230.svg)](https://github.com/astral-sh/ruff)
