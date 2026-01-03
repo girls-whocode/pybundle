@@ -24,11 +24,16 @@ class Profile:
     name: str
     steps: list
 
+
 def _dedupe_steps(steps: list) -> list:
     seen = set()
     out = []
     for s in steps:
-        key = getattr(s, "out", None) or getattr(s, "out_md", None) or getattr(s, "name", None)
+        key = (
+            getattr(s, "out", None)
+            or getattr(s, "out_md", None)
+            or getattr(s, "name", None)
+        )
         # fallback to class name if needed
         key = key or s.__class__.__name__
         if key in seen:
@@ -37,28 +42,39 @@ def _dedupe_steps(steps: list) -> list:
         out.append(s)
     return out
 
+
 def resolve_defaults(profile: str, opts: RunOptions) -> RunOptions:
     if profile == "ai":
         return dataclasses.replace(
             opts,
-            no_ruff = opts.no_ruff if opts.no_ruff is not None else True,
-            no_mypy = opts.no_mypy if opts.no_mypy is not None else True,
-            no_pytest = opts.no_pytest if opts.no_pytest is not None else True,
-            no_rg = opts.no_rg if opts.no_rg is not None else True,
-            no_error_refs = opts.no_error_refs if opts.no_error_refs is not None else True,
-            no_context = opts.no_context if opts.no_context is not None else True,
-            no_compileall = opts.no_compileall if opts.no_compileall is not None else True,
+            no_ruff=opts.no_ruff if opts.no_ruff is not None else True,
+            no_mypy=opts.no_mypy if opts.no_mypy is not None else True,
+            no_pytest=opts.no_pytest if opts.no_pytest is not None else True,
+            no_rg=opts.no_rg if opts.no_rg is not None else True,
+            no_error_refs=opts.no_error_refs
+            if opts.no_error_refs is not None
+            else True,
+            no_context=opts.no_context if opts.no_context is not None else True,
+            no_compileall=opts.no_compileall
+            if opts.no_compileall is not None
+            else True,
         )
     return opts
+
 
 def _analysis_steps(options: RunOptions) -> list:
     policy = AIContextPolicy()
 
     steps: list = [
-        ShellStep("git status", "meta/00_git_status.txt", ["git", "status"], require_cmd="git"),
-        ShellStep("git diff", "meta/01_git_diff.txt", ["git", "diff"], require_cmd="git"),
-        ShellStep("uname -a", "meta/21_uname.txt", ["uname", "-a"], require_cmd="uname"),
-
+        ShellStep(
+            "git status", "meta/00_git_status.txt", ["git", "status"], require_cmd="git"
+        ),
+        ShellStep(
+            "git diff", "meta/01_git_diff.txt", ["git", "diff"], require_cmd="git"
+        ),
+        ShellStep(
+            "uname -a", "meta/21_uname.txt", ["uname", "-a"], require_cmd="uname"
+        ),
         TreeStep(max_depth=policy.tree_max_depth, policy=policy),
         LargestFilesStep(limit=policy.largest_limit, policy=policy),
     ]
@@ -91,15 +107,24 @@ def _analysis_steps(options: RunOptions) -> list:
                 max_files=options.context_max_files,
             )
         ]
-    
+
     if not options.no_compileall:
         steps.append(CompileAllStep())
 
     # Curated pack + repro doc
     steps += [
-        ShellStep("python -V", "meta/20_python_version.txt", ["python", "-V"], require_cmd="python"),
-        ShellStep("pip freeze", "meta/22_pip_freeze.txt", ["python", "-m", "pip", "freeze"], require_cmd="python"),
-
+        ShellStep(
+            "python -V",
+            "meta/20_python_version.txt",
+            ["python", "-V"],
+            require_cmd="python",
+        ),
+        ShellStep(
+            "pip freeze",
+            "meta/22_pip_freeze.txt",
+            ["python", "-m", "pip", "freeze"],
+            require_cmd="python",
+        ),
         CuratedCopyStep(policy=policy),
         ReproMarkdownStep(),
         RoadmapStep(policy=policy),
@@ -107,6 +132,7 @@ def _analysis_steps(options: RunOptions) -> list:
     ]
 
     return _dedupe_steps(steps)
+
 
 def get_profile(name: str, options: RunOptions) -> Profile:
     if name == "analysis":

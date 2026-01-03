@@ -336,6 +336,110 @@ No filename guessing. No surprises.
 
 ---
 
+## 🧾 Machine-Readable Output (`--json`)
+
+All `pybundle` commands support a **machine-readable JSON output mode** via the `--json` flag.
+
+When enabled, `pybundle` emits **exactly one JSON object to stdout**, with a **stable schema** intended for:
+
+* CI pipelines
+* automation scripts
+* external tooling
+* AI orchestration
+* reproducible analysis
+
+No human text, spinners, or formatting are mixed into the output.
+
+### Example
+
+```bash
+pybundle run analysis --json
+```
+
+Output:
+
+```json
+{
+  "status": "ok",
+  "command": "run",
+  "profile": "analysis",
+  "files_included": 39,
+  "files_excluded": 0,
+  "duration_ms": 394,
+  "bundle_path": "/home/jessica/repositories/python/pybundle/artifacts/pybundle_analysis_20260103T102440Z.zip"
+}
+```
+
+The same structure applies to **all profiles**:
+
+```bash
+pybundle run ai --json
+pybundle run debug --json
+pybundle run backup --json
+```
+
+---
+
+### JSON Field Definitions
+
+| Field            | Description                                        |
+| ---------------- | -------------------------------------------------- |
+| `status`         | `"ok"` or `"fail"` based on execution result       |
+| `command`        | The command executed (`run` or `doctor`)           |
+| `profile`        | The profile used (`analysis`, `ai`, `debug`, etc.) |
+| `files_included` | Number of files copied into the bundle             |
+| `files_excluded` | Number of *evaluated* files skipped by policy      |
+| `duration_ms`    | Total execution time in milliseconds               |
+| `bundle_path`    | Absolute path to the generated archive             |
+
+---
+
+### Important Semantics: `files_excluded`
+
+`files_excluded` **does not** mean “everything in the repository that was not bundled.”
+
+Instead, it means:
+
+> Files that were **eligible under the active profile’s policy** and were *explicitly skipped* after evaluation.
+
+Files and directories that are **intentionally out of scope** — such as:
+
+* `.git/`
+* `node_modules/`
+* virtual environments
+* build artifacts
+* caches
+
+are **never considered**, and therefore are **not counted as excluded**.
+
+This design keeps metrics honest and avoids inflating counts with known-irrelevant infrastructure.
+
+A value of `files_excluded = 0` simply means:
+
+> *Everything that was evaluated was worth keeping.*
+
+This is expected and normal for clean, well-structured projects — especially in `ai` mode.
+
+---
+
+### JSON Stability Guarantee
+
+The JSON schema emitted by `--json` is considered **part of the public API**.
+
+Starting with **v1.0**, field names and meanings will remain stable.
+New fields may be added, but existing fields will not be renamed or removed.
+
+This allows `pybundle` to be safely embedded into:
+
+* CI workflows
+* automation scripts
+* AI pipelines
+* external tooling
+
+without fear of breaking changes.
+
+---
+
 ## 📜 Profiles
 
 pybundle is profile-driven. Each profile defines:

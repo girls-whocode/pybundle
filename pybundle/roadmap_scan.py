@@ -1,11 +1,10 @@
 from __future__ import annotations
+
 import ast
 import os
-import json
 import re
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Optional, Literal
+from typing import Literal, Optional
 from .steps.copy_pack import _is_venv_root, _is_under_venv
 
 from .roadmap_model import Node, Edge, EntryPoint, RoadmapGraph
@@ -18,22 +17,32 @@ Lang = Literal["python", "js", "ts", "rust", "html", "css", "config", "unknown"]
 
 IMPORT_RE = re.compile(r'^\s*import\s+.*?\s+from\s+[\'"](.+?)[\'"]\s*;?\s*$', re.M)
 REQUIRE_RE = re.compile(r'require\(\s*[\'"](.+?)[\'"]\s*\)')
-RUST_USE_RE = re.compile(r'^\s*use\s+([a-zA-Z0-9_:]+)', re.M)
-RUST_MOD_RE = re.compile(r'^\s*mod\s+([a-zA-Z0-9_]+)\s*;', re.M)
+RUST_USE_RE = re.compile(r"^\s*use\s+([a-zA-Z0-9_:]+)", re.M)
+RUST_MOD_RE = re.compile(r"^\s*mod\s+([a-zA-Z0-9_]+)\s*;", re.M)
+
 
 def _rel(root: Path, p: Path) -> str:
     return str(p.resolve().relative_to(root.resolve())).replace("\\", "/")
 
+
 def guess_lang(p: Path) -> Lang:
     suf = p.suffix.lower()
-    if suf in PY_EXT: return "python"
-    if suf in TS_EXT: return "ts"
-    if suf in JS_EXT: return "js"
-    if suf in RUST_EXT: return "rust"
-    if suf in {".html", ".jinja", ".j2"}: return "html"
-    if suf in {".css", ".scss", ".sass"}: return "css"
-    if suf in {".toml", ".yaml", ".yml", ".json", ".ini", ".cfg"}: return "config"
+    if suf in PY_EXT:
+        return "python"
+    if suf in TS_EXT:
+        return "ts"
+    if suf in JS_EXT:
+        return "js"
+    if suf in RUST_EXT:
+        return "rust"
+    if suf in {".html", ".jinja", ".j2"}:
+        return "html"
+    if suf in {".css", ".scss", ".sass"}:
+        return "css"
+    if suf in {".toml", ".yaml", ".yml", ".json", ".ini", ".cfg"}:
+        return "config"
     return "unknown"
+
 
 def scan_python_imports(root: Path, file_path: Path) -> list[str]:
     # returns import module strings (not resolved paths)
@@ -51,16 +60,19 @@ def scan_python_imports(root: Path, file_path: Path) -> list[str]:
                 mods.append(n.module)
     return mods
 
+
 def scan_js_imports(text: str) -> list[str]:
     out = []
     out += IMPORT_RE.findall(text)
     out += REQUIRE_RE.findall(text)
     return out
 
+
 def scan_rust_uses(text: str) -> tuple[list[str], list[str]]:
     uses = RUST_USE_RE.findall(text)
     mods = RUST_MOD_RE.findall(text)
     return uses, mods
+
 
 def detect_entrypoints(root: Path) -> list[EntryPoint]:
     eps: list[EntryPoint] = []
@@ -69,7 +81,11 @@ def detect_entrypoints(root: Path) -> list[EntryPoint]:
     p = root / "src"
     if p.exists():
         for main in p.rglob("__main__.py"):
-            eps.append(EntryPoint(node=_rel(root, main), reason="python __main__.py", confidence=3))
+            eps.append(
+                EntryPoint(
+                    node=_rel(root, main), reason="python __main__.py", confidence=3
+                )
+            )
 
     # Rust main.rs (including tauri src-tauri)
     for mr in root.rglob("main.rs"):
@@ -84,6 +100,7 @@ def detect_entrypoints(root: Path) -> list[EntryPoint]:
 
     return eps
 
+
 def detect_entrypoints_from_nodes(nodes: dict[str, Node]) -> list[EntryPoint]:
     """Derive entrypoints from the scanned node list (deterministic, no FS scope issues)."""
     eps: list[EntryPoint] = []
@@ -95,19 +112,30 @@ def detect_entrypoints_from_nodes(nodes: dict[str, Node]) -> list[EntryPoint]:
         elif path.endswith("main.rs"):
             eps.append(EntryPoint(node=nid, reason="rust main.rs", confidence=3))
         elif path == "package.json":
-            eps.append(EntryPoint(node=nid, reason="node package.json scripts", confidence=2))
+            eps.append(
+                EntryPoint(node=nid, reason="node package.json scripts", confidence=2)
+            )
         elif path == "pyproject.toml":
-            eps.append(EntryPoint(node=nid, reason="python pyproject.toml (scripts/entrypoints likely)", confidence=1))
+            eps.append(
+                EntryPoint(
+                    node=nid,
+                    reason="python pyproject.toml (scripts/entrypoints likely)",
+                    confidence=1,
+                )
+            )
 
     # Optional hints (useful for library-ish layouts)
     for hint in ("src/pybundle/cli.py", "src/pybundle/__init__.py"):
         if hint in nodes:
-            eps.append(EntryPoint(node=hint, reason="likely CLI/module entry", confidence=1))
+            eps.append(
+                EntryPoint(node=hint, reason="likely CLI/module entry", confidence=1)
+            )
 
     # Deduplicate deterministically
     uniq = {(e.node, e.reason, e.confidence) for e in eps}
     eps = [EntryPoint(node=a, reason=b, confidence=c) for (a, b, c) in uniq]
     return sorted(eps, key=lambda e: (e.node, -e.confidence, e.reason))
+
 
 def _resolve_py_to_node(root: Path, src_rel: str, mod: str) -> Optional[str]:
     """
@@ -148,14 +176,15 @@ def _resolve_py_to_node(root: Path, src_rel: str, mod: str) -> Optional[str]:
         return _rel(root, init_file)
     return None
 
-def build_roadmap(root: Path, include_dirs: list[Path], exclude_dirs: set[str], max_files: int = 20000) -> RoadmapGraph:
+
+def build_roadmap(
+    root: Path, include_dirs: list[Path], exclude_dirs: set[str], max_files: int = 20000
+) -> RoadmapGraph:
     nodes: dict[str, Node] = {}
     edges: list[Edge] = []
 
     # Walk selected dirs
     files: list[Path] = []
-    root_res = root.resolve()
-
     skipped_big = 0
 
     for d in include_dirs:
@@ -172,15 +201,19 @@ def build_roadmap(root: Path, include_dirs: list[Path], exclude_dirs: set[str], 
             dirnames[:] = [dn for dn in dirnames if dn not in exclude_dirs]
 
             # 2) prune venv dirs by structure (ANY name)
-            dirnames[:] = [dn for dn in dirnames if dn not in exclude_dirs and dn != ".pybundle-venv"]
+            dirnames[:] = [
+                dn
+                for dn in dirnames
+                if dn not in exclude_dirs and dn != ".pybundle-venv"
+            ]
             dirnames[:] = [dn for dn in dirnames if not _is_venv_root(dirpath_p / dn)]
 
             for fn in filenames:
                 p = dirpath_p / fn
 
                 # 3️⃣ skip anything under a venv (belt + suspenders)
-                rel = Path(_rel(root, p))
-                if _is_under_venv(root, rel):
+                rel_p = Path(_rel(root, p))
+                if _is_under_venv(root, rel_p):
                     continue
 
                 rel_s = _rel(root, p)

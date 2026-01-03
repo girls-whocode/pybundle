@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import time
 from dataclasses import asdict
 
 from .context import BundleContext
@@ -11,6 +12,7 @@ from .steps.base import StepResult
 
 
 def run_profile(ctx: BundleContext, profile) -> int:
+    t0 = time.time()
     ctx.write_runlog(f"=== pybundle run {profile.name} ===")
     ctx.write_runlog(f"ROOT: {ctx.root}")
     ctx.write_runlog(f"WORK: {ctx.workdir}")
@@ -50,6 +52,7 @@ def run_profile(ctx: BundleContext, profile) -> int:
     # Write the manifest BEFORE archiving so it's included inside the bundle.
     archive_fmt_used = resolve_archive_format(ctx)
     archive_path = archive_output_path(ctx, archive_fmt_used)
+
     write_manifest(
         ctx=ctx,
         profile_name=profile.name,
@@ -58,11 +61,14 @@ def run_profile(ctx: BundleContext, profile) -> int:
     )
 
     archive_path, archive_fmt_used = make_archive(ctx)
+    ctx.archive_path = archive_path
+    ctx.duration_ms = int((time.time() - t0) * 1000)
+
     ctx.write_runlog(f"ARCHIVE: {archive_path}")
 
-    print(f"✅ Archive created: {archive_path}")
+    ctx.emit(f"✅ Archive created: {archive_path}")
     if ctx.keep_workdir:
-        print(f"📁 Workdir kept:     {ctx.workdir}")
+        ctx.emit(f"📁 Workdir kept:     {ctx.workdir}")
 
     if not ctx.keep_workdir:
         shutil.rmtree(ctx.workdir, ignore_errors=True)

@@ -2,41 +2,13 @@ from __future__ import annotations
 
 import os
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 from .base import StepResult
 from pybundle.context import BundleContext
-from pybundle.tools import which
 from pybundle.policy import AIContextPolicy, PathFilter
 
-BIN_EXTS = {
-    ".appimage", ".deb", ".rpm", ".exe", ".msi", ".dmg", ".pkg",
-    ".so", ".dll", ".dylib",
-}
-DB_EXTS = {".db", ".sqlite", ".sqlite3"}
-ARCHIVE_EXTS = {".zip", ".tar", ".gz", ".tgz", ".bz2", ".xz", ".7z"}
-
-DEFAULT_EXCLUDES = [
-    ".git",
-    ".venv",
-    ".mypy_cache",
-    ".ruff_cache",
-    ".pytest_cache",
-    "__pycache__",
-    "node_modules",
-    "dist",
-    "build",
-    "artifacts",
-    ".cache",
-]
-
-def _is_excluded(rel: Path, excludes: set[str]) -> bool:
-    # Exclude if any path component matches
-    for part in rel.parts:
-        if part in excludes:
-            return True
-    return False
 
 @dataclass
 class TreeStep:
@@ -51,7 +23,11 @@ class TreeStep:
 
         # allow overrides
         exclude_dirs = set(self.excludes) if self.excludes else set(policy.exclude_dirs)
-        filt = PathFilter(exclude_dirs=exclude_dirs, exclude_file_exts=set(policy.exclude_file_exts))
+        filt = PathFilter(
+            exclude_dirs=exclude_dirs,
+            exclude_patterns=set(policy.exclude_patterns),
+            exclude_file_exts=set(policy.exclude_file_exts),
+        )
 
         out = ctx.metadir / "10_tree.txt"
         out.parent.mkdir(parents=True, exist_ok=True)
@@ -87,6 +63,7 @@ class TreeStep:
         dur = int(time.time() - start)
         return StepResult(self.name, "PASS", dur, "python-walk")
 
+
 @dataclass
 class LargestFilesStep:
     name: str = "largest files"
@@ -99,7 +76,11 @@ class LargestFilesStep:
         policy = self.policy or AIContextPolicy()
 
         exclude_dirs = set(self.excludes) if self.excludes else set(policy.exclude_dirs)
-        filt = PathFilter(exclude_dirs=exclude_dirs, exclude_file_exts=set(policy.exclude_file_exts))
+        filt = PathFilter(
+            exclude_dirs=exclude_dirs,
+            exclude_patterns=set(policy.exclude_patterns),
+            exclude_file_exts=set(policy.exclude_file_exts),
+        )
 
         out = ctx.metadir / "11_largest_files.txt"
         out.parent.mkdir(parents=True, exist_ok=True)
@@ -133,4 +114,3 @@ class LargestFilesStep:
 
         dur = int(time.time() - start)
         return StepResult(self.name, "PASS", dur, f"count={len(files)}")
-

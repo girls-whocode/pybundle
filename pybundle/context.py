@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field, asdict
+import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, TYPE_CHECKING
@@ -95,6 +96,9 @@ class BundleContext:
     tools: Tooling
     results: list["StepResult"] = field(default_factory=list)
     command_used: str = ""
+    json_mode: bool = False
+    archive_path: Path | None = None
+    duration_ms: int | None = None
 
     def have(self, cmd: str) -> bool:
         return getattr(self.tools, cmd, None) is not None
@@ -117,6 +121,7 @@ class BundleContext:
         redact: bool,
         spinner: bool,
         keep_workdir: bool,
+        json_mode: bool = False,
     ) -> "BundleContext":
         ts = cls.utc_ts()
         outdir.mkdir(parents=True, exist_ok=True)
@@ -159,6 +164,7 @@ class BundleContext:
             spinner=spinner,
             keep_workdir=keep_workdir,
             tools=tools,
+            json_mode=json_mode,
         )
 
     def rel(self, p: Path) -> str:
@@ -230,3 +236,54 @@ class BundleContext:
             else:
                 why = f" ({item.reason})" if item.reason else ""
                 print(f"  SKIP {item.name:<28}{out}{why}")
+
+    def doctor_report(self, profile) -> dict:
+        from .doctor import plan_for_profile
+
+        plan = plan_for_profile(self, profile)
+
+        tools = {}
+        for k, v in asdict(self.tools).items():
+            tools[k] = {"present": v is not None, "path": v}
+
+        o = self.options
+        return {
+            "status": "ok",
+            "command": "doctor",
+            "profile": profile.name,
+            "root": str(self.root),
+            "outdir": str(self.outdir),
+            "tools": tools,
+            "options": {
+                "ruff_target": o.ruff_target,
+                "mypy_target": o.mypy_target,
+                "pytest_args": list(o.pytest_args),
+                "no_ruff": o.no_ruff,
+                "no_mypy": o.no_mypy,
+                "no_pytest": o.no_pytest,
+                "no_rg": o.no_rg,
+                "no_error_refs": o.no_error_refs,
+                "no_context": o.no_context,
+                "error_max_files": o.error_max_files,
+                "context_depth": o.context_depth,
+                "context_max_files": o.context_max_files,
+            },
+            "plan": [
+                {
+                    "name": item.name,
+                    "status": item.status,  # "RUN" or "SKIP"
+                    "out_rel": item.out_rel,
+                    "reason": item.reason,
+                }
+                for item in plan
+            ],
+        }
+
+    def emit(self, msg: str) -> None:
+        """Human output only."""
+        if not self.json_mode:
+            print(msg)
+
+    def emit_json(self, payload: dict) -> None:
+        """JSON output only (stdout contract)."""
+        print(json.dumps(payload, ensure_ascii=False))

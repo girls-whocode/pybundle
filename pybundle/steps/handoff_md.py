@@ -92,13 +92,11 @@ class HandoffMarkdownStep(Step):
         lines.append("")
         lines.append("## At a glance")
 
-        roadmap_json = _safe_read(workdir_path / "meta" / "70_roadmap.json")
-        copy_manifest = _safe_read(workdir_path / "meta" / "50_copy_manifest.txt")
-        pip_freeze = _safe_read(workdir_path / "meta" / "22_pip_freeze.txt")
-
         lines.append("## AI context summary")
 
-        copy_manifest = _safe_read(workdir_path / "meta" / "50_copy_manifest.txt").strip()
+        copy_manifest = _safe_read(
+            workdir_path / "meta" / "50_copy_manifest.txt"
+        ).strip()
         if copy_manifest:
             lines.append("### Curated copy")
             lines.append("```")
@@ -111,6 +109,7 @@ class HandoffMarkdownStep(Step):
         if roadmap_json:
             try:
                 import json
+
                 rj = json.loads(roadmap_json)
                 langs = set()
                 for n in rj.get("nodes", []):
@@ -119,7 +118,9 @@ class HandoffMarkdownStep(Step):
                         if lang:
                             langs.add(lang)
                 eps = rj.get("entrypoints", []) or []
-                lines.append(f"- **Languages detected:** {', '.join(sorted(langs)) if langs else '(none)'}")
+                lines.append(
+                    f"- **Languages detected:** {', '.join(sorted(langs)) if langs else '(none)'}"
+                )
                 if eps:
                     lines.append("- **Entrypoints:**")
                     for ep in eps[:10]:

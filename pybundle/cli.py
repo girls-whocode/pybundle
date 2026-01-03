@@ -10,6 +10,7 @@ from .root_detect import detect_project_root
 from importlib.metadata import PackageNotFoundError, version as pkg_version
 from .runner import run_profile
 
+
 def get_version() -> str:
     # 1) Canonical for installed distributions (including editable)
     try:
@@ -34,6 +35,7 @@ def get_version() -> str:
                 return "unknown"
 
     return "unknown"
+
 
 def add_common_args(sp: argparse.ArgumentParser) -> None:
     sp.add_argument(
@@ -61,22 +63,31 @@ def add_common_args(sp: argparse.ArgumentParser) -> None:
         default=True,
         help="Redact secrets in logs/text",
     )
+    sp.add_argument(
+        "--json",
+        action="store_true",
+        help="Emit machine-readable JSON to stdout.",
+    )
+
 
 def _resolve_profile_defaults(profile: str, o: RunOptions) -> RunOptions:
     if profile == "ai":
         # AI defaults: skip slow/flake-prone tools unless explicitly enabled
         return RunOptions(
             **{
-              **o.__dict__,
-              "no_ruff":  o.no_ruff  if o.no_ruff  is not None else True,
-              "no_mypy":  o.no_mypy  if o.no_mypy  is not None else True,
-              "no_pytest":o.no_pytest if o.no_pytest is not None else True,
-              "no_rg":    o.no_rg    if o.no_rg    is not None else True,
-              "no_error_refs": o.no_error_refs if o.no_error_refs is not None else True,
-              "no_context":    o.no_context    if o.no_context    is not None else True,
+                **o.__dict__,
+                "no_ruff": o.no_ruff if o.no_ruff is not None else True,
+                "no_mypy": o.no_mypy if o.no_mypy is not None else True,
+                "no_pytest": o.no_pytest if o.no_pytest is not None else True,
+                "no_rg": o.no_rg if o.no_rg is not None else True,
+                "no_error_refs": o.no_error_refs
+                if o.no_error_refs is not None
+                else True,
+                "no_context": o.no_context if o.no_context is not None else True,
             }
         )
     return o
+
 
 def add_run_only_args(sp: argparse.ArgumentParser) -> None:
     sp.add_argument(
@@ -91,6 +102,7 @@ def add_run_only_args(sp: argparse.ArgumentParser) -> None:
         help="Delete expanded workdir after packaging",
     )
 
+
 def add_knobs(sp: argparse.ArgumentParser) -> None:
     # selective skips
     sp.add_argument("--ruff", dest="no_ruff", action="store_false", default=None)
@@ -101,10 +113,16 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
     sp.add_argument("--no-pytest", dest="no_pytest", action="store_true", default=None)
     sp.add_argument("--rg", dest="no_rg", action="store_false", default=None)
     sp.add_argument("--no-rg", dest="no_rg", action="store_true", default=None)
-    sp.add_argument("--error-refs", dest="no_error_refs", action="store_false", default=None)
-    sp.add_argument("--no-error-refs", dest="no_error_refs", action="store_true", default=None)
+    sp.add_argument(
+        "--error-refs", dest="no_error_refs", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-error-refs", dest="no_error_refs", action="store_true", default=None
+    )
     sp.add_argument("--context", dest="no_context", action="store_false", default=None)
-    sp.add_argument("--no-context", dest="no_context", action="store_true", default=None)
+    sp.add_argument(
+        "--no-context", dest="no_context", action="store_true", default=None
+    )
 
     # targets / args
     sp.add_argument("--ruff-target", default=".")
@@ -119,6 +137,7 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
     sp.add_argument("--error-max-files", type=int, default=250)
     sp.add_argument("--context-depth", type=int, default=2)
     sp.add_argument("--context-max-files", type=int, default=600)
+
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
@@ -136,15 +155,16 @@ def build_parser() -> argparse.ArgumentParser:
 
     docp = sub.add_parser("doctor", help="Show tool availability and what would run")
     docp.add_argument(
-        "profile", 
-        choices=["analysis", "debug", "backup", "ai"], 
-        nargs="?", 
-        default="analysis"
+        "profile",
+        choices=["analysis", "debug", "backup", "ai"],
+        nargs="?",
+        default="analysis",
     )
     add_common_args(docp)
     add_knobs(docp)
 
     return p
+
 
 def _build_options(args) -> RunOptions:
     pytest_args = (
@@ -164,6 +184,7 @@ def _build_options(args) -> RunOptions:
         context_depth=getattr(args, "context_depth", 2),
         context_max_files=getattr(args, "context_max_files", 600),
     )
+
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
@@ -199,11 +220,16 @@ def main(argv: list[str] | None = None) -> int:
             name_prefix=args.name,
             strict=args.strict,
             redact=args.redact,
+            json_mode=args.json,
             spinner=not args.no_spinner,
             keep_workdir=True,
             options=options,
         )
-        ctx.print_doctor(profile)
+
+        if args.json:
+            ctx.emit_json(ctx.doctor_report(profile))
+        else:
+            ctx.print_doctor(profile)
         return 0
 
     # cmd == run
@@ -217,12 +243,42 @@ def main(argv: list[str] | None = None) -> int:
         name_prefix=args.name,
         strict=args.strict,
         redact=args.redact,
+        json_mode=args.json,  # <-- add this
         spinner=not args.no_spinner,
         keep_workdir=keep_workdir,
         options=options,
     )
 
-    return run_profile(ctx, profile)
+    rc = run_profile(ctx, profile)
+
+    if args.json:
+        copied = None
+        excluded = None
+
+        mf = ctx.metadir / "50_copy_manifest.txt"
+        if mf.exists():
+            data: dict[str, str] = {}
+            for line in mf.read_text(encoding="utf-8").splitlines():
+                if "=" in line:
+                    k, v = line.split("=", 1)
+                    data[k.strip()] = v.strip()
+
+            copied = int(data.get("copied_files", "0"))
+            excluded = int(data.get("excluded_files", "0"))
+
+        payload = {
+            "status": "ok" if rc == 0 else "fail",
+            "command": "run",
+            "profile": profile.name,
+            "files_included": copied if copied is not None else 0,
+            "files_excluded": excluded if excluded is not None else 0,
+            "duration_ms": ctx.duration_ms or 0,
+            "bundle_path": str(ctx.archive_path) if ctx.archive_path else None,
+        }
+        ctx.emit_json(payload)
+
+    return rc
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
