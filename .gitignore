@@ -14,6 +14,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+file-bkup/
 *.log
 *.sqlite3
 .DS_Store
