@@ -1,14 +1,18 @@
-# 🧳 pybundle
-[![PyPI version](https://img.shields.io/pypi/v/gwc-pybundle.svg)](https://pypi.org/project/gwc-pybundle/)
-[![Python versions](https://img.shields.io/pypi/pyversions/gwc-pybundle.svg)](https://pypi.org/project/gwc-pybundle/)
-[![License](https://img.shields.io/pypi/l/gwc-pybundle.svg)](LICENSE.md)
-[![PyPI Downloads](https://static.pepy.tech/personalized-badge/gwc-pybundle?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/gwc-pybundle)
+# 🧳 pybundle [![PyPI version](https://img.shields.io/pypi/v/gwc-pybundle.svg?color=2ea44f)](https://pypi.org/project/gwc-pybundle/)
+![GitHub Release Date](https://img.shields.io/github/release-date/girls-whocode/pybundle?color=orange)
 
-[![CI](https://github.com/girls-whocode/pybundle/actions/workflows/publish.yml/badge.svg)](https://github.com/girls-whocode/pybundle/actions)
-[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-261230.svg)](https://github.com/astral-sh/ruff)
-[![Type checked](https://img.shields.io/badge/type%20checked-mypy-blue.svg)](https://mypy-lang.org/)
+[![Python versions](https://img.shields.io/pypi/pyversions/gwc-pybundle.svg?color=3776AB)](https://pypi.org/project/gwc-pybundle/)
+[![License](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE.md)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/gwc-pybundle?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLUE&right_color=GREY&left_text=downloads)](https://pepy.tech/projects/gwc-pybundle)
+![GitHub Sponsors](https://img.shields.io/github/sponsors/girls-whocode?color=ec4899)
 
-**pybundle** is a deterministic, automation-friendly tool for collecting Python project context into a single, shareable bundle - ideal for debugging, audits, AI assistance, CI artifacts, or handoff between engineers.
+[![CI](https://github.com/girls-whocode/pybundle/actions/workflows/publish.yml/badge.svg?color=fb923c)](https://github.com/girls-whocode/pybundle/actions)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-14b8a6.svg)](https://github.com/astral-sh/ruff)
+[![Type checked](https://img.shields.io/badge/type%20checked-mypy-0ea5e9.svg)](https://mypy-lang.org/)
+![Commit Activity](https://img.shields.io/github/commit-activity/t/girls-whocode/pybundle?color=f59e0b)
+
+
+**pybundle** is a deterministic, automation-friendly CLI that captures Python project context into a single, reproducible bundle — ideal for debugging, CI artifacts, audits, and AI-assisted workflows.
 
 It produces **machine-readable outputs first**, with optional human-readable summaries layered on top.
 
@@ -532,7 +536,7 @@ The project name, imports, and CLI remain **`pybundle`**.
 pip install gwc-pybundle
 pybundle run analysis
 ```
- Look in the autocreated `artifacts/` folder
+Look in the autocreated `artifacts/` folder.
 
 ## 📄 License
 
