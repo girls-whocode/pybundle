@@ -113,6 +113,12 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
     sp.add_argument("--no-pylance", dest="no_pylance", action="store_true", default=None)
     sp.add_argument("--pytest", dest="no_pytest", action="store_false", default=None)
     sp.add_argument("--no-pytest", dest="no_pytest", action="store_true", default=None)
+    sp.add_argument("--bandit", dest="no_bandit", action="store_false", default=None)
+    sp.add_argument("--no-bandit", dest="no_bandit", action="store_true", default=None)
+    sp.add_argument("--pip-audit", dest="no_pip_audit", action="store_false", default=None)
+    sp.add_argument("--no-pip-audit", dest="no_pip_audit", action="store_true", default=None)
+    sp.add_argument("--coverage", dest="no_coverage", action="store_false", default=None)
+    sp.add_argument("--no-coverage", dest="no_coverage", action="store_true", default=None)
     sp.add_argument("--rg", dest="no_rg", action="store_false", default=None)
     sp.add_argument("--no-rg", dest="no_rg", action="store_true", default=None)
     sp.add_argument(

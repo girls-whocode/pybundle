@@ -74,7 +74,8 @@ For humans, automation, and AI alike.
 * 🧾 **Structured summaries** (`SUMMARY.json`)
 * 🧭 **Respects `.gitignore`** exactly when available
 * 🛑 **Safely ignores virtualenvs and caches** (even with non-standard names)
-* 🔍 Optional tooling checks (ruff, mypy, pytest, ripgrep scans)
+* 🔍 Optional tooling checks (ruff, mypy, pytest, pylance, bandit, pip-audit, coverage)
+* 🛡️ Security scanning (bandit for code issues, pip-audit for dependency CVEs)
 * 🧪 Deterministic output (stable paths, timestamps, schemas)
 * 🔒 Secret-safe (optional redaction)
 
@@ -88,7 +89,7 @@ At minimum, a bundle contains:
 MANIFEST.json        # stable, machine-readable metadata
 SUMMARY.json         # structured summary of collected data
 src/                 # filtered project source snapshot
-logs/                # tool outputs (ruff, mypy, etc.)
+logs/                # tool outputs (ruff, mypy, pytest, pylance, bandit, pip-audit, coverage, rg scans)
 meta/                # environment + tool detection
 ```
 
@@ -120,6 +121,9 @@ Create a dedicated requirements file in the root of your project:
 ruff
 mypy
 pytest
+pytest-cov
+bandit
+pip-audit
 gwc-pybundle==1.0.0
 ```
 
@@ -202,6 +206,39 @@ Profiles are always invoked via:
 ```bash
 pybundle run <profile>
 ```
+
+---
+
+### 🔍 Analysis Tools
+
+The `analysis` and `debug` profiles run comprehensive quality and security checks:
+
+#### Code Quality
+* **ruff** - Fast Python linter and formatter checks
+* **mypy** - Static type checking for type hints
+* **pylance** - Syntax error detection and import analysis
+
+#### Testing & Coverage
+* **pytest** - Test execution and results
+* **coverage** - Code coverage analysis (shows tested vs untested code)
+
+#### Security
+* **bandit** - Security vulnerability scanning for Python code
+* **pip-audit** - Dependency vulnerability checking against known CVEs
+
+#### Pattern Scanning
+* **ripgrep scans** - TODO detection, print statements, bare excepts
+
+All tools gracefully skip if not installed. Install recommended tools:
+
+```bash
+pip install ruff mypy pytest pytest-cov bandit pip-audit
+```
+
+For ripgrep (system dependency):
+* macOS: `brew install ripgrep`
+* Ubuntu/Debian: `sudo apt install ripgrep`
+
 ---
 
 ### 🤖 AI profile (NEW)
@@ -274,7 +311,11 @@ Tool execution can be selectively disabled:
 ```bash
 --no-ruff
 --no-mypy
+--no-pylance
 --no-pytest
+--no-bandit
+--no-pip-audit
+--no-coverage
 --no-rg
 --no-error-refs
 --no-context

@@ -10,6 +10,9 @@ from .steps.ruff import RuffCheckStep, RuffFormatCheckStep
 from .steps.mypy import MypyStep
 from .steps.pylance import PylanceStep
 from .steps.pytest import PytestStep
+from .steps.bandit import BanditStep
+from .steps.pip_audit import PipAuditStep
+from .steps.coverage import CoverageStep
 from .steps.rg_scans import default_rg_steps
 from .steps.error_refs import ErrorReferencedFilesStep
 from .steps.context_expand import ErrorContextExpandStep
@@ -95,6 +98,16 @@ def _analysis_steps(options: RunOptions) -> list:
 
     if not options.no_pytest:
         steps += [PytestStep(args=options.pytest_args or ["-q"])]
+
+    # Security and quality checks
+    if not options.no_bandit:
+        steps += [BanditStep()]
+
+    if not options.no_pip_audit:
+        steps += [PipAuditStep()]
+
+    if not options.no_coverage:
+        steps += [CoverageStep()]
 
     # Landmine scans
     if not options.no_rg:

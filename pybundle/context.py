@@ -60,6 +60,9 @@ class RunOptions:
     no_mypy: bool | None = None
     no_pylance: bool | None = None
     no_pytest: bool | None = None
+    no_bandit: bool | None = None
+    no_pip_audit: bool | None = None
+    no_coverage: bool | None = None
     no_rg: bool | None = None
     no_error_refs: bool | None = None
     no_context: bool | None = None
@@ -217,6 +220,9 @@ class BundleContext:
         print(f"  no_mypy:           {o.no_mypy}")
         print(f"  no_pylance:        {o.no_pylance}")
         print(f"  no_pytest:         {o.no_pytest}")
+        print(f"  no_bandit:         {o.no_bandit}")
+        print(f"  no_pip_audit:      {o.no_pip_audit}")
+        print(f"  no_coverage:       {o.no_coverage}")
         print(f"  no_rg:             {o.no_rg}")
         print(f"  no_error_refs:     {o.no_error_refs}")
         print(f"  no_context:        {o.no_context}")
@@ -264,6 +270,9 @@ class BundleContext:
                 "no_mypy": o.no_mypy,
                 "no_pylance": o.no_pylance,
                 "no_pytest": o.no_pytest,
+                "no_bandit": o.no_bandit,
+                "no_pip_audit": o.no_pip_audit,
+                "no_coverage": o.no_coverage,
                 "no_rg": o.no_rg,
                 "no_error_refs": o.no_error_refs,
                 "no_context": o.no_context,
