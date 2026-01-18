@@ -8,6 +8,7 @@ from .steps.tree import TreeStep, LargestFilesStep
 from .steps.compileall import CompileAllStep
 from .steps.ruff import RuffCheckStep, RuffFormatCheckStep
 from .steps.mypy import MypyStep
+from .steps.pylance import PylanceStep
 from .steps.pytest import PytestStep
 from .steps.rg_scans import default_rg_steps
 from .steps.error_refs import ErrorReferencedFilesStep
@@ -88,6 +89,9 @@ def _analysis_steps(options: RunOptions) -> list:
 
     if not options.no_mypy:
         steps += [MypyStep(target=options.mypy_target)]
+
+    if not options.no_pylance:
+        steps += [PylanceStep()]
 
     if not options.no_pytest:
         steps += [PytestStep(args=options.pytest_args or ["-q"])]

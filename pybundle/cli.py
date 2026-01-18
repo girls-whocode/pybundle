@@ -109,6 +109,8 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
     sp.add_argument("--no-ruff", dest="no_ruff", action="store_true", default=None)
     sp.add_argument("--mypy", dest="no_mypy", action="store_false", default=None)
     sp.add_argument("--no-mypy", dest="no_mypy", action="store_true", default=None)
+    sp.add_argument("--pylance", dest="no_pylance", action="store_false", default=None)
+    sp.add_argument("--no-pylance", dest="no_pylance", action="store_true", default=None)
     sp.add_argument("--pytest", dest="no_pytest", action="store_false", default=None)
     sp.add_argument("--no-pytest", dest="no_pytest", action="store_true", default=None)
     sp.add_argument("--rg", dest="no_rg", action="store_false", default=None)

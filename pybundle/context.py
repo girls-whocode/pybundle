@@ -58,6 +58,7 @@ class Tooling:
 class RunOptions:
     no_ruff: bool | None = None
     no_mypy: bool | None = None
+    no_pylance: bool | None = None
     no_pytest: bool | None = None
     no_rg: bool | None = None
     no_error_refs: bool | None = None
@@ -214,6 +215,7 @@ class BundleContext:
         print(f"  pytest_args:       {' '.join(o.pytest_args)}")
         print(f"  no_ruff:           {o.no_ruff}")
         print(f"  no_mypy:           {o.no_mypy}")
+        print(f"  no_pylance:        {o.no_pylance}")
         print(f"  no_pytest:         {o.no_pytest}")
         print(f"  no_rg:             {o.no_rg}")
         print(f"  no_error_refs:     {o.no_error_refs}")
@@ -260,6 +262,7 @@ class BundleContext:
                 "pytest_args": list(o.pytest_args),
                 "no_ruff": o.no_ruff,
                 "no_mypy": o.no_mypy,
+                "no_pylance": o.no_pylance,
                 "no_pytest": o.no_pytest,
                 "no_rg": o.no_rg,
                 "no_error_refs": o.no_error_refs,
