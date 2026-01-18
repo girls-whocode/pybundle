@@ -169,16 +169,36 @@ def get_profile(name: str, options: RunOptions) -> Profile:
         return Profile(name="debug", steps=steps)
 
     if name == "backup":
-        # Scaffold: we'll implement real backup modes next
+        # Minimal backup: source + environment, no analysis
+        policy = AIContextPolicy()
         return Profile(
             name="backup",
             steps=[
+                ShellStep(
+                    "git status",
+                    "meta/00_git_status.txt",
+                    ["git", "status"],
+                    require_cmd="git",
+                ),
+                ShellStep(
+                    "git diff",
+                    "meta/01_git_diff.txt",
+                    ["git", "diff"],
+                    require_cmd="git",
+                ),
                 ShellStep(
                     "python -V",
                     "meta/20_python_version.txt",
                     ["python", "-V"],
                     require_cmd="python",
                 ),
+                ShellStep(
+                    "pip freeze",
+                    "meta/22_pip_freeze.txt",
+                    ["python", "-m", "pip", "freeze"],
+                    require_cmd="python",
+                ),
+                CuratedCopyStep(policy=policy),  # Copy source code
             ],
         )
 

@@ -124,7 +124,7 @@ pytest
 pytest-cov
 bandit
 pip-audit
-gwc-pybundle==1.0.0
+gwc-pybundle==1.1.0
 ```
 
 Then install:
@@ -161,7 +161,7 @@ See **Usage** for more details.
 #### From GitHub
 
 ```bash
-pip install "gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.0.0"
+pip install "gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.1.0"
 ```
 
 Pinning to a tag ensures reproducible behavior.
@@ -192,7 +192,7 @@ Available profiles include:
 
 * `analysis` - **full diagnostics** (lint, type-check, tests, scans)
 * `debug` - **analysis + additional environment validation**
-* `backup` - **minimal environment snapshot**
+* `backup` - **minimal source + environment snapshot** (no analysis tools)
 * `ai` - **AI-optimized context bundle** (lean, source-first)
 
 To list all available profiles:
@@ -206,6 +206,99 @@ Profiles are always invoked via:
 ```bash
 pybundle run <profile>
 ```
+
+---
+
+### 💾 Backup profile
+
+The `backup` profile creates a minimal, lightweight snapshot ideal for version archival or disaster recovery.
+
+Run it with:
+
+```bash
+pybundle run backup
+```
+
+#### What `backup` includes
+
+* ✅ Full source code snapshot (respects `.gitignore`)
+* ✅ Git status and diff (`meta/00_git_status.txt`, `meta/01_git_diff.txt`)
+* ✅ Python version (`meta/20_python_version.txt`)
+* ✅ Installed packages (`meta/22_pip_freeze.txt`)
+* ✅ Copy manifest (`meta/50_copy_manifest.txt`)
+* ❌ No linting, type-checking, or tests
+* ❌ No security scanning
+* ❌ No ripgrep scans
+
+The result is a **fast, small, restorable archive** with just source code and environment context.
+
+#### Restoring a backup
+
+Backups are created as either `.zip` or `.tar.gz` archives (see Archive Format below).
+
+To extract and inspect:
+
+**For .zip archives:**
+```bash
+# Look for filename with *_backup_<TIMESTAMP>.zip
+unzip <FILENAME>.zip -d restored/
+cd restored/<FILENAME>/
+```
+
+**For .tar.gz archives:**
+```bash
+# Look for filename with *_backup_<TIMESTAMP>.tar.gz
+tar -xzf <FILENAME>.tar.gz -C restored/
+cd restored/<FILENAME>/
+```
+
+Inside the extracted directory:
+
+```text
+src/                      # Your project source code
+meta/
+  00_git_status.txt       # Git working tree status at backup time
+  01_git_diff.txt         # Uncommitted changes (if any)
+  20_python_version.txt   # Python version used
+  22_pip_freeze.txt       # Exact package versions
+  50_copy_manifest.txt    # List of files included
+MANIFEST.json             # Machine-readable metadata
+SUMMARY.json              # Structured summary
+RUN_LOG.txt               # Execution log
+```
+
+The `src/` directory contains your complete project structure.
+The `meta/22_pip_freeze.txt` file can be used to recreate the exact environment:
+
+```bash
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
+pip install -r meta/22_pip_freeze.txt
+```
+
+Then copy your source code back:
+
+```bash
+cp -r src/* /path/to/your/project/
+```
+
+#### Archive format fallback
+
+pybundle uses **zip** by default for maximum portability.
+
+If the `zip` command is not available on your system, pybundle **automatically falls back to tar.gz** format without requiring configuration.
+
+This ensures backups can be created on any system, regardless of installed compression tools.
+
+To explicitly control the format:
+
+```bash
+pybundle run backup --format zip      # Force zip (requires zip command)
+pybundle run backup --format tar.gz   # Force tar.gz (requires tar command)
+pybundle run backup --format auto     # Auto-detect (default behavior)
+```
+
+Both formats preserve the same internal structure and metadata.
 
 ---
 
@@ -376,8 +469,6 @@ pybundle falls back to safe structural rules:
 * ignores `__pycache__`, `.ruff_cache`, `.mypy_cache`, `.pytest_cache`, etc.
 * detects virtual environments by structure (`pyvenv.cfg`, `bin/activate`), not by name
   → works with `.venv`, `.pybundle-venv`, `env-prod-2025`, etc.
-
-No filename guessing. No surprises.
 
 ---
 
@@ -554,7 +645,7 @@ pybundle follows **Semantic Versioning**.
 Pinned Git tags are recommended when used as a dependency:
 
 ```txt
-gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.0.0
+gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.1.0
 ```
 
 ---
