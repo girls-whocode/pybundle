@@ -122,7 +122,7 @@ pybundle version
 
 **Expected Output:**
 ```
-pybundle 1.2.0
+pybundle 1.2.1
 ```
 
 ---
@@ -459,7 +459,7 @@ pybundle run ai --compileall
 
 ## Security Options
 
-### `--strict-paths` (v1.2.0+)
+### `--strict-paths` (v1.2.1+)
 
 **Enforce trusted path validation for all tools.**
 

@@ -124,7 +124,7 @@ pytest
 pytest-cov
 bandit
 pip-audit
-gwc-pybundle==1.2.0
+gwc-pybundle==1.2.1
 ```
 
 Then install:
@@ -161,7 +161,7 @@ See **Usage** for more details.
 #### From GitHub
 
 ```bash
-pip install "gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.2.0"
+pip install "gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.2.1"
 ```
 
 Pinning to a tag ensures reproducible behavior.
@@ -621,7 +621,7 @@ Use `--redact / --no-redact` to control behavior.
 - Tools are resolved at detection time and stored in `Tooling` dataclass
 - No dynamic PATH manipulation or shell interpretation
 - Eliminates partial path execution vulnerabilities (B607)
-- **Optional strict-paths mode** for enhanced security (v1.2.0+)
+- **Optional strict-paths mode** for enhanced security (v1.2.1+)
 
 **Subprocess Execution:**
 - All subprocess calls use `shell=False` (default, secure)
@@ -634,7 +634,7 @@ Use `--redact / --no-redact` to control behavior.
 - Environment variables and paths logged for reproducibility
 - All file operations respect `.gitignore` rules
 
-### Strict-Paths Mode (v1.2.0+)
+### Strict-Paths Mode (v1.2.1+)
 
 For high-security environments, enable `--strict-paths` to enforce that all tools must be in trusted system directories:
 
@@ -753,7 +753,7 @@ pybundle follows **Semantic Versioning**.
 Pinned Git tags are recommended when used as a dependency:
 
 ```txt
-gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.2.0
+gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.2.1
 ```
 
 ---
