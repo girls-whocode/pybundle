@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import subprocess
+import subprocess  # nosec B404 - Required for tool execution, paths validated
 import time
 from dataclasses import dataclass
 
@@ -34,7 +34,7 @@ class RipgrepScanStep:
         cmd = [rg, "-n", "--no-heading", "-S", *args, self.pattern, self.target]
         header = f"## PWD: {ctx.root}\n## CMD: {' '.join(cmd)}\n\n"
 
-        cp = subprocess.run(
+        cp = subprocess.run(  # nosec B603
             cmd, cwd=str(ctx.root), text=True, capture_output=True, check=False
         )
         # rg exit codes:

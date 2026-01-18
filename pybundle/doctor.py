@@ -8,6 +8,7 @@ from .steps.ruff import RuffCheckStep, RuffFormatCheckStep
 from .steps.mypy import MypyStep
 from .steps.pytest import PytestStep
 from .steps.rg_scans import RipgrepScanStep
+from .tools import is_path_trusted
 
 T = TypeVar("T")
 
@@ -99,3 +100,39 @@ def plan_for_profile(ctx: Any, profile: Any) -> list[PlanItem]:
             item = PlanItem(step.name, "RUN", _out(step), "")
         items.append(item)
     return items
+
+
+def print_tool_info(ctx: Any) -> None:
+    """Print tool availability with security validation status."""
+
+    tools_data = [
+        ("git", ctx.tools.git),
+        ("python", ctx.tools.python),
+        ("pip", ctx.tools.pip),
+        ("zip", ctx.tools.zip),
+        ("tar", ctx.tools.tar),
+        ("uname", ctx.tools.uname),
+        ("ruff", ctx.tools.ruff),
+        ("mypy", ctx.tools.mypy),
+        ("pytest", ctx.tools.pytest),
+        ("rg", ctx.tools.rg),
+        ("tree", ctx.tools.tree),
+        ("npm", ctx.tools.npm),
+    ]
+
+    print("\n🔧 Tool Detection:")
+    print("=" * 70)
+
+    for name, path in tools_data:
+        if path:
+            trusted = is_path_trusted(path)
+            trust_marker = "✅" if trusted else "⚠️ "
+            print(f"  {name:10} {trust_marker} {path}")
+        else:
+            print(f"  {name:10} ❌ <missing>")
+
+    if ctx.options.strict_paths:
+        print("\n⚠️  STRICT-PATHS MODE ENABLED")
+        print("   Only tools in trusted directories are available.")
+
+    print("=" * 70)

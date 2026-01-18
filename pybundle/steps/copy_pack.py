@@ -195,7 +195,9 @@ class CuratedCopyStep:
                 pruned += 1
                 continue
 
-            files_copied, dirs_pruned, files_excluded = _copy_tree_filtered(ctx.root, sp, dst_root / rel_dir, filt)
+            files_copied, dirs_pruned, files_excluded = _copy_tree_filtered(
+                ctx.root, sp, dst_root / rel_dir, filt
+            )
             copied += files_copied
             pruned += dirs_pruned
             excluded_total += files_excluded
@@ -209,7 +211,9 @@ class CuratedCopyStep:
                 rel_pkg_name = pkg_dir.name
                 if (dst_root / rel_pkg_name).exists():
                     continue
-                files_copied, dirs_pruned, files_excluded = _copy_tree_filtered(ctx.root, pkg_dir, dst_root / rel_pkg_name, filt)
+                files_copied, dirs_pruned, files_excluded = _copy_tree_filtered(
+                    ctx.root, pkg_dir, dst_root / rel_pkg_name, filt
+                )
                 copied += files_copied
                 pruned += dirs_pruned
                 excluded_total += files_excluded
@@ -243,7 +247,11 @@ class CuratedCopyStep:
 
                         elif sp.is_dir():
                             # prune dir itself before copying
-                            parent = ctx.root if rel_path.parent == Path(".") else (ctx.root / rel_path.parent)
+                            parent = (
+                                ctx.root
+                                if rel_path.parent == Path(".")
+                                else (ctx.root / rel_path.parent)
+                            )
                             if filt.should_prune_dir(parent, rel_path.name):
                                 pruned += 1
                                 continue
@@ -251,7 +259,11 @@ class CuratedCopyStep:
                                 pruned += 1
                                 continue
 
-                            files_copied, dirs_pruned, files_excluded = _copy_tree_filtered(ctx.root, sp, dst_root / rel_path, filt)
+                            files_copied, dirs_pruned, files_excluded = (
+                                _copy_tree_filtered(
+                                    ctx.root, sp, dst_root / rel_path, filt
+                                )
+                            )
                             copied += files_copied
                             pruned += dirs_pruned
                             excluded_total += files_excluded

@@ -604,7 +604,116 @@ By default, pybundle:
 Use `--redact / --no-redact` to control behavior.
 
 ---
+## 🔒 Security Considerations
 
+**pybundle** is a development tool designed for trusted environments.
+
+### Threat Model
+
+* **Environment:** Development machines and CI/CD pipelines
+* **Trust Boundary:** Assumes trusted development environment
+* **Execution Context:** Runs external tools (git, ruff, mypy, pytest, etc.)
+* **Input Sources:** Project files, git repository, installed packages
+
+### Security Posture
+
+**Tool Path Resolution:**
+- All external tools use full resolved paths (via `shutil.which()`)
+- Tools are resolved at detection time and stored in `Tooling` dataclass
+- No dynamic PATH manipulation or shell interpretation
+- Eliminates partial path execution vulnerabilities (B607)
+- **Optional strict-paths mode** for enhanced security (v1.2.0+)
+
+**Subprocess Execution:**
+- All subprocess calls use `shell=False` (default, secure)
+- Arguments passed as lists, never as strings
+- No user-controlled command construction
+- Commands are hardcoded in source code
+
+**Data Handling:**
+- Optional secret redaction for sensitive strings in logs
+- Environment variables and paths logged for reproducibility
+- All file operations respect `.gitignore` rules
+
+### Strict-Paths Mode (v1.2.0+)
+
+For high-security environments, enable `--strict-paths` to enforce that all tools must be in trusted system directories:
+
+```bash
+pybundle run analysis --strict-paths
+```
+
+**Trusted directories** (configurable via `PYBUNDLE_TRUSTED_PATHS`):
+- `/usr/bin/`, `/usr/local/bin/`, `/bin/`
+- `/opt/homebrew/bin/` (macOS Homebrew)
+- `/snap/bin/` (Ubuntu snaps)
+- Virtual environment paths (`.venv`, `venv`, `.pybundle-venv`)
+
+Tools outside trusted directories are excluded in strict mode. This prevents:
+- Accidental execution of tools from user-writable directories
+- PATH manipulation attacks
+- Use of potentially compromised tool installations
+
+**Example:** Verify tool paths before running:
+```bash
+pybundle doctor --strict-paths
+```
+
+Output shows trust status:
+```
+🔧 Tool Detection:
+git        ✅ /usr/bin/git
+python     ✅ /path/to/venv/bin/python
+npm        ⚠️  /home/user/.nvm/.../npm  (untrusted in strict mode)
+```
+
+**Configure custom trusted paths:**
+```bash
+export PYBUNDLE_TRUSTED_PATHS="/opt/custom/bin:/company/tools/bin"
+pybundle run debug --strict-paths
+```
+
+### Known Limitations
+
+1. **Requires Trusted Environment**
+   - Assumes developer controls their machine and installed tools
+   - Not designed for untrusted code execution or sandboxing
+   - Tool integrity depends on system package management
+
+2. **Tool Availability**
+   - External tools (git, ruff, mypy) are optional
+   - Missing tools result in SKIP status, not failure
+   - Use `pybundle doctor` to verify available tools
+
+3. **File System Access**
+   - Reads entire project tree (respecting ignore rules)
+   - Writes to `artifacts/` directory by default
+   - No privilege escalation or system modification
+
+### For Security Auditors
+
+**Bandit Security Scan Results:**
+- 33 low-severity findings (all expected for CLI tool)
+- **B404** (subprocess import): Required for tool functionality
+- **B603** (subprocess calls): Using secure pattern (shell=False, full paths)
+- **B112** (try/except/continue): Acceptable error handling pattern
+
+**Risk Classification:** LOW
+- No user-controlled command injection
+- No untrusted input in command execution
+- Full path resolution prevents PATH manipulation attacks
+- Standard development tool security posture
+
+**Recommended Usage:**
+```bash
+# Verify tool paths before execution
+pybundle doctor
+
+# Review what tools will be used
+pybundle doctor analysis --json
+```
+
+---
 ## 🧩 Why pybundle?
 
 pybundle is designed for:

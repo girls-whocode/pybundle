@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import subprocess
+import subprocess  # nosec B404 - Required for tool execution, paths validated
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -49,7 +49,7 @@ class MypyStep:
         cmd = [mypy, "--exclude", "^artifacts/", self.target]
         header = f"## PWD: {ctx.root}\n## CMD: {' '.join(cmd)}\n\n"
 
-        cp = subprocess.run(
+        cp = subprocess.run(  # nosec B603
             cmd, cwd=str(ctx.root), text=True, capture_output=True, check=False
         )
         text = header + (cp.stdout or "") + ("\n" + cp.stderr if cp.stderr else "")

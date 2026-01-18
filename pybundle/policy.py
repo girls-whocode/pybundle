@@ -14,16 +14,22 @@ from pybundle.filters import (
     is_excluded_by_name,
 )
 
+
 @dataclass(frozen=True)
 class AIContextPolicy:
     exclude_dirs: set[str] = field(default_factory=lambda: set(DEFAULT_EXCLUDE_DIRS))
     exclude_patterns: set[str] = field(default_factory=lambda: set(EXCLUDE_PATTERNS))
-    exclude_file_exts: set[str] = field(default_factory=lambda: set(DEFAULT_EXCLUDE_FILE_EXTS))
+    exclude_file_exts: set[str] = field(
+        default_factory=lambda: set(DEFAULT_EXCLUDE_FILE_EXTS)
+    )
 
-    include_files: list[str] = field(default_factory=lambda: list(DEFAULT_INCLUDE_FILES))
+    include_files: list[str] = field(
+        default_factory=lambda: list(DEFAULT_INCLUDE_FILES)
+    )
     include_dirs: list[str] = field(default_factory=lambda: list(DEFAULT_INCLUDE_DIRS))
-    include_globs: list[str] = field(default_factory=lambda: list(DEFAULT_INCLUDE_GLOBS))
-
+    include_globs: list[str] = field(
+        default_factory=lambda: list(DEFAULT_INCLUDE_GLOBS)
+    )
 
     # AI-friendly knobs
     tree_max_depth: int = 4
@@ -85,7 +91,11 @@ class PathFilter:
         return False
 
     def should_prune_dir(self, parent_dir: Path, child_name: str) -> bool:
-        if is_excluded_by_name(child_name, exclude_names=self.exclude_dirs, exclude_patterns=self.exclude_patterns):
+        if is_excluded_by_name(
+            child_name,
+            exclude_names=self.exclude_dirs,
+            exclude_patterns=self.exclude_patterns,
+        ):
             return True
         if self.detect_venvs and self.is_venv_root(parent_dir / child_name):
             return True
@@ -99,11 +109,19 @@ class PathFilter:
 
         # reject files under excluded dirs by name/pattern
         for part in rel.parts[:-1]:
-            if is_excluded_by_name(part, exclude_names=self.exclude_dirs, exclude_patterns=self.exclude_patterns):
+            if is_excluded_by_name(
+                part,
+                exclude_names=self.exclude_dirs,
+                exclude_patterns=self.exclude_patterns,
+            ):
                 return False
 
         # reject excluded file names by pattern (e.g. *.egg, *.rej)
-        if is_excluded_by_name(rel.name, exclude_names=self.exclude_dirs, exclude_patterns=self.exclude_patterns):
+        if is_excluded_by_name(
+            rel.name,
+            exclude_names=self.exclude_dirs,
+            exclude_patterns=self.exclude_patterns,
+        ):
             return False
 
         # reject excluded extensions

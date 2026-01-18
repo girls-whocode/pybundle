@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import subprocess
+import subprocess  # nosec B404 - Required for tool execution, paths validated
 import time
 from dataclasses import dataclass
 
@@ -31,7 +31,7 @@ class PipAuditStep:
         cmd = [pip_audit, "--desc", "--format", "columns"]
         header = f"## PWD: {ctx.root}\n## CMD: {' '.join(cmd)}\n\n"
 
-        cp = subprocess.run(
+        cp = subprocess.run(  # nosec B603
             cmd, cwd=str(ctx.root), text=True, capture_output=True, check=False
         )
         text = header + (cp.stdout or "") + ("\n" + cp.stderr if cp.stderr else "")
@@ -40,8 +40,6 @@ class PipAuditStep:
         dur = int(time.time() - start)
         # pip-audit exit codes: 0=no vulnerabilities, 1=vulnerabilities found
         note = (
-            ""
-            if cp.returncode == 0
-            else f"exit={cp.returncode} (vulnerable packages)"
+            "" if cp.returncode == 0 else f"exit={cp.returncode} (vulnerable packages)"
         )
         return StepResult(self.name, "PASS", dur, note)

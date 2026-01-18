@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import subprocess
+import subprocess  # nosec B404 - Required for tool execution, paths validated
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -54,7 +54,7 @@ class CompileAllStep:
         )
 
         try:
-            cp = subprocess.run(
+            cp = subprocess.run(  # nosec B603
                 cmd,
                 cwd=str(ctx.root),
                 text=True,

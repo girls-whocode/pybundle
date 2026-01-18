@@ -37,20 +37,26 @@ class Tooling:
     npm: str | None
 
     @staticmethod
-    def detect() -> "Tooling":
+    def detect(strict_paths: bool = False) -> "Tooling":
+        """Detect available tools, optionally enforcing trusted paths.
+
+        Args:
+            strict_paths: If True, only accept tools in trusted system directories
+        """
         return Tooling(
-            git=which("git"),
-            python=which("python") or which("python3"),
-            pip=which("pip") or which("pip3"),
-            zip=which("zip"),
-            tar=which("tar"),
-            uname=which("uname"),
-            ruff=which("ruff"),
-            mypy=which("mypy"),
-            pytest=which("pytest"),
-            rg=which("rg"),
-            tree=which("tree"),
-            npm=which("npm"),
+            git=which("git", strict=strict_paths),
+            python=which("python", strict=strict_paths)
+            or which("python3", strict=strict_paths),
+            pip=which("pip", strict=strict_paths) or which("pip3", strict=strict_paths),
+            zip=which("zip", strict=strict_paths),
+            tar=which("tar", strict=strict_paths),
+            uname=which("uname", strict=strict_paths),
+            ruff=which("ruff", strict=strict_paths),
+            mypy=which("mypy", strict=strict_paths),
+            pytest=which("pytest", strict=strict_paths),
+            rg=which("rg", strict=strict_paths),
+            tree=which("tree", strict=strict_paths),
+            npm=which("npm", strict=strict_paths),
         )
 
 
@@ -67,6 +73,8 @@ class RunOptions:
     no_error_refs: bool | None = None
     no_context: bool | None = None
     no_compileall: bool | None = None
+
+    strict_paths: bool = False  # Enforce trusted path validation
 
     ruff_target: str = "."
     mypy_target: str = "."
@@ -143,10 +151,9 @@ class BundleContext:
         summary_json = workdir / "SUMMARY.json"
         manifest_json = workdir / "MANIFEST.json"
 
-        tools = Tooling.detect()
-        prefix = name_prefix or f"pybundle_{profile_name}_{ts}"
-
         options = options or RunOptions()
+        tools = Tooling.detect(strict_paths=options.strict_paths)
+        prefix = name_prefix or f"pybundle_{profile_name}_{ts}"
 
         return cls(
             root=root,
@@ -201,18 +208,19 @@ class BundleContext:
             f.write(line.rstrip() + "\n")
 
     def print_doctor(self, profile) -> None:
+        from .doctor import plan_for_profile, print_tool_info
+
         print(f"Root: {self.root}")
         print(f"Out:  {self.outdir}\n")
 
-        # Tools (keep your existing output)
-        print("Tools:")
-        for k, v in asdict(self.tools).items():
-            print(f"{k:>8}: {fmt_tool(v)}")
+        # Enhanced tool information with security validation
+        print_tool_info(self)
         print()
 
         # Options (super useful)
         print("Options:")
         o = self.options
+        print(f"  strict_paths:      {o.strict_paths}")
         print(f"  ruff_target:       {o.ruff_target}")
         print(f"  mypy_target:       {o.mypy_target}")
         print(f"  pytest_args:       {' '.join(o.pytest_args)}")
@@ -232,8 +240,6 @@ class BundleContext:
         print()
 
         # Plan
-        from .doctor import plan_for_profile  # local import avoids circulars
-
         plan = plan_for_profile(self, profile)
 
         print(f"Plan ({profile.name}):")

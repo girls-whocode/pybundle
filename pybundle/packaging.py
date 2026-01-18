@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import subprocess
+import subprocess  # nosec B404 - Required for archive creation, paths validated
 from pathlib import Path
 
 from .context import BundleContext
@@ -23,18 +23,22 @@ def make_archive(ctx: BundleContext) -> tuple[Path, str]:
     fmt_used = resolve_archive_format(ctx)
 
     if fmt_used == "zip":
+        if not ctx.tools.zip:
+            raise RuntimeError("zip tool not available")
         out = archive_output_path(ctx, fmt_used)
         # zip wants working dir above target folder
-        subprocess.run(
-            ["zip", "-qr", str(out), ctx.workdir.name],
+        subprocess.run(  # nosec B603
+            [ctx.tools.zip, "-qr", str(out), ctx.workdir.name],
             cwd=str(ctx.workdir.parent),
             check=False,
         )
         return out, fmt_used
 
+    if not ctx.tools.tar:
+        raise RuntimeError("tar tool not available")
     out = archive_output_path(ctx, fmt_used)
-    subprocess.run(
-        ["tar", "-czf", str(out), ctx.workdir.name],
+    subprocess.run(  # nosec B603
+        [ctx.tools.tar, "-czf", str(out), ctx.workdir.name],
         cwd=str(ctx.workdir.parent),
         check=False,
     )

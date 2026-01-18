@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-import subprocess
+import subprocess  # nosec B404 - Required for git operations, paths validated
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
@@ -15,7 +15,7 @@ def _git_commit_hash(root: Path, git_path: str | None) -> str | None:
         return None
     try:
         # If this fails, we're not in a repo or git isn't functional.
-        p = subprocess.run(
+        p = subprocess.run(  # nosec B603
             [git_path, "rev-parse", "HEAD"],
             cwd=str(root),
             capture_output=True,

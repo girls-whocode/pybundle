@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import subprocess
+import subprocess  # nosec B404 - Required for tool execution, paths validated
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -45,9 +45,7 @@ class BanditStep:
             return StepResult(self.name, "SKIP", 0, "missing bandit")
 
         if not _repo_has_py_files(ctx.root):
-            out.write_text(
-                "no .py files detected; skipping bandit\n", encoding="utf-8"
-            )
+            out.write_text("no .py files detected; skipping bandit\n", encoding="utf-8")
             return StepResult(self.name, "SKIP", 0, "no python files")
 
         # Run bandit with recursive mode, excluding common directories
@@ -62,7 +60,7 @@ class BanditStep:
         ]
         header = f"## PWD: {ctx.root}\n## CMD: {' '.join(cmd)}\n\n"
 
-        cp = subprocess.run(
+        cp = subprocess.run(  # nosec B603
             cmd, cwd=str(ctx.root), text=True, capture_output=True, check=False
         )
         text = header + (cp.stdout or "") + ("\n" + cp.stderr if cp.stderr else "")

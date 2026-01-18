@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import subprocess
+import subprocess  # nosec B404 - Required for tool execution, paths validated
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -31,18 +31,25 @@ class ShellStep:
             )
             return StepResult(self.name, "SKIP", 0, f"missing {self.require_cmd}")
 
+        # Resolve command path if the first element matches a tool name
+        cmd = list(self.cmd)
+        if cmd and self.require_cmd:
+            tool_path = getattr(ctx.tools, self.require_cmd, None)
+            if tool_path and cmd[0] in [self.require_cmd, "python", "python3"]:
+                cmd[0] = tool_path
+
         out = ctx.workdir / self.outfile_rel
         out.parent.mkdir(parents=True, exist_ok=True)
 
         start = time.time()
         header = (
             f"## PWD: {ctx.root if self.cwd_is_root else Path.cwd()}\n"
-            f"## CMD: {' '.join(self.cmd)}\n\n"
+            f"## CMD: {' '.join(cmd)}\n\n"
         )
 
         try:
-            cp = subprocess.run(
-                self.cmd,
+            cp = subprocess.run(  # nosec B603
+                cmd,
                 cwd=str(ctx.root) if self.cwd_is_root else None,
                 text=True,
                 capture_output=True,

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import subprocess
+import subprocess  # nosec B404 - Required for tool execution, paths validated
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -17,9 +17,12 @@ def _has_pytest(root: Path) -> bool:
         test_path = root / test_dir
         if test_path.is_dir():
             # Make sure it's not inside a venv
-            if not any(p.name.endswith('venv') or p.name.startswith('.') for p in test_path.parents):
+            if not any(
+                p.name.endswith("venv") or p.name.startswith(".")
+                for p in test_path.parents
+            ):
                 return True
-    
+
     # Look for test files in the project root and immediate subdirectories
     # (not deep recursion to avoid finding venv tests)
     for pattern in ["test_*.py", "*_test.py"]:
@@ -27,10 +30,14 @@ def _has_pytest(root: Path) -> bool:
             return True
         # Check one level deep
         for subdir in root.iterdir():
-            if subdir.is_dir() and not subdir.name.startswith('.') and not subdir.name.endswith('venv'):
+            if (
+                subdir.is_dir()
+                and not subdir.name.startswith(".")
+                and not subdir.name.endswith("venv")
+            ):
                 for p in subdir.glob(pattern):
                     return True
-    
+
     return False
 
 
@@ -55,9 +62,7 @@ class CoverageStep:
 
         # Check if there are tests to run
         if not _has_pytest(ctx.root):
-            out.write_text(
-                "no tests detected; skipping coverage\n", encoding="utf-8"
-            )
+            out.write_text("no tests detected; skipping coverage\n", encoding="utf-8")
             return StepResult(self.name, "SKIP", 0, "no tests")
 
         # Run pytest with coverage
@@ -70,13 +75,13 @@ class CoverageStep:
         ]
         header = f"## PWD: {ctx.root}\n## CMD: {' '.join(cmd)}\n\n"
 
-        cp = subprocess.run(
+        cp = subprocess.run(  # nosec B603
             cmd, cwd=str(ctx.root), text=True, capture_output=True, check=False
         )
-        
+
         # Combine stdout and stderr
         text = header + (cp.stdout or "") + ("\n" + cp.stderr if cp.stderr else "")
-        
+
         # If pytest-cov is not installed, provide helpful message
         if "pytest: error: unrecognized arguments: --cov" in text:
             text = (
@@ -86,7 +91,7 @@ class CoverageStep:
             )
             out.write_text(ctx.redact_text(text), encoding="utf-8")
             return StepResult(self.name, "SKIP", 0, "missing pytest-cov")
-        
+
         out.write_text(ctx.redact_text(text), encoding="utf-8")
 
         dur = int(time.time() - start)

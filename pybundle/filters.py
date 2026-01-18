@@ -150,14 +150,18 @@ DEFAULT_EXCLUDE_FILE_EXTS: set[str] = {
 }
 
 
-def is_excluded_by_name(name: str, *, exclude_names: set[str], exclude_patterns: set[str]) -> bool:
+def is_excluded_by_name(
+    name: str, *, exclude_names: set[str], exclude_patterns: set[str]
+) -> bool:
     if name in exclude_names:
         return True
     return any(fnmatch(name, pat) for pat in exclude_patterns)
 
 
 def is_excluded_name(self, name: str) -> bool:
-    return is_excluded_by_name(name, exclude_names=self.exclude_dirs, exclude_patterns=self.exclude_patterns)
+    return is_excluded_by_name(
+        name, exclude_names=self.exclude_dirs, exclude_patterns=self.exclude_patterns
+    )
 
 
 def is_excluded_path(
@@ -167,6 +171,8 @@ def is_excluded_path(
 ) -> bool:
     # Exclude if *any* part matches (dirs) OR the final filename matches
     for part in rel.parts:
-        if is_excluded_by_name(part, exclude_names=exclude_names, exclude_patterns=exclude_patterns):
+        if is_excluded_by_name(
+            part, exclude_names=exclude_names, exclude_patterns=exclude_patterns
+        ):
             return True
     return False

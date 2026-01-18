@@ -110,15 +110,25 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
     sp.add_argument("--mypy", dest="no_mypy", action="store_false", default=None)
     sp.add_argument("--no-mypy", dest="no_mypy", action="store_true", default=None)
     sp.add_argument("--pylance", dest="no_pylance", action="store_false", default=None)
-    sp.add_argument("--no-pylance", dest="no_pylance", action="store_true", default=None)
+    sp.add_argument(
+        "--no-pylance", dest="no_pylance", action="store_true", default=None
+    )
     sp.add_argument("--pytest", dest="no_pytest", action="store_false", default=None)
     sp.add_argument("--no-pytest", dest="no_pytest", action="store_true", default=None)
     sp.add_argument("--bandit", dest="no_bandit", action="store_false", default=None)
     sp.add_argument("--no-bandit", dest="no_bandit", action="store_true", default=None)
-    sp.add_argument("--pip-audit", dest="no_pip_audit", action="store_false", default=None)
-    sp.add_argument("--no-pip-audit", dest="no_pip_audit", action="store_true", default=None)
-    sp.add_argument("--coverage", dest="no_coverage", action="store_false", default=None)
-    sp.add_argument("--no-coverage", dest="no_coverage", action="store_true", default=None)
+    sp.add_argument(
+        "--pip-audit", dest="no_pip_audit", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-pip-audit", dest="no_pip_audit", action="store_true", default=None
+    )
+    sp.add_argument(
+        "--coverage", dest="no_coverage", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-coverage", dest="no_coverage", action="store_true", default=None
+    )
     sp.add_argument("--rg", dest="no_rg", action="store_false", default=None)
     sp.add_argument("--no-rg", dest="no_rg", action="store_true", default=None)
     sp.add_argument(
@@ -130,6 +140,13 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
     sp.add_argument("--context", dest="no_context", action="store_false", default=None)
     sp.add_argument(
         "--no-context", dest="no_context", action="store_true", default=None
+    )
+
+    # Security options
+    sp.add_argument(
+        "--strict-paths",
+        action="store_true",
+        help="Only use tools from trusted system directories (enhanced security)",
     )
 
     # targets / args
@@ -181,10 +198,16 @@ def _build_options(args) -> RunOptions:
     return RunOptions(
         no_ruff=getattr(args, "no_ruff", None),
         no_mypy=getattr(args, "no_mypy", None),
+        no_pylance=getattr(args, "no_pylance", None),
         no_pytest=getattr(args, "no_pytest", None),
+        no_bandit=getattr(args, "no_bandit", None),
+        no_pip_audit=getattr(args, "no_pip_audit", None),
+        no_coverage=getattr(args, "no_coverage", None),
         no_rg=getattr(args, "no_rg", None),
         no_error_refs=getattr(args, "no_error_refs", None),
         no_context=getattr(args, "no_context", None),
+        no_compileall=getattr(args, "no_compileall", None),
+        strict_paths=getattr(args, "strict_paths", False),
         ruff_target=getattr(args, "ruff_target", "."),
         mypy_target=getattr(args, "mypy_target", "."),
         pytest_args=pytest_args,
