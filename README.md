@@ -1,4 +1,5 @@
-# 🧳 pybundle [![PyPI version](https://img.shields.io/pypi/v/gwc-pybundle.svg?color=2ea44f)](https://pypi.org/project/gwc-pybundle/)
+# 🧳 pybundle ![PyPI - Version](https://img.shields.io/pypi/v/gwc-pybundle)
+
 ![GitHub Release Date](https://img.shields.io/github/release-date/girls-whocode/pybundle?color=orange)
 
 [![Python versions](https://img.shields.io/pypi/pyversions/gwc-pybundle.svg?color=3776AB)](https://pypi.org/project/gwc-pybundle/)
