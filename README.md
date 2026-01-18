@@ -124,7 +124,7 @@ pytest
 pytest-cov
 bandit
 pip-audit
-gwc-pybundle==1.1.0
+gwc-pybundle==1.1.1
 ```
 
 Then install:
@@ -161,7 +161,7 @@ See **Usage** for more details.
 #### From GitHub
 
 ```bash
-pip install "gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.1.0"
+pip install "gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.1.1"
 ```
 
 Pinning to a tag ensures reproducible behavior.
@@ -645,7 +645,7 @@ pybundle follows **Semantic Versioning**.
 Pinned Git tags are recommended when used as a dependency:
 
 ```txt
-gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.1.0
+gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.1.1
 ```
 
 ---
