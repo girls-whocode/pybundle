@@ -396,7 +396,6 @@ Commonly used options:
 * `--outdir PATH` - output directory (default: `<project>/artifacts`)
 * `--name NAME` - override archive name prefix
 * `--strict` - fail with non-zero exit code if any step fails
-* `--no-spinner` - disable spinner output (CI-friendly)
 * `--redact / --no-redact` - control secret redaction
 
 Tool execution can be selectively disabled:
@@ -484,7 +483,7 @@ When enabled, `pybundle` emits **exactly one JSON object to stdout**, with a **s
 * AI orchestration
 * reproducible analysis
 
-No human text, spinners, or formatting are mixed into the output.
+No human text or formatting are mixed into the output.
 
 ### Example
 

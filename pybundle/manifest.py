@@ -63,7 +63,6 @@ def write_manifest(
         "run": {
             "strict": ctx.strict,
             "redact": ctx.redact,
-            "spinner": ctx.spinner,
             "keep_workdir": ctx.keep_workdir,
             "archive_format_requested": ctx.archive_format,
             "name_prefix": ctx.name_prefix,

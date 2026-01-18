@@ -55,9 +55,6 @@ def add_common_args(sp: argparse.ArgumentParser) -> None:
         "--strict", action="store_true", help="Fail non-zero if any step fails"
     )
     sp.add_argument(
-        "--no-spinner", action="store_true", help="Disable spinner output (CI-friendly)"
-    )
-    sp.add_argument(
         "--redact",
         action=argparse.BooleanOptionalAction,
         default=True,
@@ -252,7 +249,6 @@ def main(argv: list[str] | None = None) -> int:
             strict=args.strict,
             redact=args.redact,
             json_mode=args.json,
-            spinner=not args.no_spinner,
             keep_workdir=True,
             options=options,
         )
@@ -274,8 +270,7 @@ def main(argv: list[str] | None = None) -> int:
         name_prefix=args.name,
         strict=args.strict,
         redact=args.redact,
-        json_mode=args.json,  # <-- add this
-        spinner=not args.no_spinner,
+        json_mode=args.json,
         keep_workdir=keep_workdir,
         options=options,
     )

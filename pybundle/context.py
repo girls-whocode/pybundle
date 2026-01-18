@@ -103,7 +103,6 @@ class BundleContext:
     name_prefix: str
     strict: bool
     redact: bool
-    spinner: bool
     keep_workdir: bool
     tools: Tooling
     results: list["StepResult"] = field(default_factory=list)
@@ -131,7 +130,6 @@ class BundleContext:
         name_prefix: str | None,
         strict: bool,
         redact: bool,
-        spinner: bool,
         keep_workdir: bool,
         json_mode: bool = False,
     ) -> "BundleContext":
@@ -172,7 +170,6 @@ class BundleContext:
             name_prefix=prefix,
             strict=strict,
             redact=redact,
-            spinner=spinner,
             keep_workdir=keep_workdir,
             tools=tools,
             json_mode=json_mode,
