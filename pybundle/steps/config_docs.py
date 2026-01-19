@@ -52,7 +52,7 @@ class ConfigVarExtractor(ast.NodeVisitor):
                 if isinstance(node.slice, ast.Constant):
                     var_name = node.slice.value
                     if isinstance(var_name, str):
-                        self.env_vars.append((node.lineno, var_name, None))
+                        self.env_vars.append((node.lineno, var_name, ""))
 
         self.generic_visit(node)
 
@@ -91,7 +91,7 @@ class ConfigDocumentationStep:
         if not python_files:
             elapsed = time.time() - start
             note = "No Python files found"
-            return StepResult(self.name, "SKIP", elapsed, note)
+            return StepResult(self.name, "SKIP", int(elapsed), note)
 
         # Extract environment variables from code
         env_vars = self._extract_env_vars(python_files, context.root)
@@ -102,7 +102,7 @@ class ConfigDocumentationStep:
         # Parse config file patterns
         config_patterns = self._extract_config_patterns(config_files, context.root)
 
-        elapsed = time.time() - start
+        elapsed = int(time.time() - start)
 
         # Write report
         log_path = context.workdir / self.outfile
@@ -138,7 +138,9 @@ class ConfigDocumentationStep:
                             f.write(f"  Defaults: {', '.join(set(defaults))}\n")
 
                     f.write("  Used in:\n")
-                    for filepath, lineno, _ in sorted(locations, key=lambda x: (x[0], x[1])):
+                    for filepath, lineno, _ in sorted(
+                        locations, key=lambda x: (x[0], x[1])
+                    ):
                         f.write(f"    {filepath}:{lineno}\n")
 
                     f.write("\n")
@@ -214,7 +216,7 @@ class ConfigDocumentationStep:
         self, python_files: List[Path], root: Path
     ) -> List[Tuple[str, int, str, str]]:
         """Extract environment variables from Python files.
-        
+
         Returns list of (filepath, lineno, var_name, default).
         """
         env_vars = []
@@ -283,16 +285,16 @@ class ConfigDocumentationStep:
         self, config_files: List[str], root: Path
     ) -> Dict[str, List[Tuple[str, int]]]:
         """Extract configuration patterns from config files.
-        
+
         Returns dict of {pattern: [(filepath, lineno)]}.
         """
         patterns: Dict[str, List[Tuple[str, int]]] = {}
 
         # Simple pattern matching for common config formats
         var_patterns = [
-            (re.compile(r'^([A-Z_][A-Z0-9_]*)\s*='), "Environment variable"),
-            (re.compile(r'^\s*([a-z_][a-z0-9_]*)\s*:'), "YAML/INI key"),
-            (re.compile(r'^\s*\[([^\]]+)\]'), "Section header"),
+            (re.compile(r"^([A-Z_][A-Z0-9_]*)\s*="), "Environment variable"),
+            (re.compile(r"^\s*([a-z_][a-z0-9_]*)\s*:"), "YAML/INI key"),
+            (re.compile(r"^\s*\[([^\]]+)\]"), "Section header"),
         ]
 
         for config_file in config_files:

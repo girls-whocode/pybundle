@@ -1,6 +1,7 @@
 """
 Memory profiling with tracemalloc - Milestone 3 (v1.4.0)
 """
+
 from __future__ import annotations
 
 import subprocess
@@ -16,32 +17,32 @@ from ..context import BundleContext
 class MemoryProfileStep:
     """
     Memory profiling using tracemalloc to identify memory-consuming operations.
-    
+
     Outputs:
     - logs/62_memory_profile.txt: Top memory-consuming functions and allocations
     """
-    
+
     name: str = "memory_profile"
-    
+
     def run(self, ctx: BundleContext) -> StepResult:
         start = time.time()
-        
+
         if ctx.options.no_profile or not ctx.options.profile_memory:
             return StepResult(self.name, "SKIP", 0, "memory profiling not enabled")
-        
+
         # Require pytest for memory profiling
         if not ctx.tools.pytest:
             return StepResult(self.name, "SKIP", 0, "pytest not found")
-        
+
         tests_dir = ctx.root / "tests"
         if not tests_dir.is_dir():
             return StepResult(self.name, "SKIP", 0, "no tests/ directory")
-        
+
         ctx.emit("  Running memory profiling on test suite")
-        
+
         # Create a temporary script to run pytest with tracemalloc
         profile_script = self._create_profile_script(ctx.root)
-        
+
         try:
             # Run the profiling script
             result = subprocess.run(
@@ -49,18 +50,18 @@ class MemoryProfileStep:
                 cwd=ctx.root,
                 capture_output=True,
                 text=True,
-                timeout=300  # 5 minute timeout
+                timeout=300,  # 5 minute timeout
             )
-            
+
             # Write output
             output_file = ctx.workdir / "logs" / "62_memory_profile.txt"
             output_file.parent.mkdir(parents=True, exist_ok=True)
-            
+
             with output_file.open("w") as f:
                 f.write("=" * 70 + "\n")
                 f.write("MEMORY PROFILING (tracemalloc)\n")
                 f.write("=" * 70 + "\n\n")
-                
+
                 if result.returncode == 0:
                     f.write(result.stdout)
                     if result.stderr:
@@ -72,13 +73,15 @@ class MemoryProfileStep:
                     f.write(result.stdout)
                     f.write("\n\nSTDERR:\n")
                     f.write(result.stderr)
-            
+
             elapsed = int((time.time() - start) * 1000)
             if result.returncode == 0:
                 return StepResult(self.name, "OK", elapsed)
             else:
-                return StepResult(self.name, "FAIL", elapsed, f"exit {result.returncode}")
-                
+                return StepResult(
+                    self.name, "FAIL", elapsed, f"exit {result.returncode}"
+                )
+
         except subprocess.TimeoutExpired:
             elapsed = int((time.time() - start) * 1000)
             return StepResult(self.name, "FAIL", elapsed, "timeout")
@@ -89,11 +92,11 @@ class MemoryProfileStep:
             # Clean up temporary script
             if profile_script.exists():
                 profile_script.unlink()
-    
+
     def _create_profile_script(self, root: Path) -> Path:
         """Create a temporary Python script that runs pytest with tracemalloc"""
         script_path = root / ".pybundle_memory_profile.py"
-        
+
         script_content = '''"""Temporary memory profiling script for pybundle"""
 import tracemalloc
 import sys
@@ -166,8 +169,8 @@ print("=" * 70)
 
 sys.exit(exit_code)
 '''
-        
+
         with script_path.open("w") as f:
             f.write(script_content)
-        
+
         return script_path

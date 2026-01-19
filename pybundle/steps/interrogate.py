@@ -40,15 +40,14 @@ class InterrogateStep:
         interrogate = which("interrogate")
         if not interrogate:
             out.write_text(
-                "interrogate not found; skipping (pip install interrogate)\n", 
-                encoding="utf-8"
+                "interrogate not found; skipping (pip install interrogate)\n",
+                encoding="utf-8",
             )
             return StepResult(self.name, "SKIP", 0, "missing interrogate")
 
         if not _repo_has_py_files(ctx.root):
             out.write_text(
-                "no .py files detected; skipping interrogate\n", 
-                encoding="utf-8"
+                "no .py files detected; skipping interrogate\n", encoding="utf-8"
             )
             return StepResult(self.name, "SKIP", 0, "no python files")
 
@@ -57,7 +56,8 @@ class InterrogateStep:
             interrogate,
             str(target_path),
             "-v",  # Verbose output
-            "--fail-under", "0",  # Don't fail the step based on coverage percentage
+            "--fail-under",
+            "0",  # Don't fail the step based on coverage percentage
             "--color",
         ]
 
@@ -72,10 +72,10 @@ class InterrogateStep:
             )
             out.write_text(result.stdout, encoding="utf-8")
             elapsed = int((time.time() - start) * 1000)
-            
+
             # interrogate returns 0 even with missing docstrings when --fail-under=0
             # We consider any execution a success
-            return StepResult(self.name, "OK", elapsed, None)
+            return StepResult(self.name, "OK", elapsed, "")
         except subprocess.TimeoutExpired:
             out.write_text("interrogate timed out after 120s\n", encoding="utf-8")
             return StepResult(self.name, "FAIL", 120000, "timeout")

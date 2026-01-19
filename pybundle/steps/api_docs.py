@@ -28,7 +28,7 @@ class ApiDocsStep:
         if not shutil.which("pdoc"):
             elapsed = time.time() - start
             note = "pdoc not installed (pip install pdoc)"
-            return StepResult(self.name, "SKIP", elapsed, note)
+            return StepResult(self.name, "SKIP", int(elapsed), note)
 
         # Find Python package(s) in project
         packages = self._find_packages(context.root)
@@ -36,7 +36,7 @@ class ApiDocsStep:
         if not packages:
             elapsed = time.time() - start
             note = "No Python packages found"
-            return StepResult(self.name, "SKIP", elapsed, note)
+            return StepResult(self.name, "SKIP", int(elapsed), note)
 
         # Create output directory in meta
         output_dir = context.workdir / "meta/82_api_docs"
@@ -54,7 +54,8 @@ class ApiDocsStep:
                     [
                         "pdoc",
                         "--html",
-                        "--output-dir", str(output_dir),
+                        "--output-dir",
+                        str(output_dir),
                         "--force",  # Overwrite existing
                         str(package),
                     ],
@@ -135,7 +136,7 @@ class ApiDocsStep:
 
     def _find_packages(self, root: Path) -> list[Path]:
         """Find Python packages (directories with __init__.py).
-        
+
         Returns top-level packages only, excluding common directories.
         """
         packages = []

@@ -40,15 +40,13 @@ class DuplicationStep:
         pylint = which("pylint")
         if not pylint:
             out.write_text(
-                "pylint not found; skipping (pip install pylint)\n", 
-                encoding="utf-8"
+                "pylint not found; skipping (pip install pylint)\n", encoding="utf-8"
             )
             return StepResult(self.name, "SKIP", 0, "missing pylint")
 
         if not _repo_has_py_files(ctx.root):
             out.write_text(
-                "no .py files detected; skipping duplication check\n", 
-                encoding="utf-8"
+                "no .py files detected; skipping duplication check\n", encoding="utf-8"
             )
             return StepResult(self.name, "SKIP", 0, "no python files")
 
@@ -56,7 +54,7 @@ class DuplicationStep:
         # This is typically the directory with the same name as the project
         # or explicitly named "src", "lib", etc.
         target_path = ctx.root / self.target
-        
+
         # If target is ".", try to find the actual package directory
         if self.target == ".":
             # Look for a directory with __init__.py at root level
@@ -66,7 +64,7 @@ class DuplicationStep:
                     if init_file.exists():
                         target_path = item
                         break
-        
+
         cmd = [
             pylint,
             str(target_path),
@@ -86,19 +84,16 @@ class DuplicationStep:
             )
             out.write_text(result.stdout, encoding="utf-8")
             elapsed = int((time.time() - start) * 1000)
-            
+
             # pylint returns various exit codes:
             # 0 = no issues
             # 1, 2, 4, 8, 16 = various issue types (we still want the output)
             # We consider all of these as success
             if result.returncode in (0, 1, 2, 4, 8, 16, 24, 32):
-                return StepResult(self.name, "OK", elapsed, None)
+                return StepResult(self.name, "OK", elapsed, "")
             else:
                 return StepResult(
-                    self.name, 
-                    "FAIL", 
-                    elapsed, 
-                    f"exit {result.returncode}"
+                    self.name, "FAIL", elapsed, f"exit {result.returncode}"
                 )
         except subprocess.TimeoutExpired:
             out.write_text("duplication check timed out after 180s\n", encoding="utf-8")

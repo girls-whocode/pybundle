@@ -49,7 +49,7 @@ class RadonStep:
             return StepResult(self.name, "SKIP", 0, "no python files")
 
         target_path = ctx.root / self.target
-        
+
         # Run cyclomatic complexity check
         cmd_cc = [
             radon,
@@ -57,16 +57,16 @@ class RadonStep:
             str(target_path),
             "-s",  # Show complexity score
             "-a",  # Average complexity
-            "-nc", # No color
+            "-nc",  # No color
         ]
-        
+
         # Run maintainability index check
         cmd_mi = [
             radon,
             "mi",
             str(target_path),
             "-s",  # Show maintainability index
-            "-nc", # No color
+            "-nc",  # No color
         ]
 
         try:
@@ -75,7 +75,7 @@ class RadonStep:
                 f.write("=" * 70 + "\n")
                 f.write("CYCLOMATIC COMPLEXITY\n")
                 f.write("=" * 70 + "\n\n")
-                
+
                 result_cc = subprocess.run(  # nosec B603 - Using full path from which()
                     cmd_cc,
                     cwd=ctx.root,
@@ -85,12 +85,12 @@ class RadonStep:
                     timeout=120,
                 )
                 f.write(result_cc.stdout)
-                
+
                 f.write("\n\n")
                 f.write("=" * 70 + "\n")
                 f.write("MAINTAINABILITY INDEX\n")
                 f.write("=" * 70 + "\n\n")
-                
+
                 result_mi = subprocess.run(  # nosec B603 - Using full path from which()
                     cmd_mi,
                     cwd=ctx.root,
@@ -102,16 +102,16 @@ class RadonStep:
                 f.write(result_mi.stdout)
 
             elapsed = int((time.time() - start) * 1000)
-            
+
             # Radon returns 0 on success
             if result_cc.returncode == 0 and result_mi.returncode == 0:
-                return StepResult(self.name, "OK", elapsed, None)
+                return StepResult(self.name, "OK", elapsed, "")
             else:
                 return StepResult(
-                    self.name, 
-                    "FAIL", 
-                    elapsed, 
-                    f"exit cc:{result_cc.returncode} mi:{result_mi.returncode}"
+                    self.name,
+                    "FAIL",
+                    elapsed,
+                    f"exit cc:{result_cc.returncode} mi:{result_mi.returncode}",
                 )
         except subprocess.TimeoutExpired:
             out.write_text("radon timed out after 120s\n", encoding="utf-8")

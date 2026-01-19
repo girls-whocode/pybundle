@@ -30,7 +30,7 @@ class LinkValidationStep:
         if not md_files:
             elapsed = time.time() - start
             note = "No markdown files found"
-            return StepResult(self.name, "SKIP", elapsed, note)
+            return StepResult(self.name, "SKIP", int(elapsed), note)
 
         # Extract all links from markdown files
         all_links = self._extract_links(md_files, context.root)
@@ -38,7 +38,7 @@ class LinkValidationStep:
         if not all_links:
             elapsed = time.time() - start
             note = "No HTTP(S) links found"
-            return StepResult(self.name, "SKIP", elapsed, note)
+            return StepResult(self.name, "SKIP", int(elapsed), note)
 
         # Check links
         results = self._check_links(all_links)
@@ -56,7 +56,11 @@ class LinkValidationStep:
             # Summary
             total_links = len(results)
             broken_links = sum(1 for status, _ in results.values() if status != "OK")
-            success_rate = ((total_links - broken_links) / total_links * 100) if total_links > 0 else 100
+            success_rate = (
+                ((total_links - broken_links) / total_links * 100)
+                if total_links > 0
+                else 100
+            )
 
             f.write("Summary:\n")
             f.write("-" * 80 + "\n")
@@ -130,12 +134,14 @@ class LinkValidationStep:
         self, md_files: List[Path], root: Path
     ) -> Dict[Tuple[str, str], None]:
         """Extract HTTP/HTTPS links from markdown files.
-        
+
         Returns dict with (filepath, url) as keys for deduplication.
         """
-        links = {}
+        links: Dict[Tuple[str, str], None] = {}
         # Regex for markdown links and bare URLs
-        link_pattern = re.compile(r'\[([^\]]+)\]\(([^)]+)\)|(?:^|[^(])(https?://[^\s\)<>]+)', re.MULTILINE)
+        link_pattern = re.compile(
+            r"\[([^\]]+)\]\(([^)]+)\)|(?:^|[^(])(https?://[^\s\)<>]+)", re.MULTILINE
+        )
 
         for filepath in md_files:
             try:
@@ -147,7 +153,9 @@ class LinkValidationStep:
                 for match in link_pattern.finditer(content):
                     # Group 2 is markdown link URL, group 3 is bare URL
                     url = match.group(2) or match.group(3)
-                    if url and (url.startswith("http://") or url.startswith("https://")):
+                    if url and (
+                        url.startswith("http://") or url.startswith("https://")
+                    ):
                         # Clean up URL (remove trailing punctuation)
                         url = url.rstrip(".,;:!?")
                         links[(rel_path, url)] = None
@@ -162,7 +170,7 @@ class LinkValidationStep:
         self, links: Dict[Tuple[str, str], None]
     ) -> Dict[Tuple[str, str], Tuple[str, str]]:
         """Check if links are valid.
-        
+
         Returns dict with (filepath, url) -> (status, message).
         """
         import subprocess
@@ -186,6 +194,7 @@ class LinkValidationStep:
         if not has_curl:
             try:
                 import requests  # noqa: F401
+
                 has_requests = True
             except ImportError:
                 pass
@@ -197,7 +206,7 @@ class LinkValidationStep:
             return results
 
         # Check each link
-        for (filepath, url) in links:
+        for filepath, url in links:
             status, message = self._check_single_link(url, has_curl, has_requests)
             results[(filepath, url)] = (status, message)
 
@@ -207,7 +216,7 @@ class LinkValidationStep:
         self, url: str, has_curl: bool, has_requests: bool
     ) -> Tuple[str, str]:
         """Check a single link.
-        
+
         Returns (status, message) tuple.
         """
         import subprocess
@@ -221,9 +230,12 @@ class LinkValidationStep:
                         "-I",  # HEAD request
                         "-L",  # Follow redirects
                         "-s",  # Silent
-                        "-o", "/dev/null",  # Discard output
-                        "-w", "%{http_code}",  # Write HTTP code
-                        "--max-time", "10",  # 10 second timeout
+                        "-o",
+                        "/dev/null",  # Discard output
+                        "-w",
+                        "%{http_code}",  # Write HTTP code
+                        "--max-time",
+                        "10",  # 10 second timeout
                         url,
                     ],
                     capture_output=True,

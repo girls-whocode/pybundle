@@ -138,56 +138,136 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
     sp.add_argument(
         "--no-context", dest="no_context", action="store_true", default=None
     )
-    
+
     # code quality tools (v1.3.0)
     sp.add_argument("--vulture", dest="no_vulture", action="store_false", default=None)
-    sp.add_argument("--no-vulture", dest="no_vulture", action="store_true", default=None)
+    sp.add_argument(
+        "--no-vulture", dest="no_vulture", action="store_true", default=None
+    )
     sp.add_argument("--radon", dest="no_radon", action="store_false", default=None)
     sp.add_argument("--no-radon", dest="no_radon", action="store_true", default=None)
-    sp.add_argument("--interrogate", dest="no_interrogate", action="store_false", default=None)
-    sp.add_argument("--no-interrogate", dest="no_interrogate", action="store_true", default=None)
-    sp.add_argument("--duplication", dest="no_duplication", action="store_false", default=None)
-    sp.add_argument("--no-duplication", dest="no_duplication", action="store_true", default=None)
-    
+    sp.add_argument(
+        "--interrogate", dest="no_interrogate", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-interrogate", dest="no_interrogate", action="store_true", default=None
+    )
+    sp.add_argument(
+        "--duplication", dest="no_duplication", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-duplication", dest="no_duplication", action="store_true", default=None
+    )
+
     # dependency analysis tools (v1.3.1)
-    sp.add_argument("--pipdeptree", dest="no_pipdeptree", action="store_false", default=None)
-    sp.add_argument("--no-pipdeptree", dest="no_pipdeptree", action="store_true", default=None)
-    sp.add_argument("--unused-deps", dest="no_unused_deps", action="store_false", default=None)
-    sp.add_argument("--no-unused-deps", dest="no_unused_deps", action="store_true", default=None)
-    sp.add_argument("--license-scan", dest="no_license_scan", action="store_false", default=None)
-    sp.add_argument("--no-license-scan", dest="no_license_scan", action="store_true", default=None)
-    sp.add_argument("--dependency-sizes", dest="no_dependency_sizes", action="store_false", default=None)
-    sp.add_argument("--no-dependency-sizes", dest="no_dependency_sizes", action="store_true", default=None)
-    
+    sp.add_argument(
+        "--pipdeptree", dest="no_pipdeptree", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-pipdeptree", dest="no_pipdeptree", action="store_true", default=None
+    )
+    sp.add_argument(
+        "--unused-deps", dest="no_unused_deps", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-unused-deps", dest="no_unused_deps", action="store_true", default=None
+    )
+    sp.add_argument(
+        "--license-scan", dest="no_license_scan", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-license-scan", dest="no_license_scan", action="store_true", default=None
+    )
+    sp.add_argument(
+        "--dependency-sizes",
+        dest="no_dependency_sizes",
+        action="store_false",
+        default=None,
+    )
+    sp.add_argument(
+        "--no-dependency-sizes",
+        dest="no_dependency_sizes",
+        action="store_true",
+        default=None,
+    )
+
     # performance profiling (v1.4.0)
     sp.add_argument("--profile", dest="no_profile", action="store_false", default=None)
-    sp.add_argument("--no-profile", dest="no_profile", action="store_true", default=None)
-    sp.add_argument("--profile-entry-point", type=str, default=None,
-                    help="Entry point for profiling (e.g., main.py or tests/)")
-    sp.add_argument("--profile-memory", action="store_true", default=False,
-                    help="Enable memory profiling with tracemalloc")
-    sp.add_argument("--enable-line-profiler", action="store_true", default=False,
-                    help="Enable line_profiler (requires @profile decorators)")
-    
+    sp.add_argument(
+        "--no-profile", dest="no_profile", action="store_true", default=None
+    )
+    sp.add_argument(
+        "--profile-entry-point",
+        type=str,
+        default=None,
+        help="Entry point for profiling (e.g., main.py or tests/)",
+    )
+    sp.add_argument(
+        "--profile-memory",
+        action="store_true",
+        default=False,
+        help="Enable memory profiling with tracemalloc",
+    )
+    sp.add_argument(
+        "--enable-line-profiler",
+        action="store_true",
+        default=False,
+        help="Enable line_profiler (requires @profile decorators)",
+    )
+
     # test quality & coverage (v1.4.1)
-    sp.add_argument("--test-flakiness-runs", type=int, default=3,
-                    help="Number of times to run tests for flakiness detection (default: 3)")
-    sp.add_argument("--slow-test-threshold", type=float, default=1.0,
-                    help="Threshold in seconds for identifying slow tests (default: 1.0)")
-    sp.add_argument("--mutation", dest="enable_mutation_testing", action="store_true", default=False,
-                    help="Enable mutation testing with mutmut (VERY SLOW!)")
-    sp.add_argument("--no-mutation", dest="enable_mutation_testing", action="store_false", default=False,
-                    help="Disable mutation testing (default)")
-    
+    sp.add_argument(
+        "--test-flakiness-runs",
+        type=int,
+        default=3,
+        help="Number of times to run tests for flakiness detection (default: 3)",
+    )
+    sp.add_argument(
+        "--slow-test-threshold",
+        type=float,
+        default=1.0,
+        help="Threshold in seconds for identifying slow tests (default: 1.0)",
+    )
+    sp.add_argument(
+        "--mutation",
+        dest="enable_mutation_testing",
+        action="store_true",
+        default=False,
+        help="Enable mutation testing with mutmut (VERY SLOW!)",
+    )
+    sp.add_argument(
+        "--no-mutation",
+        dest="enable_mutation_testing",
+        action="store_false",
+        default=False,
+        help="Disable mutation testing (default)",
+    )
+
     # documentation & type quality (v1.5.0)
-    sp.add_argument("--type-coverage", dest="no_type_coverage", action="store_false", default=None)
-    sp.add_argument("--no-type-coverage", dest="no_type_coverage", action="store_true", default=None)
-    sp.add_argument("--link-check", dest="no_link_check", action="store_false", default=None)
-    sp.add_argument("--no-link-check", dest="no_link_check", action="store_true", default=None)
-    sp.add_argument("--api-docs", dest="no_api_docs", action="store_false", default=None)
-    sp.add_argument("--no-api-docs", dest="no_api_docs", action="store_true", default=None)
-    sp.add_argument("--config-docs", dest="no_config_docs", action="store_false", default=None)
-    sp.add_argument("--no-config-docs", dest="no_config_docs", action="store_true", default=None)
+    sp.add_argument(
+        "--type-coverage", dest="no_type_coverage", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-type-coverage", dest="no_type_coverage", action="store_true", default=None
+    )
+    sp.add_argument(
+        "--link-check", dest="no_link_check", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-link-check", dest="no_link_check", action="store_true", default=None
+    )
+    sp.add_argument(
+        "--api-docs", dest="no_api_docs", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-api-docs", dest="no_api_docs", action="store_true", default=None
+    )
+    sp.add_argument(
+        "--config-docs", dest="no_config_docs", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-config-docs", dest="no_config_docs", action="store_true", default=None
+    )
 
     # Security options
     sp.add_argument(

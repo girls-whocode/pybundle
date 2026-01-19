@@ -23,7 +23,7 @@ class LicenseScanStep:
         if not pip_licenses:
             out.write_text(
                 "pip-licenses not found; skipping (pip install pip-licenses)\n",
-                encoding="utf-8"
+                encoding="utf-8",
             )
             return StepResult(self.name, "SKIP", 0, "missing pip-licenses")
 
@@ -44,9 +44,9 @@ class LicenseScanStep:
                 text=True,
                 timeout=60,
             )
-            
+
             output = result.stdout
-            
+
             # Add license compatibility warnings
             warnings = self._check_license_compatibility(output)
             if warnings:
@@ -54,11 +54,11 @@ class LicenseScanStep:
                 output += "LICENSE COMPATIBILITY WARNINGS\n"
                 output += "=" * 70 + "\n\n"
                 output += "\n".join(warnings)
-            
+
             out.write_text(output, encoding="utf-8")
             elapsed = int((time.time() - start) * 1000)
-            
-            return StepResult(self.name, "OK", elapsed, None)
+
+            return StepResult(self.name, "OK", elapsed, "")
         except subprocess.TimeoutExpired:
             out.write_text("pip-licenses timed out after 60s\n", encoding="utf-8")
             return StepResult(self.name, "FAIL", 60000, "timeout")
@@ -69,13 +69,13 @@ class LicenseScanStep:
     def _check_license_compatibility(self, output: str) -> list[str]:
         """Check for common license compatibility issues."""
         warnings = []
-        
+
         # Simple heuristic: look for GPL + permissive license mixing
         has_gpl = any(gpl in output for gpl in ["GPL", "AGPL", "LGPL"])
         has_mit = "MIT" in output
         has_apache = "Apache" in output
         has_bsd = "BSD" in output
-        
+
         if has_gpl and (has_mit or has_apache or has_bsd):
             warnings.append(
                 "⚠️  Potential GPL compatibility issue detected:\n"
@@ -84,7 +84,7 @@ class LicenseScanStep:
                 "   - LGPL is generally compatible with permissive licenses\n"
                 "   - Consult legal counsel for production use"
             )
-        
+
         # Check for proprietary or unknown licenses
         if "UNKNOWN" in output:
             warnings.append(
@@ -92,5 +92,5 @@ class LicenseScanStep:
                 "   - Review manually before distribution\n"
                 "   - May indicate missing license metadata"
             )
-        
+
         return warnings

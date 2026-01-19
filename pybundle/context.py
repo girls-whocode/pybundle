@@ -35,20 +35,20 @@ class Tooling:
     rg: str | None
     tree: str | None
     npm: str | None
-    
+
     # code quality tools (v1.3.0)
     vulture: str | None
     radon: str | None
     interrogate: str | None
     pylint: str | None
-    
+
     # dependency analysis tools (v1.3.1)
     pipdeptree: str | None
     pip_licenses: str | None
-    
+
     # performance profiling tools (v1.4.0)
     line_profiler: str | None
-    
+
     # documentation & type quality tools (v1.5.0)
     pdoc: str | None
     markdown_link_check: str | None
@@ -99,30 +99,30 @@ class RunOptions:
     no_error_refs: bool | None = None
     no_context: bool | None = None
     no_compileall: bool | None = None
-    
+
     # code quality tools (v1.3.0)
     no_vulture: bool | None = None
     no_radon: bool | None = None
     no_interrogate: bool | None = None
     no_duplication: bool | None = None
-    
+
     # dependency analysis tools (v1.3.1)
     no_pipdeptree: bool | None = None
     no_unused_deps: bool | None = None
     no_license_scan: bool | None = None
     no_dependency_sizes: bool | None = None
-    
+
     # performance profiling (v1.4.0)
     no_profile: bool | None = None
     profile_entry_point: str | None = None
     profile_memory: bool = True  # v1.4.2: enabled by default
     enable_line_profiler: bool = False  # requires @profile decorators
-    
+
     # test quality & coverage (v1.4.1)
     test_flakiness_runs: int = 3
     slow_test_threshold: float = 1.0
     enable_mutation_testing: bool = False
-    
+
     # documentation & type quality (v1.5.0)
     no_type_coverage: bool | None = None
     no_link_check: bool | None = None
@@ -259,7 +259,7 @@ class BundleContext:
         with self.runlog.open("a", encoding="utf-8") as f:
             f.write(line.rstrip() + "\n")
 
-    def print_doctor(self, profile: str) -> None:
+    def print_doctor(self, profile: "Profile") -> None:
         from .doctor import plan_for_profile, print_tool_info
 
         print(f"Root: {self.root}")
@@ -303,7 +303,7 @@ class BundleContext:
                 why = f" ({item.reason})" if item.reason else ""
                 print(f"  SKIP {item.name:<28}{out}{why}")
 
-    def doctor_report(self, profile: str) -> dict:
+    def doctor_report(self, profile: "Profile") -> dict:
         from .doctor import plan_for_profile
 
         plan = plan_for_profile(self, profile)

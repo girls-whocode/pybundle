@@ -8,6 +8,7 @@ from dataclasses import asdict
 
 try:
     from colorama import Fore, Style, init as colorama_init
+
     # Force colors in xterm and other terminals
     # strip=False keeps ANSI codes, autoreset=True resets after each print
     colorama_init(autoreset=True, strip=False)
@@ -15,15 +16,10 @@ try:
 except ImportError:
     COLORS_AVAILABLE = False
     # Fallback if colorama not available
-    class Fore:
-        RED: str = ""
-        YELLOW: str = ""
-        GREEN: str = ""
-        CYAN: str = ""
-        RESET: str = ""
-    class Style:
-        BRIGHT: str = ""
-        RESET_ALL: str = ""
+    Fore = type(
+        "Fore", (), {"RED": "", "YELLOW": "", "GREEN": "", "CYAN": "", "RESET": ""}
+    )  # type: ignore
+    Style = type("Style", (), {"BRIGHT": "", "RESET_ALL": ""})  # type: ignore
 
 from .context import BundleContext
 from .packaging import archive_output_path, make_archive, resolve_archive_format
@@ -35,7 +31,7 @@ from .profiles import Profile
 def _format_duration(milliseconds: int) -> str:
     """Format milliseconds into human-readable duration (hr min sec)."""
     seconds = milliseconds / 1000.0
-    
+
     if seconds < 1:
         return f"{milliseconds}ms"
     elif seconds < 60:
@@ -72,19 +68,21 @@ def _emit_step_result(idx: int, total: int, step_name: str, result: StepResult) 
     else:
         color = Fore.CYAN
         symbol = "•"
-    
+
     # Format duration in human-readable format
     duration = _format_duration(result.seconds)
-    
+
     # Build status line with colorful step counter and status-colored step name
     step_counter = f"{Fore.BLACK}{Style.BRIGHT}[{Fore.MAGENTA}{idx}{Fore.WHITE}/{Fore.CYAN}{total}{Fore.BLACK}{Style.BRIGHT}]{Style.RESET_ALL}"
-    status_msg = f"{step_counter} {color}{Style.BRIGHT}{symbol} {step_name}{Style.RESET_ALL}"
-    
+    status_msg = (
+        f"{step_counter} {color}{Style.BRIGHT}{symbol} {step_name}{Style.RESET_ALL}"
+    )
+
     # Add note and duration in terminal default color
     if result.note:
         status_msg += f" - {result.note}"
     status_msg += f" ({duration})"
-    
+
     print(status_msg, file=sys.stderr, flush=True)
 
 
@@ -102,19 +100,23 @@ def run_profile(ctx: BundleContext, profile: Profile) -> int:
     for idx, step in enumerate(profile.steps, 1):
         # Progress indicator with colorful step count: [magenta#white/cyan#] Running: step
         step_counter = f"{Fore.BLACK}{Style.BRIGHT}[{Fore.MAGENTA}{idx}{Fore.WHITE}/{Fore.CYAN}{total_steps}{Fore.BLACK}{Style.BRIGHT}]{Style.RESET_ALL}"
-        print(f"{step_counter} {Fore.WHITE}Running: {step.name}...{Style.RESET_ALL}", file=sys.stderr, flush=True)
+        print(
+            f"{step_counter} {Fore.WHITE}Running: {step.name}...{Style.RESET_ALL}",
+            file=sys.stderr,
+            flush=True,
+        )
         ctx.write_runlog(f"-- START: {step.name}")
-        
+
         r = step.run(ctx)
         results.append(r)
         ctx.results = results
-        
+
         # Colored status output
         _emit_step_result(idx, total_steps, step.name, r)
         ctx.write_runlog(
             f"-- DONE:  {step.name} [{r.status}] ({r.seconds}s) {r.note}".rstrip()
         )
-        
+
         if r.status == "FAIL":
             any_fail = True
             if ctx.strict:

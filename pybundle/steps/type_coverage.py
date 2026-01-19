@@ -6,7 +6,7 @@ identifying functions/methods/classes that lack type hints.
 
 import ast
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Tuple
 
@@ -24,11 +24,9 @@ class TypeCoverageStats:
     typed_classes: int = 0
     total_attributes: int = 0
     typed_attributes: int = 0
-    missing_items: List[Tuple[str, int, str]] = None  # (file, line, name)
-
-    def __post_init__(self) -> None:
-        if self.missing_items is None:
-            self.missing_items = []
+    missing_items: List[Tuple[str, int, str]] = field(
+        default_factory=list
+    )  # (file, line, name)
 
     @property
     def function_coverage(self) -> float:
@@ -94,7 +92,10 @@ class TypeCoverageAnalyzer(ast.NodeVisitor):
             if arg.arg not in ("self", "cls")
         )
 
-        if has_return_type and (has_param_types or len([a for a in node.args.args if a.arg not in ("self", "cls")]) == 0):
+        if has_return_type and (
+            has_param_types
+            or len([a for a in node.args.args if a.arg not in ("self", "cls")]) == 0
+        ):
             self.stats.typed_functions += 1
         else:
             self.stats.missing_items.append(
@@ -111,9 +112,7 @@ class TypeCoverageAnalyzer(ast.NodeVisitor):
         self.stats.total_classes += 1
 
         # Check if class has any type-hinted attributes
-        has_annotations = any(
-            isinstance(stmt, ast.AnnAssign) for stmt in node.body
-        )
+        has_annotations = any(isinstance(stmt, ast.AnnAssign) for stmt in node.body)
 
         # Check __init__ for parameter types
         init_method = None
@@ -172,9 +171,7 @@ class TypeCoverageStep:
         if not python_files:
             elapsed = time.time() - start
             note = "No Python files found"
-            return StepResult(self.name, "SKIP", elapsed, note)
-
-        # Analyze all files
+        return StepResult(self.name, "SKIP", int(elapsed), note)
         overall_stats = TypeCoverageStats()
 
         for filepath in python_files:
@@ -215,12 +212,18 @@ class TypeCoverageStep:
             f.write("Summary:\n")
             f.write("-" * 80 + "\n")
             f.write(f"Overall Coverage:    {overall_stats.overall_coverage:6.2f}%\n")
-            f.write(f"Function Coverage:   {overall_stats.function_coverage:6.2f}% "
-                   f"({overall_stats.typed_functions}/{overall_stats.total_functions})\n")
-            f.write(f"Class Coverage:      {overall_stats.class_coverage:6.2f}% "
-                   f"({overall_stats.typed_classes}/{overall_stats.total_classes})\n")
-            f.write(f"Attribute Coverage:  {overall_stats.attribute_coverage:6.2f}% "
-                   f"({overall_stats.typed_attributes}/{overall_stats.total_attributes})\n")
+            f.write(
+                f"Function Coverage:   {overall_stats.function_coverage:6.2f}% "
+                f"({overall_stats.typed_functions}/{overall_stats.total_functions})\n"
+            )
+            f.write(
+                f"Class Coverage:      {overall_stats.class_coverage:6.2f}% "
+                f"({overall_stats.typed_classes}/{overall_stats.total_classes})\n"
+            )
+            f.write(
+                f"Attribute Coverage:  {overall_stats.attribute_coverage:6.2f}% "
+                f"({overall_stats.typed_attributes}/{overall_stats.total_attributes})\n"
+            )
             f.write("\n")
 
             if overall_stats.missing_items:
@@ -228,7 +231,9 @@ class TypeCoverageStep:
                 f.write("-" * 80 + "\n")
 
                 # Sort by file, then line number
-                sorted_missing = sorted(overall_stats.missing_items, key=lambda x: (x[0], x[1]))
+                sorted_missing = sorted(
+                    overall_stats.missing_items, key=lambda x: (x[0], x[1])
+                )
 
                 current_file = None
                 for filepath, lineno, name in sorted_missing:
@@ -255,7 +260,7 @@ class TypeCoverageStep:
             status = "FAIL"
 
         note = f"{coverage:.1f}% type coverage"
-        return StepResult(self.name, status, elapsed, note)
+        return StepResult(self.name, status, int(elapsed), note)
 
     def _find_python_files(self, root: Path) -> List[Path]:
         """Find all Python source files, excluding common directories."""

@@ -23,14 +23,15 @@ class PipdeptreeStep:
         if not pipdeptree:
             out.write_text(
                 "pipdeptree not found; skipping (pip install pipdeptree)\n",
-                encoding="utf-8"
+                encoding="utf-8",
             )
             return StepResult(self.name, "SKIP", 0, "missing pipdeptree")
 
         # Run pipdeptree with warnings for conflicts
         cmd = [
             pipdeptree,
-            "--warn", "fail",  # Show warnings for conflicting dependencies
+            "--warn",
+            "fail",  # Show warnings for conflicting dependencies
         ]
 
         try:
@@ -42,17 +43,17 @@ class PipdeptreeStep:
                 text=True,
                 timeout=60,
             )
-            
+
             # Combine stdout and stderr to capture both tree and warnings
             output = result.stdout
             if result.stderr:
                 output += "\n\n=== WARNINGS ===\n" + result.stderr
-            
+
             out.write_text(output, encoding="utf-8")
             elapsed = int((time.time() - start) * 1000)
-            
+
             # pipdeptree returns 0 on success, even with warnings
-            return StepResult(self.name, "OK", elapsed, None)
+            return StepResult(self.name, "OK", elapsed, "")
         except subprocess.TimeoutExpired:
             out.write_text("pipdeptree timed out after 60s\n", encoding="utf-8")
             return StepResult(self.name, "FAIL", 60000, "timeout")

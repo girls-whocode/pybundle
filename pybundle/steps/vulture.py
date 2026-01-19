@@ -45,7 +45,9 @@ class VultureStep:
             return StepResult(self.name, "SKIP", 0, "missing vulture")
 
         if not _repo_has_py_files(ctx.root):
-            out.write_text("no .py files detected; skipping vulture\n", encoding="utf-8")
+            out.write_text(
+                "no .py files detected; skipping vulture\n", encoding="utf-8"
+            )
             return StepResult(self.name, "SKIP", 0, "no python files")
 
         target_path = ctx.root / self.target
@@ -54,7 +56,8 @@ class VultureStep:
             str(target_path),
             "--exclude",
             "*venv*,*.venv*,.pybundle-venv,venv,env,.env,__pycache__,artifacts,build,dist,.git,.tox,node_modules",
-            "--min-confidence", "60",  # Configurable confidence threshold
+            "--min-confidence",
+            "60",  # Configurable confidence threshold
             "--sort-by-size",
         ]
 
@@ -69,15 +72,17 @@ class VultureStep:
             )
             out.write_text(result.stdout, encoding="utf-8")
             elapsed = int((time.time() - start) * 1000)
-            
+
             # Vulture exit codes:
             # 0 = no dead code found
             # 1 = usage/configuration error
             # 3 = dead code found (this is success!)
             if result.returncode in (0, 3):
-                return StepResult(self.name, "OK", elapsed, None)
+                return StepResult(self.name, "OK", elapsed, "")
             else:
-                return StepResult(self.name, "FAIL", elapsed, f"exit {result.returncode}")
+                return StepResult(
+                    self.name, "FAIL", elapsed, f"exit {result.returncode}"
+                )
         except subprocess.TimeoutExpired:
             out.write_text("vulture timed out after 120s\n", encoding="utf-8")
             return StepResult(self.name, "FAIL", 120000, "timeout")

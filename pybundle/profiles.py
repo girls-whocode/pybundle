@@ -20,25 +20,30 @@ from .steps.copy_pack import CuratedCopyStep
 from .steps.repro_md import ReproMarkdownStep
 from .steps.handoff_md import HandoffMarkdownStep
 from .steps.roadmap import RoadmapStep
+
 # Code quality tools (v1.3.0)
 from .steps.vulture import VultureStep
 from .steps.radon import RadonStep
 from .steps.interrogate import InterrogateStep
 from .steps.duplication import DuplicationStep
+
 # Dependency analysis tools (v1.3.1)
 from .steps.pipdeptree import PipdeptreeStep
 from .steps.unused_deps import UnusedDependenciesStep
 from .steps.license_scan import LicenseScanStep
 from .steps.dependency_sizes import DependencySizesStep
+
 # Performance profiling tools (v1.4.0)
 from .steps.cprofile_step import CProfileStep
 from .steps.import_time import ImportTimeStep
 from .steps.memory_profile import MemoryProfileStep
 from .steps.line_profiler import LineProfilerStep
+
 # Test quality & coverage tools (v1.4.1)
 from .steps.test_flakiness import TestFlakinessStep
 from .steps.slow_tests import SlowTestsStep
 from .steps.mutation_testing import MutationTestingStep
+
 # Documentation & type quality tools (v1.5.0)
 from .steps.type_coverage import TypeCoverageStep
 from .steps.link_validation import LinkValidationStep
@@ -122,53 +127,52 @@ def _analysis_steps(options: RunOptions) -> list:
             ["python", "-m", "pip", "freeze"],
             require_cmd="python",
         ),
-        
         # Code structure
         TreeStep(max_depth=policy.tree_max_depth, policy=policy),
         LargestFilesStep(limit=policy.largest_limit, policy=policy),
     ]
-    
+
     # Code quality metrics (what the code looks like)
     if not options.no_radon:
         steps += [RadonStep()]
-    
+
     if not options.no_interrogate:
         steps += [InterrogateStep()]
-    
+
     if not options.no_duplication:
         steps += [DuplicationStep()]
-    
+
     # Dependency analysis (what the project uses)
     if not options.no_pipdeptree:
         steps += [PipdeptreeStep()]
-    
+
     if not options.no_license_scan:
         steps += [LicenseScanStep()]
-    
+
     if not options.no_dependency_sizes:
         steps += [DependencySizesStep()]
-    
+
     # Performance profiling (what the code does)
     if not options.no_profile:
         steps += [CProfileStep()]
         steps += [ImportTimeStep()]
-    
+
     if options.profile_memory:
         steps += [MemoryProfileStep()]
-    
+
     if options.enable_line_profiler:
         steps += [LineProfilerStep()]
-    
+
     # Documentation & type quality (what the code documents/types)
     if not options.no_type_coverage:
         steps += [TypeCoverageStep()]
-    
+
     if not options.no_link_check:
         steps += [LinkValidationStep()]
-    
+
     if not options.no_api_docs:
         steps += [ApiDocsStep()]
-    
+
     if not options.no_config_docs:
         steps += [ConfigDocumentationStep()]
 
@@ -221,12 +225,11 @@ def _debug_steps(options: RunOptions) -> list:
             ["python", "-m", "pip", "check"],
             require_cmd="python",
         ),
-        
         # Code structure (for context)
         TreeStep(max_depth=policy.tree_max_depth, policy=policy),
         LargestFilesStep(limit=policy.largest_limit, policy=policy),
     ]
-    
+
     # Compilation errors
     if not options.no_compileall:
         steps.append(CompileAllStep())
@@ -250,11 +253,11 @@ def _debug_steps(options: RunOptions) -> list:
 
     if not options.no_coverage:
         steps += [CoverageStep()]
-    
+
     # Test quality issues
     steps += [TestFlakinessStep()]  # Non-deterministic tests
     steps += [SlowTestsStep()]  # Performance issues in tests
-    
+
     if options.enable_mutation_testing:
         steps += [MutationTestingStep()]  # Test effectiveness
 
@@ -264,18 +267,18 @@ def _debug_steps(options: RunOptions) -> list:
 
     if not options.no_pip_audit:
         steps += [PipAuditStep()]
-    
+
     # Code quality issues (dead code, complexity)
     if not options.no_vulture:
         steps += [VultureStep()]
-    
+
     if not options.no_radon:
         steps += [RadonStep()]
-    
+
     # Dependency issues
     if not options.no_unused_deps:
         steps += [UnusedDependenciesStep()]
-    
+
     if not options.no_pipdeptree:
         steps += [PipdeptreeStep()]  # For conflict detection
 
