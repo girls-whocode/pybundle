@@ -162,7 +162,7 @@ See **Usage** for more details.
 #### From GitHub
 
 ```bash
-pip install "gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.3.0"
+pip install "gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.3.1"
 ```
 
 Pinning to a tag ensures reproducible behavior.
@@ -324,13 +324,19 @@ The `analysis` and `debug` profiles run comprehensive quality and security check
 * **bandit** - Security vulnerability scanning for Python code
 * **pip-audit** - Dependency vulnerability checking against known CVEs
 
+#### Dependency Analysis (v1.3.1+)
+* **pipdeptree** - Full dependency tree with conflict detection
+* **unused dependencies** - Identify installed but unused packages
+* **pip-licenses** - License scanning and compatibility warnings
+* **dependency sizes** - Disk usage analysis per package
+
 #### Pattern Scanning
 * **ripgrep scans** - TODO detection, print statements, bare excepts
 
 All tools gracefully skip if not installed. Install recommended tools:
 
 ```bash
-pip install ruff mypy pytest pytest-cov bandit pip-audit vulture radon interrogate pylint
+pip install ruff mypy pytest pytest-cov bandit pip-audit vulture radon interrogate pylint pipdeptree pip-licenses
 ```
 
 For ripgrep (system dependency):
@@ -628,6 +634,7 @@ Use `--redact / --no-redact` to control behavior.
 - Eliminates partial path execution vulnerabilities (B607)
 - **Optional strict-paths mode** for enhanced security (v1.2.0+)
 - **Code quality tools** for dead code, complexity, docstrings, and duplication (v1.3.0+)
+- **Dependency intelligence** for conflict detection, license scanning, and size analysis (v1.3.1+)
 
 **Subprocess Execution:**
 - All subprocess calls use `shell=False` (default, secure)
@@ -759,7 +766,7 @@ pybundle follows **Semantic Versioning**.
 Pinned Git tags are recommended when used as a dependency:
 
 ```txt
-gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.3.0
+gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.3.1
 ```
 
 ---

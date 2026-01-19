@@ -449,6 +449,42 @@ pybundle run analysis --no-pip-audit
 
 ---
 
+### Dependency Analysis (v1.3.1+)
+
+**`--pipdeptree` / `--no-pipdeptree`**
+
+Enable/disable dependency tree visualization with conflict detection.
+
+```bash
+pybundle run analysis --no-pipdeptree
+```
+
+**`--unused-deps` / `--no-unused-deps`**
+
+Enable/disable unused dependency detection.
+
+```bash
+pybundle run analysis --no-unused-deps
+```
+
+**`--license-scan` / `--no-license-scan`**
+
+Enable/disable license scanning and compatibility warnings.
+
+```bash
+pybundle run analysis --no-license-scan
+```
+
+**`--dependency-sizes` / `--no-dependency-sizes`**
+
+Enable/disable dependency size analysis.
+
+```bash
+pybundle run analysis --no-dependency-sizes
+```
+
+---
+
 ### Pattern Scanning
 
 **`--rg` / `--no-rg`**

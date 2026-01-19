@@ -123,6 +123,9 @@ def print_tool_info(ctx: Any) -> None:
         ("radon", ctx.tools.radon),
         ("interrogate", ctx.tools.interrogate),
         ("pylint", ctx.tools.pylint),
+        # Dependency analysis tools (v1.3.1)
+        ("pipdeptree", ctx.tools.pipdeptree),
+        ("pip-licenses", ctx.tools.pip_licenses),
     ]
 
     print("\n🔧 Tool Detection:")

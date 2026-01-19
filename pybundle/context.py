@@ -41,6 +41,10 @@ class Tooling:
     radon: str | None
     interrogate: str | None
     pylint: str | None
+    
+    # dependency analysis tools (v1.3.1)
+    pipdeptree: str | None
+    pip_licenses: str | None
 
     @staticmethod
     def detect(strict_paths: bool = False) -> "Tooling":
@@ -67,6 +71,8 @@ class Tooling:
             radon=which("radon", strict=strict_paths),
             interrogate=which("interrogate", strict=strict_paths),
             pylint=which("pylint", strict=strict_paths),
+            pipdeptree=which("pipdeptree", strict=strict_paths),
+            pip_licenses=which("pip-licenses", strict=strict_paths),
         )
 
 
@@ -89,6 +95,12 @@ class RunOptions:
     no_radon: bool | None = None
     no_interrogate: bool | None = None
     no_duplication: bool | None = None
+    
+    # dependency analysis tools (v1.3.1)
+    no_pipdeptree: bool | None = None
+    no_unused_deps: bool | None = None
+    no_license_scan: bool | None = None
+    no_dependency_sizes: bool | None = None
 
     strict_paths: bool = False  # Enforce trusted path validation
 
@@ -299,6 +311,10 @@ class BundleContext:
                 "no_radon": o.no_radon,
                 "no_interrogate": o.no_interrogate,
                 "no_duplication": o.no_duplication,
+                "no_pipdeptree": o.no_pipdeptree,
+                "no_unused_deps": o.no_unused_deps,
+                "no_license_scan": o.no_license_scan,
+                "no_dependency_sizes": o.no_dependency_sizes,
                 "error_max_files": o.error_max_files,
                 "context_depth": o.context_depth,
                 "context_max_files": o.context_max_files,

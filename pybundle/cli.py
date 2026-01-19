@@ -148,6 +148,16 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
     sp.add_argument("--no-interrogate", dest="no_interrogate", action="store_true", default=None)
     sp.add_argument("--duplication", dest="no_duplication", action="store_false", default=None)
     sp.add_argument("--no-duplication", dest="no_duplication", action="store_true", default=None)
+    
+    # dependency analysis tools (v1.3.1)
+    sp.add_argument("--pipdeptree", dest="no_pipdeptree", action="store_false", default=None)
+    sp.add_argument("--no-pipdeptree", dest="no_pipdeptree", action="store_true", default=None)
+    sp.add_argument("--unused-deps", dest="no_unused_deps", action="store_false", default=None)
+    sp.add_argument("--no-unused-deps", dest="no_unused_deps", action="store_true", default=None)
+    sp.add_argument("--license-scan", dest="no_license_scan", action="store_false", default=None)
+    sp.add_argument("--no-license-scan", dest="no_license_scan", action="store_true", default=None)
+    sp.add_argument("--dependency-sizes", dest="no_dependency_sizes", action="store_false", default=None)
+    sp.add_argument("--no-dependency-sizes", dest="no_dependency_sizes", action="store_true", default=None)
 
     # Security options
     sp.add_argument(
@@ -218,6 +228,10 @@ def _build_options(args) -> RunOptions:
         no_radon=getattr(args, "no_radon", None),
         no_interrogate=getattr(args, "no_interrogate", None),
         no_duplication=getattr(args, "no_duplication", None),
+        no_pipdeptree=getattr(args, "no_pipdeptree", None),
+        no_unused_deps=getattr(args, "no_unused_deps", None),
+        no_license_scan=getattr(args, "no_license_scan", None),
+        no_dependency_sizes=getattr(args, "no_dependency_sizes", None),
         strict_paths=getattr(args, "strict_paths", False),
         ruff_target=getattr(args, "ruff_target", "."),
         mypy_target=getattr(args, "mypy_target", "."),

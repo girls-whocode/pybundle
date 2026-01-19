@@ -25,6 +25,11 @@ from .steps.vulture import VultureStep
 from .steps.radon import RadonStep
 from .steps.interrogate import InterrogateStep
 from .steps.duplication import DuplicationStep
+# Dependency analysis tools (v1.3.1)
+from .steps.pipdeptree import PipdeptreeStep
+from .steps.unused_deps import UnusedDependenciesStep
+from .steps.license_scan import LicenseScanStep
+from .steps.dependency_sizes import DependencySizesStep
 from .policy import AIContextPolicy
 from .steps.handoff_md import HandoffMarkdownStep
 from .steps.roadmap import RoadmapStep
@@ -129,6 +134,19 @@ def _analysis_steps(options: RunOptions) -> list:
     
     if not options.no_duplication:
         steps += [DuplicationStep()]
+    
+    # Dependency analysis (v1.3.1)
+    if not options.no_pipdeptree:
+        steps += [PipdeptreeStep()]
+    
+    if not options.no_unused_deps:
+        steps += [UnusedDependenciesStep()]
+    
+    if not options.no_license_scan:
+        steps += [LicenseScanStep()]
+    
+    if not options.no_dependency_sizes:
+        steps += [DependencySizesStep()]
 
     # Landmine scans
     if not options.no_rg:
