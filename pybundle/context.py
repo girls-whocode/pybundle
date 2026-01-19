@@ -48,6 +48,10 @@ class Tooling:
     
     # performance profiling tools (v1.4.0)
     line_profiler: str | None
+    
+    # documentation & type quality tools (v1.5.0)
+    pdoc: str | None
+    markdown_link_check: str | None
 
     @staticmethod
     def detect(strict_paths: bool = False) -> "Tooling":
@@ -77,6 +81,8 @@ class Tooling:
             pipdeptree=which("pipdeptree", strict=strict_paths),
             pip_licenses=which("pip-licenses", strict=strict_paths),
             line_profiler=which("kernprof", strict=strict_paths),
+            pdoc=which("pdoc", strict=strict_paths),
+            markdown_link_check=which("markdown-link-check", strict=strict_paths),
         )
 
 
@@ -116,6 +122,12 @@ class RunOptions:
     test_flakiness_runs: int = 3
     slow_test_threshold: float = 1.0
     enable_mutation_testing: bool = False
+    
+    # documentation & type quality (v1.5.0)
+    no_type_coverage: bool | None = None
+    no_link_check: bool | None = None
+    no_api_docs: bool | None = None
+    no_config_docs: bool | None = None
 
     strict_paths: bool = False  # Enforce trusted path validation
 

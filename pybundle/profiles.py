@@ -39,6 +39,11 @@ from .steps.line_profiler import LineProfilerStep
 from .steps.test_flakiness import TestFlakinessStep
 from .steps.slow_tests import SlowTestsStep
 from .steps.mutation_testing import MutationTestingStep
+# Documentation & type quality tools (v1.5.0)
+from .steps.type_coverage import TypeCoverageStep
+from .steps.link_validation import LinkValidationStep
+from .steps.api_docs import ApiDocsStep
+from .steps.config_docs import ConfigDocumentationStep
 from .policy import AIContextPolicy
 from .steps.handoff_md import HandoffMarkdownStep
 from .steps.roadmap import RoadmapStep
@@ -156,6 +161,19 @@ def _analysis_steps(options: RunOptions) -> list:
     
     if options.enable_line_profiler:
         steps += [LineProfilerStep()]
+    
+    # Documentation & type quality (what the code documents/types)
+    if not options.no_type_coverage:
+        steps += [TypeCoverageStep()]
+    
+    if not options.no_link_check:
+        steps += [LinkValidationStep()]
+    
+    if not options.no_api_docs:
+        steps += [ApiDocsStep()]
+    
+    if not options.no_config_docs:
+        steps += [ConfigDocumentationStep()]
 
     # Source snapshot and documentation
     steps += [

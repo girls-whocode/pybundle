@@ -178,6 +178,16 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
                     help="Enable mutation testing with mutmut (VERY SLOW!)")
     sp.add_argument("--no-mutation", dest="enable_mutation_testing", action="store_false", default=False,
                     help="Disable mutation testing (default)")
+    
+    # documentation & type quality (v1.5.0)
+    sp.add_argument("--type-coverage", dest="no_type_coverage", action="store_false", default=None)
+    sp.add_argument("--no-type-coverage", dest="no_type_coverage", action="store_true", default=None)
+    sp.add_argument("--link-check", dest="no_link_check", action="store_false", default=None)
+    sp.add_argument("--no-link-check", dest="no_link_check", action="store_true", default=None)
+    sp.add_argument("--api-docs", dest="no_api_docs", action="store_false", default=None)
+    sp.add_argument("--no-api-docs", dest="no_api_docs", action="store_true", default=None)
+    sp.add_argument("--config-docs", dest="no_config_docs", action="store_false", default=None)
+    sp.add_argument("--no-config-docs", dest="no_config_docs", action="store_true", default=None)
 
     # Security options
     sp.add_argument(
@@ -259,6 +269,10 @@ def _build_options(args) -> RunOptions:
         test_flakiness_runs=getattr(args, "test_flakiness_runs", 3),
         slow_test_threshold=getattr(args, "slow_test_threshold", 1.0),
         enable_mutation_testing=getattr(args, "enable_mutation_testing", False),
+        no_type_coverage=getattr(args, "no_type_coverage", None),
+        no_link_check=getattr(args, "no_link_check", None),
+        no_api_docs=getattr(args, "no_api_docs", None),
+        no_config_docs=getattr(args, "no_config_docs", None),
         strict_paths=getattr(args, "strict_paths", False),
         ruff_target=getattr(args, "ruff_target", "."),
         mypy_target=getattr(args, "mypy_target", "."),
