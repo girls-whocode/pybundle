@@ -9,5 +9,6 @@ Pygments==2.19.2
 pytest==9.0.2
 ruff==0.14.10
 typing_extensions==4.15.0
+colorama==0.4.6
 build
 twine
