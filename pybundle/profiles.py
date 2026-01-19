@@ -20,6 +20,14 @@ from .steps.copy_pack import CuratedCopyStep
 from .steps.repro_md import ReproMarkdownStep
 from .steps.handoff_md import HandoffMarkdownStep
 from .steps.roadmap import RoadmapStep
+# Code quality tools (v1.3.0)
+from .steps.vulture import VultureStep
+from .steps.radon import RadonStep
+from .steps.interrogate import InterrogateStep
+from .steps.duplication import DuplicationStep
+from .policy import AIContextPolicy
+from .steps.handoff_md import HandoffMarkdownStep
+from .steps.roadmap import RoadmapStep
 from .policy import AIContextPolicy
 
 
@@ -108,6 +116,19 @@ def _analysis_steps(options: RunOptions) -> list:
 
     if not options.no_coverage:
         steps += [CoverageStep()]
+    
+    # Code quality analysis (v1.3.0)
+    if not options.no_vulture:
+        steps += [VultureStep()]
+    
+    if not options.no_radon:
+        steps += [RadonStep()]
+    
+    if not options.no_interrogate:
+        steps += [InterrogateStep()]
+    
+    if not options.no_duplication:
+        steps += [DuplicationStep()]
 
     # Landmine scans
     if not options.no_rg:

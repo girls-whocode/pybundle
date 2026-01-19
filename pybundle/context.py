@@ -35,6 +35,12 @@ class Tooling:
     rg: str | None
     tree: str | None
     npm: str | None
+    
+    # code quality tools (v1.3.0)
+    vulture: str | None
+    radon: str | None
+    interrogate: str | None
+    pylint: str | None
 
     @staticmethod
     def detect(strict_paths: bool = False) -> "Tooling":
@@ -57,6 +63,10 @@ class Tooling:
             rg=which("rg", strict=strict_paths),
             tree=which("tree", strict=strict_paths),
             npm=which("npm", strict=strict_paths),
+            vulture=which("vulture", strict=strict_paths),
+            radon=which("radon", strict=strict_paths),
+            interrogate=which("interrogate", strict=strict_paths),
+            pylint=which("pylint", strict=strict_paths),
         )
 
 
@@ -73,6 +83,12 @@ class RunOptions:
     no_error_refs: bool | None = None
     no_context: bool | None = None
     no_compileall: bool | None = None
+    
+    # code quality tools (v1.3.0)
+    no_vulture: bool | None = None
+    no_radon: bool | None = None
+    no_interrogate: bool | None = None
+    no_duplication: bool | None = None
 
     strict_paths: bool = False  # Enforce trusted path validation
 
@@ -279,6 +295,10 @@ class BundleContext:
                 "no_rg": o.no_rg,
                 "no_error_refs": o.no_error_refs,
                 "no_context": o.no_context,
+                "no_vulture": o.no_vulture,
+                "no_radon": o.no_radon,
+                "no_interrogate": o.no_interrogate,
+                "no_duplication": o.no_duplication,
                 "error_max_files": o.error_max_files,
                 "context_depth": o.context_depth,
                 "context_max_files": o.context_max_files,

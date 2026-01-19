@@ -375,6 +375,38 @@ Enable/disable Pylance syntax/import analysis.
 pybundle run analysis --no-pylance
 ```
 
+**`--vulture` / `--no-vulture` (v1.3.0+)**
+
+Enable/disable dead code detection.
+
+```bash
+pybundle run analysis --no-vulture
+```
+
+**`--radon` / `--no-radon` (v1.3.0+)**
+
+Enable/disable complexity and maintainability metrics.
+
+```bash
+pybundle run analysis --no-radon
+```
+
+**`--interrogate` / `--no-interrogate` (v1.3.0+)**
+
+Enable/disable docstring coverage analysis.
+
+```bash
+pybundle run analysis --no-interrogate
+```
+
+**`--duplication` / `--no-duplication` (v1.3.0+)**
+
+Enable/disable code duplication detection.
+
+```bash
+pybundle run analysis --no-duplication
+```
+
 ---
 
 ### Testing & Coverage
@@ -459,7 +491,7 @@ pybundle run ai --compileall
 
 ## Security Options
 
-### `--strict-paths` (v1.2.1+)
+### `--strict-paths` (v1.2.0+)
 
 **Enforce trusted path validation for all tools.**
 

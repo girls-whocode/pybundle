@@ -162,7 +162,7 @@ See **Usage** for more details.
 #### From GitHub
 
 ```bash
-pip install "gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.2.1"
+pip install "gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.3.0"
 ```
 
 Pinning to a tag ensures reproducible behavior.
@@ -311,6 +311,10 @@ The `analysis` and `debug` profiles run comprehensive quality and security check
 * **ruff** - Fast Python linter and formatter checks
 * **mypy** - Static type checking for type hints
 * **pylance** - Syntax error detection and import analysis
+* **vulture** - Dead code detection (v1.3.0+)
+* **radon** - Cyclomatic complexity and maintainability metrics (v1.3.0+)
+* **interrogate** - Docstring coverage analysis (v1.3.0+)
+* **pylint duplication** - Code duplication detection (v1.3.0+)
 
 #### Testing & Coverage
 * **pytest** - Test execution and results
@@ -326,7 +330,7 @@ The `analysis` and `debug` profiles run comprehensive quality and security check
 All tools gracefully skip if not installed. Install recommended tools:
 
 ```bash
-pip install ruff mypy pytest pytest-cov bandit pip-audit
+pip install ruff mypy pytest pytest-cov bandit pip-audit vulture radon interrogate pylint
 ```
 
 For ripgrep (system dependency):
@@ -622,7 +626,8 @@ Use `--redact / --no-redact` to control behavior.
 - Tools are resolved at detection time and stored in `Tooling` dataclass
 - No dynamic PATH manipulation or shell interpretation
 - Eliminates partial path execution vulnerabilities (B607)
-- **Optional strict-paths mode** for enhanced security (v1.2.1+)
+- **Optional strict-paths mode** for enhanced security (v1.2.0+)
+- **Code quality tools** for dead code, complexity, docstrings, and duplication (v1.3.0+)
 
 **Subprocess Execution:**
 - All subprocess calls use `shell=False` (default, secure)
@@ -635,7 +640,7 @@ Use `--redact / --no-redact` to control behavior.
 - Environment variables and paths logged for reproducibility
 - All file operations respect `.gitignore` rules
 
-### Strict-Paths Mode (v1.2.1+)
+### Strict-Paths Mode (v1.2.0+)
 
 For high-security environments, enable `--strict-paths` to enforce that all tools must be in trusted system directories:
 
@@ -754,7 +759,7 @@ pybundle follows **Semantic Versioning**.
 Pinned Git tags are recommended when used as a dependency:
 
 ```txt
-gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.2.1
+gwc-pybundle @ git+https://github.com/girls-whocode/pybundle.git@v1.3.0
 ```
 
 ---

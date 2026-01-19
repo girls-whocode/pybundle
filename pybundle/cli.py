@@ -138,6 +138,16 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
     sp.add_argument(
         "--no-context", dest="no_context", action="store_true", default=None
     )
+    
+    # code quality tools (v1.3.0)
+    sp.add_argument("--vulture", dest="no_vulture", action="store_false", default=None)
+    sp.add_argument("--no-vulture", dest="no_vulture", action="store_true", default=None)
+    sp.add_argument("--radon", dest="no_radon", action="store_false", default=None)
+    sp.add_argument("--no-radon", dest="no_radon", action="store_true", default=None)
+    sp.add_argument("--interrogate", dest="no_interrogate", action="store_false", default=None)
+    sp.add_argument("--no-interrogate", dest="no_interrogate", action="store_true", default=None)
+    sp.add_argument("--duplication", dest="no_duplication", action="store_false", default=None)
+    sp.add_argument("--no-duplication", dest="no_duplication", action="store_true", default=None)
 
     # Security options
     sp.add_argument(
@@ -204,6 +214,10 @@ def _build_options(args) -> RunOptions:
         no_error_refs=getattr(args, "no_error_refs", None),
         no_context=getattr(args, "no_context", None),
         no_compileall=getattr(args, "no_compileall", None),
+        no_vulture=getattr(args, "no_vulture", None),
+        no_radon=getattr(args, "no_radon", None),
+        no_interrogate=getattr(args, "no_interrogate", None),
+        no_duplication=getattr(args, "no_duplication", None),
         strict_paths=getattr(args, "strict_paths", False),
         ruff_target=getattr(args, "ruff_target", "."),
         mypy_target=getattr(args, "mypy_target", "."),

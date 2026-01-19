@@ -118,6 +118,11 @@ def print_tool_info(ctx: Any) -> None:
         ("rg", ctx.tools.rg),
         ("tree", ctx.tools.tree),
         ("npm", ctx.tools.npm),
+        # Code quality tools (v1.3.0)
+        ("vulture", ctx.tools.vulture),
+        ("radon", ctx.tools.radon),
+        ("interrogate", ctx.tools.interrogate),
+        ("pylint", ctx.tools.pylint),
     ]
 
     print("\n🔧 Tool Detection:")
