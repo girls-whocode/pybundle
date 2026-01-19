@@ -52,7 +52,8 @@ class VultureStep:
         cmd = [
             vulture,
             str(target_path),
-            "--exclude", "*venv*,*.venv*,.pybundle-venv,venv,env,.env,__pycache__",
+            "--exclude",
+            "*venv*,*.venv*,.pybundle-venv,venv,env,.env,__pycache__,artifacts,build,dist,.git,.tox,node_modules",
             "--min-confidence", "60",  # Configurable confidence threshold
             "--sort-by-size",
         ]
@@ -69,9 +70,11 @@ class VultureStep:
             out.write_text(result.stdout, encoding="utf-8")
             elapsed = int((time.time() - start) * 1000)
             
-            # Vulture returns 0 if no dead code found, 1 if dead code found
-            # Both are "success" for our purposes
-            if result.returncode in (0, 1):
+            # Vulture exit codes:
+            # 0 = no dead code found
+            # 1 = usage/configuration error
+            # 3 = dead code found (this is success!)
+            if result.returncode in (0, 3):
                 return StepResult(self.name, "OK", elapsed, None)
             else:
                 return StepResult(self.name, "FAIL", elapsed, f"exit {result.returncode}")
