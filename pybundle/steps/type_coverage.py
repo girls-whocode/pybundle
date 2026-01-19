@@ -26,7 +26,7 @@ class TypeCoverageStats:
     typed_attributes: int = 0
     missing_items: List[Tuple[str, int, str]] = None  # (file, line, name)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.missing_items is None:
             self.missing_items = []
 
@@ -64,16 +64,16 @@ class TypeCoverageStats:
 class TypeCoverageAnalyzer(ast.NodeVisitor):
     """AST visitor for analyzing type coverage."""
 
-    def __init__(self, filepath: str):
+    def __init__(self, filepath: str) -> None:
         self.filepath = filepath
         self.stats = TypeCoverageStats()
 
-    def visit_FunctionDef(self, node: ast.FunctionDef):
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         """Visit function definition."""
         self._analyze_function(node)
         self.generic_visit(node)
 
-    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef):
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
         """Visit async function definition."""
         self._analyze_function(node)
         self.generic_visit(node)
@@ -101,7 +101,7 @@ class TypeCoverageAnalyzer(ast.NodeVisitor):
                 (self.filepath, node.lineno, f"function '{node.name}'")
             )
 
-    def visit_ClassDef(self, node: ast.ClassDef):
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
         """Visit class definition."""
         # Skip private classes
         if node.name.startswith("_"):
@@ -145,7 +145,7 @@ class TypeCoverageAnalyzer(ast.NodeVisitor):
 
         self.generic_visit(node)
 
-    def visit_AnnAssign(self, node: ast.AnnAssign):
+    def visit_AnnAssign(self, node: ast.AnnAssign) -> None:
         """Visit annotated assignment (class/module level)."""
         # Count as typed attribute
         self.stats.total_attributes += 1

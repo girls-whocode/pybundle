@@ -36,7 +36,7 @@ def _tool_table(tools_obj: Any) -> list[str]:
 
 
 class HandoffMarkdownStep(Step):
-    name = "generate HANDOFF.md"
+    name: str = "generate HANDOFF.md"
 
     def run(self, ctx: Any) -> StepResult:
         start = time.time()

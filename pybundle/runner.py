@@ -16,19 +16,20 @@ except ImportError:
     COLORS_AVAILABLE = False
     # Fallback if colorama not available
     class Fore:
-        RED = ""
-        YELLOW = ""
-        GREEN = ""
-        CYAN = ""
-        RESET = ""
+        RED: str = ""
+        YELLOW: str = ""
+        GREEN: str = ""
+        CYAN: str = ""
+        RESET: str = ""
     class Style:
-        BRIGHT = ""
-        RESET_ALL = ""
+        BRIGHT: str = ""
+        RESET_ALL: str = ""
 
 from .context import BundleContext
 from .packaging import archive_output_path, make_archive, resolve_archive_format
 from .manifest import write_manifest
 from .steps.base import StepResult
+from .profiles import Profile
 
 
 def _format_duration(milliseconds: int) -> str:
@@ -87,7 +88,7 @@ def _emit_step_result(idx: int, total: int, step_name: str, result: StepResult) 
     print(status_msg, file=sys.stderr, flush=True)
 
 
-def run_profile(ctx: BundleContext, profile) -> int:
+def run_profile(ctx: BundleContext, profile: Profile) -> int:
     t0 = time.time()
     ctx.write_runlog(f"=== pybundle run {profile.name} ===")
     ctx.write_runlog(f"ROOT: {ctx.root}")

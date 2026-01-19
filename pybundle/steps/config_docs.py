@@ -18,11 +18,11 @@ from ..context import BundleContext
 class ConfigVarExtractor(ast.NodeVisitor):
     """AST visitor for extracting environment variable accesses."""
 
-    def __init__(self, filepath: str):
+    def __init__(self, filepath: str) -> None:
         self.filepath = filepath
         self.env_vars: List[Tuple[int, str, str]] = []  # (line, var_name, default)
 
-    def visit_Call(self, node: ast.Call):
+    def visit_Call(self, node: ast.Call) -> None:
         """Visit function calls looking for os.getenv, os.environ.get, etc."""
         # Check for os.getenv(var, default) or os.environ.get(var, default)
         if isinstance(node.func, ast.Attribute):
@@ -41,7 +41,7 @@ class ConfigVarExtractor(ast.NodeVisitor):
 
         self.generic_visit(node)
 
-    def visit_Subscript(self, node: ast.Subscript):
+    def visit_Subscript(self, node: ast.Subscript) -> None:
         """Visit subscript operations like os.environ['VAR']."""
         if isinstance(node.value, ast.Attribute):
             if (

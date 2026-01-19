@@ -259,7 +259,7 @@ class BundleContext:
         with self.runlog.open("a", encoding="utf-8") as f:
             f.write(line.rstrip() + "\n")
 
-    def print_doctor(self, profile) -> None:
+    def print_doctor(self, profile: str) -> None:
         from .doctor import plan_for_profile, print_tool_info
 
         print(f"Root: {self.root}")
@@ -303,7 +303,7 @@ class BundleContext:
                 why = f" ({item.reason})" if item.reason else ""
                 print(f"  SKIP {item.name:<28}{out}{why}")
 
-    def doctor_report(self, profile) -> dict:
+    def doctor_report(self, profile: str) -> dict:
         from .doctor import plan_for_profile
 
         plan = plan_for_profile(self, profile)
