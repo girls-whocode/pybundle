@@ -269,6 +269,20 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
         "--no-config-docs", dest="no_config_docs", action="store_true", default=None
     )
 
+    # Git analytics options (v1.5.1)
+    sp.add_argument(
+        "--git-analytics", dest="no_git_analytics", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-git-analytics", dest="no_git_analytics", action="store_true", default=None
+    )
+    sp.add_argument(
+        "--git-blame-depth",
+        type=int,
+        default=100,
+        help="Number of commits to analyze in git blame (default: 100)",
+    )
+
     # Security options
     sp.add_argument(
         "--strict-paths",

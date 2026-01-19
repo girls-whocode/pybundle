@@ -102,7 +102,7 @@ class LinkValidationStep:
             status = "FAIL"
             note = f"{broken_links}/{total_links} broken links"
 
-        return StepResult(self.name, status, elapsed, note)
+        return StepResult(self.name, status, int(elapsed), note)
 
     def _find_markdown_files(self, root: Path) -> List[Path]:
         """Find all markdown files."""
@@ -193,7 +193,7 @@ class LinkValidationStep:
         has_requests = False
         if not has_curl:
             try:
-                import requests  # noqa: F401
+                import requests  # type: ignore[import-untyped]
 
                 has_requests = True
             except ImportError:

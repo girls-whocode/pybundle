@@ -42,18 +42,18 @@ class UnusedDependenciesStep:
                 return StepResult(self.name, "FAIL", 0, "pip freeze failed")
 
             # Parse installed packages (normalize names)
-            installed_packages = set()
+            installed_packages: list[str] = []
             for line in pip_freeze_result.stdout.splitlines():
                 if line and not line.startswith("-") and "==" in line:
                     pkg_name = line.split("==")[0].strip().lower().replace("_", "-")
-                    installed_packages.add(pkg_name)
+                    installed_packages.append(pkg_name)
 
             # Get imported modules from source code
             imported_modules = self._get_imported_modules(ctx.root)
 
             # Find unused packages (installed but not imported)
             # Note: This is a heuristic - some packages are used indirectly
-            unused = sorted(installed_packages - imported_modules)
+            unused = sorted(set(installed_packages) - imported_modules)
 
             # Write results
             with out.open("w", encoding="utf-8") as f:
@@ -118,9 +118,9 @@ class UnusedDependenciesStep:
                         module = line[7:].split()[0].split(".")[0].split(",")[0].strip()
                         imported.add(module.lower().replace("_", "-"))
                     elif line.startswith("from "):
-                        parts = line.split()
-                        if len(parts) >= 2:
-                            module = parts[1].split(".")[0].strip()
+                        line_parts = line.split()
+                        if len(line_parts) >= 2:
+                            module = line_parts[1].split(".")[0].strip()
                             imported.add(module.lower().replace("_", "-"))
             except Exception:
                 continue

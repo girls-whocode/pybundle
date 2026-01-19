@@ -231,49 +231,7 @@ Roadmap for expanding pybundle's diagnostic capabilities beyond v1.2.x.
 
 ---
 
-## Milestone 6: Container & Deployment Analysis (v1.5.1)
-
-**Focus:** Docker and containerization best practices
-
-**Priority:** LOW (HIGH for containerized projects)  
-**Complexity:** MEDIUM  
-**Target:** Q3 2026
-
-### Features
-
-- **Dockerfile Linting** (`hadolint`)
-  - Best practice validation
-  - Security issue detection
-  - Integration: `logs/90_hadolint.txt`
-
-- **Container Image Analysis** (Docker-specific)
-  - Layer size breakdown (via `docker history`)
-  - Unused layers identification
-  - Integration: `meta/90_image_layers.txt`
-
-- **.dockerignore Effectiveness**
-  - Compare .dockerignore with actual build context
-  - Show what's being copied unnecessarily
-  - Integration: `meta/91_dockerignore_analysis.txt`
-
-- **Multi-Stage Build Validation**
-  - Ensure intermediate stages don't leak into final image
-  - Integration: `logs/91_dockerfile_stages.txt`
-
-### CLI Additions
-```bash
---no-dockerfile / --dockerfile
---docker-image NAME  # For image analysis
-```
-
-### Success Criteria
-- Works when Dockerfile exists, skips gracefully otherwise
-- hadolint integration matches existing tool pattern
-- Docker image analysis requires docker CLI
-
----
-
-## Milestone 7: Advanced Git Analytics (v1.6.0)
+## Milestone 6: Advanced Git Analytics (v1.5.1) COMPLETED
 
 **Focus:** Deep git history and code ownership insights
 
@@ -316,7 +274,7 @@ Roadmap for expanding pybundle's diagnostic capabilities beyond v1.2.x.
 
 ---
 
-## Milestone 8: Runtime & Dynamic Analysis (v1.6.1)
+## Milestone 7: Runtime & Dynamic Analysis (v1.6.0)
 
 **Focus:** Understanding code behavior at runtime
 
@@ -356,6 +314,48 @@ Roadmap for expanding pybundle's diagnostic capabilities beyond v1.2.x.
 - Exception tracking finds >95% of raise statements
 - Call graph works on projects up to 50k LOC
 - Env var detection includes common libraries (click, pydantic)
+
+---
+
+## Milestone 8: Container & Deployment Analysis (v1.6.1)
+
+**Focus:** Docker and containerization best practices
+
+**Priority:** LOW (HIGH for containerized projects)  
+**Complexity:** MEDIUM  
+**Target:** Q3 2026
+
+### Features
+
+- **Dockerfile Linting** (`hadolint`)
+  - Best practice validation
+  - Security issue detection
+  - Integration: `logs/90_hadolint.txt`
+
+- **Container Image Analysis** (Docker-specific)
+  - Layer size breakdown (via `docker history`)
+  - Unused layers identification
+  - Integration: `meta/90_image_layers.txt`
+
+- **.dockerignore Effectiveness**
+  - Compare .dockerignore with actual build context
+  - Show what's being copied unnecessarily
+  - Integration: `meta/91_dockerignore_analysis.txt`
+
+- **Multi-Stage Build Validation**
+  - Ensure intermediate stages don't leak into final image
+  - Integration: `logs/91_dockerfile_stages.txt`
+
+### CLI Additions
+```bash
+--no-dockerfile / --dockerfile
+--docker-image NAME  # For image analysis
+```
+
+### Success Criteria
+- Works when Dockerfile exists, skips gracefully otherwise
+- hadolint integration matches existing tool pattern
+- Docker image analysis requires docker CLI
 
 ---
 

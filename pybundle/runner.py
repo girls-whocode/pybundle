@@ -5,21 +5,35 @@ import shutil
 import sys
 import time
 from dataclasses import asdict
+from typing import Any
 
 try:
-    from colorama import Fore, Style, init as colorama_init
+    from colorama import Fore as ColorFore, Style as ColorStyle, init as colorama_init  # type: ignore[import-untyped]
 
     # Force colors in xterm and other terminals
     # strip=False keeps ANSI codes, autoreset=True resets after each print
     colorama_init(autoreset=True, strip=False)
     COLORS_AVAILABLE = True
+    ForeColor: Any = ColorFore
+    StyleColor: Any = ColorStyle
+    Fore = ForeColor
+    Style = StyleColor
 except ImportError:
     COLORS_AVAILABLE = False
     # Fallback if colorama not available
-    Fore = type(
-        "Fore", (), {"RED": "", "YELLOW": "", "GREEN": "", "CYAN": "", "RESET": ""}
-    )  # type: ignore
-    Style = type("Style", (), {"BRIGHT": "", "RESET_ALL": ""})  # type: ignore
+    class _Fore:
+        RED: str = ""
+        YELLOW: str = ""
+        GREEN: str = ""
+        CYAN: str = ""
+        RESET: str = ""
+
+    class _Style:
+        BRIGHT: str = ""
+        RESET_ALL: str = ""
+
+    Fore = _Fore()
+    Style = _Style()
 
 from .context import BundleContext
 from .packaging import archive_output_path, make_archive, resolve_archive_format

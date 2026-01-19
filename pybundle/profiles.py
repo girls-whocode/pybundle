@@ -49,6 +49,10 @@ from .steps.type_coverage import TypeCoverageStep
 from .steps.link_validation import LinkValidationStep
 from .steps.api_docs import ApiDocsStep
 from .steps.config_docs import ConfigDocumentationStep
+
+# Git analytics tools (v1.5.1)
+from .steps.git_analytics import GitAnalyticsStep
+
 from .policy import AIContextPolicy
 
 
@@ -175,6 +179,10 @@ def _analysis_steps(options: RunOptions) -> list:
 
     if not options.no_config_docs:
         steps += [ConfigDocumentationStep()]
+
+    # Git analytics (v1.5.1)
+    if not options.no_git_analytics:
+        steps += [GitAnalyticsStep()]
 
     # Source snapshot and documentation
     steps += [

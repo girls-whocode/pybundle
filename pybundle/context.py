@@ -11,6 +11,7 @@ from .tools import which
 
 if TYPE_CHECKING:
     from .steps.base import StepResult
+    from .profiles import Profile
 
 
 def fmt_tool(path: str | None) -> str:
@@ -128,6 +129,10 @@ class RunOptions:
     no_link_check: bool | None = None
     no_api_docs: bool | None = None
     no_config_docs: bool | None = None
+
+    # git analytics (v1.5.1)
+    no_git_analytics: bool | None = None
+    git_blame_depth: int = 100
 
     strict_paths: bool = False  # Enforce trusted path validation
 

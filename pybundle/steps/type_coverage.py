@@ -171,7 +171,8 @@ class TypeCoverageStep:
         if not python_files:
             elapsed = time.time() - start
             note = "No Python files found"
-        return StepResult(self.name, "SKIP", int(elapsed), note)
+            return StepResult(self.name, "SKIP", int(elapsed), note)
+
         overall_stats = TypeCoverageStats()
 
         for filepath in python_files:

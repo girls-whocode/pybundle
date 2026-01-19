@@ -64,7 +64,7 @@ class ConfigVarExtractor(ast.NodeVisitor):
                 var_name = node.args[0].value
                 if isinstance(var_name, str):
                     # Check for default value
-                    default = None
+                    default = ""
                     if len(node.args) >= 2:
                         if isinstance(node.args[1], ast.Constant):
                             default = repr(node.args[1].value)
@@ -94,7 +94,9 @@ class ConfigDocumentationStep:
             return StepResult(self.name, "SKIP", int(elapsed), note)
 
         # Extract environment variables from code
-        env_vars = self._extract_env_vars(python_files, context.root)
+        env_vars: List[Tuple[str, int, str, str]] = self._extract_env_vars(
+            python_files, context.root
+        )
 
         # Look for config files
         config_files = self._find_config_files(context.root)
@@ -161,12 +163,12 @@ class ConfigDocumentationStep:
             if config_patterns:
                 f.write("Configuration Patterns Detected:\n")
                 f.write("-" * 80 + "\n")
-                for pattern, locations in sorted(config_patterns.items()):
+                for pattern, pattern_locations in sorted(config_patterns.items()):
                     f.write(f"\n{pattern}\n")
-                    for filepath, lineno in locations[:5]:  # Limit to 5
+                    for filepath, lineno in pattern_locations[:5]:  # Limit to 5
                         f.write(f"  {filepath}:{lineno}\n")
-                    if len(locations) > 5:
-                        f.write(f"  ... and {len(locations) - 5} more\n")
+                    if len(pattern_locations) > 5:
+                        f.write(f"  ... and {len(pattern_locations) - 5} more\n")
                 f.write("\n")
 
             f.write("=" * 80 + "\n")

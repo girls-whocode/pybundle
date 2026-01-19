@@ -132,7 +132,7 @@ class ApiDocsStep:
             status = "FAIL"
             note = f"All {error_count} package(s) failed"
 
-        return StepResult(self.name, status, elapsed, note)
+        return StepResult(self.name, status, int(elapsed), note)
 
     def _find_packages(self, root: Path) -> list[Path]:
         """Find Python packages (directories with __init__.py).
