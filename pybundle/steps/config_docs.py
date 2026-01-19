@@ -8,7 +8,7 @@ import ast
 import re
 import time
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Tuple
 from dataclasses import dataclass
 
 from .base import StepResult

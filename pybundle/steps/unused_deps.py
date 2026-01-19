@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import subprocess  # nosec B404 - Required for tool execution, paths validated
 import time
 from dataclasses import dataclass
@@ -8,7 +7,6 @@ from pathlib import Path
 
 from .base import StepResult
 from ..context import BundleContext
-from ..tools import which
 
 
 @dataclass

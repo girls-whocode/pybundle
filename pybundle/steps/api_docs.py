@@ -117,7 +117,7 @@ class ApiDocsStep:
                     f.write(f"  ... and {len(html_files) - 20} more files\n")
 
             f.write("\n" + "=" * 80 + "\n")
-            f.write(f"Documentation generation complete\n")
+            f.write("Documentation generation complete\n")
             f.write("=" * 80 + "\n")
 
         # Determine status

@@ -8,7 +8,7 @@ import ast
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 from .base import StepResult
 from ..context import BundleContext

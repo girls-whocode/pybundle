@@ -6,8 +6,7 @@ Checks all markdown files for broken links (HTTP/HTTPS URLs).
 import re
 import time
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
-from urllib.parse import urlparse
+from typing import Dict, List, Tuple
 from dataclasses import dataclass
 
 from .base import StepResult
@@ -167,7 +166,6 @@ class LinkValidationStep:
         Returns dict with (filepath, url) -> (status, message).
         """
         import subprocess
-        import sys
 
         results = {}
 
@@ -187,7 +185,7 @@ class LinkValidationStep:
         has_requests = False
         if not has_curl:
             try:
-                import requests
+                import requests  # noqa: F401
                 has_requests = True
             except ImportError:
                 pass

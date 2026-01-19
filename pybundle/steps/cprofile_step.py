@@ -151,5 +151,5 @@ class CProfileStep:
             stats.print_stats(50)
             
             f.write("\n" + "=" * 70 + "\n")
-            f.write(f"Full binary stats saved to: meta/60_cprofile.stats\n")
+            f.write("Full binary stats saved to: meta/60_cprofile.stats\n")
             f.write("Analyze with: python -m pstats meta/60_cprofile.stats\n")
