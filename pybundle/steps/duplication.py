@@ -52,7 +52,21 @@ class DuplicationStep:
             )
             return StepResult(self.name, "SKIP", 0, "no python files")
 
+        # Find the main package directory (directory with __init__.py)
+        # This is typically the directory with the same name as the project
+        # or explicitly named "src", "lib", etc.
         target_path = ctx.root / self.target
+        
+        # If target is ".", try to find the actual package directory
+        if self.target == ".":
+            # Look for a directory with __init__.py at root level
+            for item in ctx.root.iterdir():
+                if item.is_dir() and not item.name.startswith("."):
+                    init_file = item / "__init__.py"
+                    if init_file.exists():
+                        target_path = item
+                        break
+        
         cmd = [
             pylint,
             str(target_path),
