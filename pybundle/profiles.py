@@ -89,9 +89,16 @@ def resolve_defaults(profile: str, opts: RunOptions) -> RunOptions:
 
 
 def _analysis_steps(options: RunOptions) -> list:
+    """
+    Analysis profile: What the code IS
+    - Structure, metrics, dependencies
+    - Documentation and codebase understanding
+    - No error detection or linting
+    """
     policy = AIContextPolicy()
 
     steps: list = [
+        # Environment & git status
         ShellStep(
             "git status", "meta/00_git_status.txt", ["git", "status"], require_cmd="git"
         ),
@@ -101,102 +108,6 @@ def _analysis_steps(options: RunOptions) -> list:
         ShellStep(
             "uname -a", "meta/21_uname.txt", ["uname", "-a"], require_cmd="uname"
         ),
-        TreeStep(max_depth=policy.tree_max_depth, policy=policy),
-        LargestFilesStep(limit=policy.largest_limit, policy=policy),
-    ]
-
-    # Lint/type/test (CLI-overridable)
-    if not options.no_ruff:
-        steps += [
-            RuffCheckStep(target=options.ruff_target),
-            RuffFormatCheckStep(target=options.ruff_target),
-        ]
-
-    if not options.no_mypy:
-        steps += [MypyStep(target=options.mypy_target)]
-
-    if not options.no_pylance:
-        steps += [PylanceStep()]
-
-    if not options.no_pytest:
-        steps += [PytestStep(args=options.pytest_args or ["-q"])]
-
-    # Security and quality checks
-    if not options.no_bandit:
-        steps += [BanditStep()]
-
-    if not options.no_pip_audit:
-        steps += [PipAuditStep()]
-
-    if not options.no_coverage:
-        steps += [CoverageStep()]
-    
-    # Code quality analysis (v1.3.0)
-    if not options.no_vulture:
-        steps += [VultureStep()]
-    
-    if not options.no_radon:
-        steps += [RadonStep()]
-    
-    if not options.no_interrogate:
-        steps += [InterrogateStep()]
-    
-    if not options.no_duplication:
-        steps += [DuplicationStep()]
-    
-    # Dependency analysis (v1.3.1)
-    if not options.no_pipdeptree:
-        steps += [PipdeptreeStep()]
-    
-    if not options.no_unused_deps:
-        steps += [UnusedDependenciesStep()]
-    
-    if not options.no_license_scan:
-        steps += [LicenseScanStep()]
-    
-    if not options.no_dependency_sizes:
-        steps += [DependencySizesStep()]
-    
-    # Performance profiling (v1.4.0)
-    if not options.no_profile:
-        steps += [CProfileStep()]
-        steps += [ImportTimeStep()]
-    
-    if options.profile_memory:
-        steps += [MemoryProfileStep()]
-    
-    if options.enable_line_profiler:
-        steps += [LineProfilerStep()]
-    
-    # Test quality & coverage (v1.4.1)
-    # Note: These run after regular pytest/coverage
-    steps += [TestFlakinessStep()]  # Always enabled, detects flaky tests
-    steps += [SlowTestsStep()]  # Always enabled, identifies slow tests
-    
-    if options.enable_mutation_testing:
-        steps += [MutationTestingStep()]  # Optional, very slow
-
-    # Landmine scans
-    if not options.no_rg:
-        steps += list(default_rg_steps(target="."))
-
-    # Error-driven packs
-    if not options.no_error_refs:
-        steps += [ErrorReferencedFilesStep(max_files=options.error_max_files)]
-
-    if not options.no_context:
-        steps += [
-            ErrorContextExpandStep(
-                depth=options.context_depth,
-                max_files=options.context_max_files,
-            )
-        ]
-
-    if not options.no_compileall:
-        steps.append(CompileAllStep())
-
-    # Curated pack + repro doc
-    steps += [
         ShellStep(
             "python -V",
             "meta/20_python_version.txt",
@@ -209,9 +120,170 @@ def _analysis_steps(options: RunOptions) -> list:
             ["python", "-m", "pip", "freeze"],
             require_cmd="python",
         ),
+        
+        # Code structure
+        TreeStep(max_depth=policy.tree_max_depth, policy=policy),
+        LargestFilesStep(limit=policy.largest_limit, policy=policy),
+    ]
+    
+    # Code quality metrics (what the code looks like)
+    if not options.no_radon:
+        steps += [RadonStep()]
+    
+    if not options.no_interrogate:
+        steps += [InterrogateStep()]
+    
+    if not options.no_duplication:
+        steps += [DuplicationStep()]
+    
+    # Dependency analysis (what the project uses)
+    if not options.no_pipdeptree:
+        steps += [PipdeptreeStep()]
+    
+    if not options.no_license_scan:
+        steps += [LicenseScanStep()]
+    
+    if not options.no_dependency_sizes:
+        steps += [DependencySizesStep()]
+    
+    # Performance profiling (what the code does)
+    if not options.no_profile:
+        steps += [CProfileStep()]
+        steps += [ImportTimeStep()]
+    
+    if options.profile_memory:
+        steps += [MemoryProfileStep()]
+    
+    if options.enable_line_profiler:
+        steps += [LineProfilerStep()]
+
+    # Source snapshot and documentation
+    steps += [
+        CuratedCopyStep(policy=policy),
+        RoadmapStep(policy=policy),
+        HandoffMarkdownStep(),
+    ]
+
+    return _dedupe_steps(steps)
+
+
+def _debug_steps(options: RunOptions) -> list:
+    """
+    Debug profile: What's WRONG with the code
+    - Linting, type checking, testing
+    - Security vulnerabilities
+    - Code quality issues
+    - Error detection and context
+    """
+    policy = AIContextPolicy()
+
+    steps: list = [
+        # Environment & git status
+        ShellStep(
+            "git status", "meta/00_git_status.txt", ["git", "status"], require_cmd="git"
+        ),
+        ShellStep(
+            "git diff", "meta/01_git_diff.txt", ["git", "diff"], require_cmd="git"
+        ),
+        ShellStep(
+            "uname -a", "meta/21_uname.txt", ["uname", "-a"], require_cmd="uname"
+        ),
+        ShellStep(
+            "python -V",
+            "meta/20_python_version.txt",
+            ["python", "-V"],
+            require_cmd="python",
+        ),
+        ShellStep(
+            "pip freeze",
+            "meta/22_pip_freeze.txt",
+            ["python", "-m", "pip", "freeze"],
+            require_cmd="python",
+        ),
+        ShellStep(
+            "pip check",
+            "logs/25_pip_check.txt",
+            ["python", "-m", "pip", "check"],
+            require_cmd="python",
+        ),
+        
+        # Code structure (for context)
+        TreeStep(max_depth=policy.tree_max_depth, policy=policy),
+        LargestFilesStep(limit=policy.largest_limit, policy=policy),
+    ]
+    
+    # Compilation errors
+    if not options.no_compileall:
+        steps.append(CompileAllStep())
+
+    # Linting & type checking (what's wrong with code style/types)
+    if not options.no_ruff:
+        steps += [
+            RuffCheckStep(target=options.ruff_target),
+            RuffFormatCheckStep(target=options.ruff_target),
+        ]
+
+    if not options.no_mypy:
+        steps += [MypyStep(target=options.mypy_target)]
+
+    if not options.no_pylance:
+        steps += [PylanceStep()]
+
+    # Testing (what's broken in functionality)
+    if not options.no_pytest:
+        steps += [PytestStep(args=options.pytest_args or ["-q"])]
+
+    if not options.no_coverage:
+        steps += [CoverageStep()]
+    
+    # Test quality issues
+    steps += [TestFlakinessStep()]  # Non-deterministic tests
+    steps += [SlowTestsStep()]  # Performance issues in tests
+    
+    if options.enable_mutation_testing:
+        steps += [MutationTestingStep()]  # Test effectiveness
+
+    # Security vulnerabilities
+    if not options.no_bandit:
+        steps += [BanditStep()]
+
+    if not options.no_pip_audit:
+        steps += [PipAuditStep()]
+    
+    # Code quality issues (dead code, complexity)
+    if not options.no_vulture:
+        steps += [VultureStep()]
+    
+    if not options.no_radon:
+        steps += [RadonStep()]
+    
+    # Dependency issues
+    if not options.no_unused_deps:
+        steps += [UnusedDependenciesStep()]
+    
+    if not options.no_pipdeptree:
+        steps += [PipdeptreeStep()]  # For conflict detection
+
+    # Pattern scanning (anti-patterns, TODOs)
+    if not options.no_rg:
+        steps += list(default_rg_steps(target="."))
+
+    # Error context extraction
+    if not options.no_error_refs:
+        steps += [ErrorReferencedFilesStep(max_files=options.error_max_files)]
+
+    if not options.no_context:
+        steps += [
+            ErrorContextExpandStep(
+                depth=options.context_depth,
+                max_files=options.context_max_files,
+            )
+        ]
+
+    # Source snapshot + repro documentation
+    steps += [
         CuratedCopyStep(policy=policy),
         ReproMarkdownStep(),
-        RoadmapStep(policy=policy),
         HandoffMarkdownStep(),
     ]
 
@@ -223,17 +295,7 @@ def get_profile(name: str, options: RunOptions) -> Profile:
         return Profile(name="analysis", steps=_analysis_steps(options))
 
     if name == "debug":
-        # debug inherits analysis but keeps the same options
-        steps = list(_analysis_steps(options))
-        steps.append(
-            ShellStep(
-                "pip check",
-                "logs/25_pip_check.txt",
-                ["python", "-m", "pip", "check"],
-                require_cmd="python",
-            )
-        )
-        return Profile(name="debug", steps=steps)
+        return Profile(name="debug", steps=_debug_steps(options))
 
     if name == "backup":
         # Minimal backup: source + environment, no analysis
@@ -270,7 +332,9 @@ def get_profile(name: str, options: RunOptions) -> Profile:
         )
 
     if name == "ai":
+        # AI profile: debug optimized for AI consumption
+        # Disables some noisy tools but keeps everything for problem understanding
         opts = resolve_defaults("ai", options)
-        return Profile(name="ai", steps=_analysis_steps(opts))
+        return Profile(name="ai", steps=_debug_steps(opts))
 
     raise ValueError(f"unknown profile: {name}")

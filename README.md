@@ -189,12 +189,22 @@ This builds a timestamped diagnostic bundle under the default `artifacts/` direc
 
 Profiles define *what* pybundle collects and *which tools* are run.
 
-Available profiles include:
+**Available profiles** (v1.4.3+):
 
-* `analysis` - **full diagnostics** (lint, type-check, tests, scans)
-* `debug` - **analysis + additional environment validation**
-* `backup` - **minimal source + environment snapshot** (no analysis tools)
-* `ai` - **AI-optimized context bundle** (lean, source-first)
+* **`analysis`** - What the code IS (structure, metrics, dependencies, docs)
+  - Code structure, complexity metrics, documentation coverage
+  - Dependency analysis, licenses, performance profiling
+  - No error detection or linting
+  
+* **`debug`** - What's WRONG with the code (errors, issues, problems)
+  - Linting, type checking, testing, security scans
+  - Error context extraction, anti-pattern detection
+  - Includes everything needed for troubleshooting
+
+* **`ai`** - Debug optimized for AI (reduced noise, problem-focused)
+  - Same as debug but with defaults tuned for AI consumption
+  
+* **`backup`** - Minimal snapshot (source + git + env, no analysis)
 
 To list all available profiles:
 
