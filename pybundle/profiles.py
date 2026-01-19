@@ -30,6 +30,11 @@ from .steps.pipdeptree import PipdeptreeStep
 from .steps.unused_deps import UnusedDependenciesStep
 from .steps.license_scan import LicenseScanStep
 from .steps.dependency_sizes import DependencySizesStep
+# Performance profiling tools (v1.4.0)
+from .steps.cprofile_step import CProfileStep
+from .steps.import_time import ImportTimeStep
+from .steps.memory_profile import MemoryProfileStep
+from .steps.line_profiler import LineProfilerStep
 from .policy import AIContextPolicy
 from .steps.handoff_md import HandoffMarkdownStep
 from .steps.roadmap import RoadmapStep
@@ -147,6 +152,17 @@ def _analysis_steps(options: RunOptions) -> list:
     
     if not options.no_dependency_sizes:
         steps += [DependencySizesStep()]
+    
+    # Performance profiling (v1.4.0)
+    if not options.no_profile:
+        steps += [CProfileStep()]
+        steps += [ImportTimeStep()]
+    
+    if options.profile_memory:
+        steps += [MemoryProfileStep()]
+    
+    if options.enable_line_profiler:
+        steps += [LineProfilerStep()]
 
     # Landmine scans
     if not options.no_rg:

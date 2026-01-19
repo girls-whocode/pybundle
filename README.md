@@ -125,7 +125,7 @@ pytest
 pytest-cov
 bandit
 pip-audit
-gwc-pybundle==1.2.1
+gwc-pybundle==1.3.1
 ```
 
 Then install:
@@ -329,6 +329,12 @@ The `analysis` and `debug` profiles run comprehensive quality and security check
 * **unused dependencies** - Identify installed but unused packages
 * **pip-licenses** - License scanning and compatibility warnings
 * **dependency sizes** - Disk usage analysis per package
+
+#### Performance Profiling (v1.4.0+)
+* **cProfile** - CPU profiling to identify bottlenecks
+* **import time analysis** - Detect slow module imports
+* **tracemalloc** - Memory profiling (optional, via `--profile-memory`)
+* **line_profiler** - Line-by-line profiling (optional, requires `@profile` decorators and `--enable-line-profiler`)
 
 #### Pattern Scanning
 * **ripgrep scans** - TODO detection, print statements, bare excepts

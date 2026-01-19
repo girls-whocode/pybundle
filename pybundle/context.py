@@ -45,6 +45,9 @@ class Tooling:
     # dependency analysis tools (v1.3.1)
     pipdeptree: str | None
     pip_licenses: str | None
+    
+    # performance profiling tools (v1.4.0)
+    line_profiler: str | None
 
     @staticmethod
     def detect(strict_paths: bool = False) -> "Tooling":
@@ -73,6 +76,7 @@ class Tooling:
             pylint=which("pylint", strict=strict_paths),
             pipdeptree=which("pipdeptree", strict=strict_paths),
             pip_licenses=which("pip-licenses", strict=strict_paths),
+            line_profiler=which("kernprof", strict=strict_paths),
         )
 
 
@@ -101,6 +105,12 @@ class RunOptions:
     no_unused_deps: bool | None = None
     no_license_scan: bool | None = None
     no_dependency_sizes: bool | None = None
+    
+    # performance profiling (v1.4.0)
+    no_profile: bool | None = None
+    profile_entry_point: str | None = None
+    profile_memory: bool = False
+    enable_line_profiler: bool = False
 
     strict_paths: bool = False  # Enforce trusted path validation
 
@@ -315,6 +325,10 @@ class BundleContext:
                 "no_unused_deps": o.no_unused_deps,
                 "no_license_scan": o.no_license_scan,
                 "no_dependency_sizes": o.no_dependency_sizes,
+                "no_profile": o.no_profile,
+                "profile_entry_point": o.profile_entry_point,
+                "profile_memory": o.profile_memory,
+                "enable_line_profiler": o.enable_line_profiler,
                 "error_max_files": o.error_max_files,
                 "context_depth": o.context_depth,
                 "context_max_files": o.context_max_files,

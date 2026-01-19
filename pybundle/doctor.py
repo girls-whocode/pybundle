@@ -126,6 +126,8 @@ def print_tool_info(ctx: Any) -> None:
         # Dependency analysis tools (v1.3.1)
         ("pipdeptree", ctx.tools.pipdeptree),
         ("pip-licenses", ctx.tools.pip_licenses),
+        # Performance profiling tools (v1.4.0)
+        ("line_profiler", ctx.tools.line_profiler),
     ]
 
     print("\n🔧 Tool Detection:")

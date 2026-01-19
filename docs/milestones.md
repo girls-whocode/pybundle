@@ -147,6 +147,11 @@ Roadmap for expanding pybundle's diagnostic capabilities beyond v1.2.x.
 **Target:** Q2 2026
 
 ### Features
+- **Give visibility to user of progress**
+  - Create an informational colorful output to inform user of pybundle's progress
+  - Red if something errors
+  - Yellow if something isn't installed
+  - Green if step passes
 
 - **Test Flakiness Detection**
   - Run tests 3x, flag non-deterministic failures

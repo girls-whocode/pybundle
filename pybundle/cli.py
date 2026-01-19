@@ -158,6 +158,16 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
     sp.add_argument("--no-license-scan", dest="no_license_scan", action="store_true", default=None)
     sp.add_argument("--dependency-sizes", dest="no_dependency_sizes", action="store_false", default=None)
     sp.add_argument("--no-dependency-sizes", dest="no_dependency_sizes", action="store_true", default=None)
+    
+    # performance profiling (v1.4.0)
+    sp.add_argument("--profile", dest="no_profile", action="store_false", default=None)
+    sp.add_argument("--no-profile", dest="no_profile", action="store_true", default=None)
+    sp.add_argument("--profile-entry-point", type=str, default=None,
+                    help="Entry point for profiling (e.g., main.py or tests/)")
+    sp.add_argument("--profile-memory", action="store_true", default=False,
+                    help="Enable memory profiling with tracemalloc")
+    sp.add_argument("--enable-line-profiler", action="store_true", default=False,
+                    help="Enable line_profiler (requires @profile decorators)")
 
     # Security options
     sp.add_argument(
@@ -232,6 +242,10 @@ def _build_options(args) -> RunOptions:
         no_unused_deps=getattr(args, "no_unused_deps", None),
         no_license_scan=getattr(args, "no_license_scan", None),
         no_dependency_sizes=getattr(args, "no_dependency_sizes", None),
+        no_profile=getattr(args, "no_profile", None),
+        profile_entry_point=getattr(args, "profile_entry_point", None),
+        profile_memory=getattr(args, "profile_memory", False),
+        enable_line_profiler=getattr(args, "enable_line_profiler", False),
         strict_paths=getattr(args, "strict_paths", False),
         ruff_target=getattr(args, "ruff_target", "."),
         mypy_target=getattr(args, "mypy_target", "."),

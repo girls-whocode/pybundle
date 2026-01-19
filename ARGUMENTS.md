@@ -485,6 +485,43 @@ pybundle run analysis --no-dependency-sizes
 
 ---
 
+### Performance Profiling (v1.4.0+)
+
+**`--profile` / `--no-profile`**
+
+Enable/disable performance profiling (CPU and import time analysis).
+
+```bash
+pybundle run analysis --no-profile
+```
+
+**`--profile-entry-point PATH`**
+
+Specify entry point for profiling (file or directory).
+
+```bash
+pybundle run analysis --profile-entry-point main.py
+pybundle run analysis --profile-entry-point tests/
+```
+
+**`--profile-memory`**
+
+Enable memory profiling with tracemalloc (requires pytest).
+
+```bash
+pybundle run analysis --profile-memory
+```
+
+**`--enable-line-profiler`**
+
+Enable line-by-line profiling (requires line_profiler and @profile decorators).
+
+```bash
+pybundle run analysis --enable-line-profiler --profile-entry-point script.py
+```
+
+---
+
 ### Pattern Scanning
 
 **`--rg` / `--no-rg`**
