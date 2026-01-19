@@ -31,6 +31,25 @@ from .manifest import write_manifest
 from .steps.base import StepResult
 
 
+def _format_duration(milliseconds: int) -> str:
+    """Format milliseconds into human-readable duration (hr min sec)."""
+    seconds = milliseconds / 1000.0
+    
+    if seconds < 1:
+        return f"{milliseconds}ms"
+    elif seconds < 60:
+        return f"{seconds:.1f}s"
+    elif seconds < 3600:
+        minutes = int(seconds // 60)
+        secs = int(seconds % 60)
+        return f"{minutes}m {secs}s"
+    else:
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        secs = int(seconds % 60)
+        return f"{hours}h {minutes}m {secs}s"
+
+
 def _emit_progress(msg: str, color: str = "cyan") -> None:
     """Emit a progress message with optional color."""
     color_code = getattr(Fore, color.upper(), Fore.CYAN)
@@ -53,16 +72,19 @@ def _emit_step_result(idx: int, total: int, step_name: str, result: StepResult) 
         color = Fore.CYAN
         symbol = "•"
     
-    # Format duration
-    duration = f"{result.seconds:.2f}s"
+    # Format duration in human-readable format
+    duration = _format_duration(result.seconds)
     
-    # Build status line
-    status_msg = f"[{idx}/{total}] {symbol} {step_name}"
+    # Build status line with colorful step counter and status-colored step name
+    step_counter = f"{Fore.BLACK}{Style.BRIGHT}[{Fore.MAGENTA}{idx}{Fore.WHITE}/{Fore.CYAN}{total}{Fore.BLACK}{Style.BRIGHT}]{Style.RESET_ALL}"
+    status_msg = f"{step_counter} {color}{Style.BRIGHT}{symbol} {step_name}{Style.RESET_ALL}"
+    
+    # Add note and duration in terminal default color
     if result.note:
         status_msg += f" - {result.note}"
     status_msg += f" ({duration})"
     
-    print(f"{color}{Style.BRIGHT}{status_msg}{Style.RESET_ALL}", file=sys.stderr, flush=True)
+    print(status_msg, file=sys.stderr, flush=True)
 
 
 def run_profile(ctx: BundleContext, profile) -> int:
@@ -77,8 +99,9 @@ def run_profile(ctx: BundleContext, profile) -> int:
 
     total_steps = len(profile.steps)
     for idx, step in enumerate(profile.steps, 1):
-        # Progress indicator with step count
-        _emit_progress(f"[{idx}/{total_steps}] Running: {step.name}...", "cyan")
+        # Progress indicator with colorful step count: [magenta#white/cyan#] Running: step
+        step_counter = f"{Fore.BLACK}{Style.BRIGHT}[{Fore.MAGENTA}{idx}{Fore.WHITE}/{Fore.CYAN}{total_steps}{Fore.BLACK}{Style.BRIGHT}]{Style.RESET_ALL}"
+        print(f"{step_counter} {Fore.WHITE}Running: {step.name}...{Style.RESET_ALL}", file=sys.stderr, flush=True)
         ctx.write_runlog(f"-- START: {step.name}")
         
         r = step.run(ctx)

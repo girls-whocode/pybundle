@@ -52,6 +52,7 @@ class VultureStep:
         cmd = [
             vulture,
             str(target_path),
+            "--exclude", "*venv*,*.venv*,.pybundle-venv,venv,env,.env,__pycache__",
             "--min-confidence", "60",  # Configurable confidence threshold
             "--sort-by-size",
         ]
