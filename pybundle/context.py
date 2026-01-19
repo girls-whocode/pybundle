@@ -109,8 +109,8 @@ class RunOptions:
     # performance profiling (v1.4.0)
     no_profile: bool | None = None
     profile_entry_point: str | None = None
-    profile_memory: bool = False
-    enable_line_profiler: bool = False
+    profile_memory: bool = True  # v1.4.2: enabled by default
+    enable_line_profiler: bool = False  # requires @profile decorators
     
     # test quality & coverage (v1.4.1)
     test_flakiness_runs: int = 3

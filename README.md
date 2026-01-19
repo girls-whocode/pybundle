@@ -333,15 +333,22 @@ The `analysis` and `debug` profiles run comprehensive quality and security check
 #### Performance Profiling (v1.4.0+)
 * **cProfile** - CPU profiling to identify bottlenecks
 * **import time analysis** - Detect slow module imports
-* **tracemalloc** - Memory profiling (optional, via `--profile-memory`)
+* **tracemalloc** - Memory profiling (*enabled by default in v1.4.2+*)
 * **line_profiler** - Line-by-line profiling (optional, requires `@profile` decorators and `--enable-line-profiler`)
 
 #### Test Quality & Coverage Enhancement (v1.4.1+)
 * **Colorful progress indicators** - Real-time colored output with step counts (🟢 green = success, 🟡 yellow = skipped, 🔴 red = failed)
+  - *v1.4.2: Fixed color support for xterm and other terminals*
 * **Test flakiness detection** - Run tests multiple times to identify non-deterministic failures
 * **Branch coverage** - Enhanced coverage.py integration showing missing branches, not just lines
 * **Slow test identification** - Automatically identify and rank tests exceeding time threshold
 * **Mutation testing** - Optional mutmut integration to measure test suite effectiveness (VERY SLOW - disabled by default)
+
+#### Performance Profiling (v1.4.0+)
+* **cProfile integration** - CPU profiling showing slowest functions
+* **import time analysis** - Detect slow module imports
+* **tracemalloc** - Memory profiling (*v1.4.2: enabled by default*)
+* **line_profiler** - Line-by-line profiling (optional, requires `@profile` decorators and `--enable-line-profiler`)
 
 #### Pattern Scanning
 * **ripgrep scans** - TODO detection, print statements, bare excepts

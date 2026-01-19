@@ -506,10 +506,12 @@ pybundle run analysis --profile-entry-point tests/
 
 **`--profile-memory`**
 
-Enable memory profiling with tracemalloc (requires pytest).
+Enable memory profiling with tracemalloc (requires pytest). **Enabled by default in v1.4.2+**.
+
+Use `--no-profile-memory` to disable:
 
 ```bash
-pybundle run analysis --profile-memory
+pybundle run analysis --no-profile-memory
 ```
 
 **`--enable-line-profiler`**

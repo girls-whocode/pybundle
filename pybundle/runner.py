@@ -8,7 +8,9 @@ from dataclasses import asdict
 
 try:
     from colorama import Fore, Style, init as colorama_init
-    colorama_init(autoreset=True)
+    # Force colors in xterm and other terminals
+    # strip=False keeps ANSI codes, autoreset=True resets after each print
+    colorama_init(autoreset=True, strip=False)
     COLORS_AVAILABLE = True
 except ImportError:
     COLORS_AVAILABLE = False
