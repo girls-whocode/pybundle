@@ -65,10 +65,11 @@ class CoverageStep:
             out.write_text("no tests detected; skipping coverage\n", encoding="utf-8")
             return StepResult(self.name, "SKIP", 0, "no tests")
 
-        # Run pytest with coverage
+        # Run pytest with coverage (including branch coverage for v1.4.1+)
         cmd = [
             pytest_bin,
             "--cov",
+            "--cov-branch",  # Enable branch coverage (v1.4.1+)
             "--cov-report=term-missing:skip-covered",
             "--no-cov-on-fail",
             "-q",

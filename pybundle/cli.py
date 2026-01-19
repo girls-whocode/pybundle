@@ -168,6 +168,16 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
                     help="Enable memory profiling with tracemalloc")
     sp.add_argument("--enable-line-profiler", action="store_true", default=False,
                     help="Enable line_profiler (requires @profile decorators)")
+    
+    # test quality & coverage (v1.4.1)
+    sp.add_argument("--test-flakiness-runs", type=int, default=3,
+                    help="Number of times to run tests for flakiness detection (default: 3)")
+    sp.add_argument("--slow-test-threshold", type=float, default=1.0,
+                    help="Threshold in seconds for identifying slow tests (default: 1.0)")
+    sp.add_argument("--mutation", dest="enable_mutation_testing", action="store_true", default=False,
+                    help="Enable mutation testing with mutmut (VERY SLOW!)")
+    sp.add_argument("--no-mutation", dest="enable_mutation_testing", action="store_false", default=False,
+                    help="Disable mutation testing (default)")
 
     # Security options
     sp.add_argument(
@@ -246,6 +256,9 @@ def _build_options(args) -> RunOptions:
         profile_entry_point=getattr(args, "profile_entry_point", None),
         profile_memory=getattr(args, "profile_memory", False),
         enable_line_profiler=getattr(args, "enable_line_profiler", False),
+        test_flakiness_runs=getattr(args, "test_flakiness_runs", 3),
+        slow_test_threshold=getattr(args, "slow_test_threshold", 1.0),
+        enable_mutation_testing=getattr(args, "enable_mutation_testing", False),
         strict_paths=getattr(args, "strict_paths", False),
         ruff_target=getattr(args, "ruff_target", "."),
         mypy_target=getattr(args, "mypy_target", "."),

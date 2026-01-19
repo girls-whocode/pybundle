@@ -522,6 +522,34 @@ pybundle run analysis --enable-line-profiler --profile-entry-point script.py
 
 ---
 
+### Test Quality & Coverage (v1.4.1+)
+
+**`--test-flakiness-runs N`**
+
+Set number of times to run tests for flakiness detection (default: 3).
+
+```bash
+pybundle run analysis --test-flakiness-runs 5
+```
+
+**`--slow-test-threshold SECONDS`**
+
+Set threshold in seconds for identifying slow tests (default: 1.0).
+
+```bash
+pybundle run analysis --slow-test-threshold 2.0
+```
+
+**`--mutation` / `--no-mutation`**
+
+Enable/disable mutation testing with mutmut (VERY SLOW, disabled by default).
+
+```bash
+pybundle run analysis --mutation
+```
+
+---
+
 ### Pattern Scanning
 
 **`--rg` / `--no-rg`**

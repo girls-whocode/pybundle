@@ -336,6 +336,12 @@ The `analysis` and `debug` profiles run comprehensive quality and security check
 * **tracemalloc** - Memory profiling (optional, via `--profile-memory`)
 * **line_profiler** - Line-by-line profiling (optional, requires `@profile` decorators and `--enable-line-profiler`)
 
+#### Test Quality & Coverage Enhancement (v1.4.1+)
+* **Test flakiness detection** - Run tests multiple times to identify non-deterministic failures
+* **Branch coverage** - Enhanced coverage.py integration showing missing branches, not just lines
+* **Slow test identification** - Automatically identify and rank tests exceeding time threshold
+* **Mutation testing** - Optional mutmut integration to measure test suite effectiveness (VERY SLOW - disabled by default)
+
 #### Pattern Scanning
 * **ripgrep scans** - TODO detection, print statements, bare excepts
 

@@ -35,6 +35,10 @@ from .steps.cprofile_step import CProfileStep
 from .steps.import_time import ImportTimeStep
 from .steps.memory_profile import MemoryProfileStep
 from .steps.line_profiler import LineProfilerStep
+# Test quality & coverage tools (v1.4.1)
+from .steps.test_flakiness import TestFlakinessStep
+from .steps.slow_tests import SlowTestsStep
+from .steps.mutation_testing import MutationTestingStep
 from .policy import AIContextPolicy
 from .steps.handoff_md import HandoffMarkdownStep
 from .steps.roadmap import RoadmapStep
@@ -163,6 +167,14 @@ def _analysis_steps(options: RunOptions) -> list:
     
     if options.enable_line_profiler:
         steps += [LineProfilerStep()]
+    
+    # Test quality & coverage (v1.4.1)
+    # Note: These run after regular pytest/coverage
+    steps += [TestFlakinessStep()]  # Always enabled, detects flaky tests
+    steps += [SlowTestsStep()]  # Always enabled, identifies slow tests
+    
+    if options.enable_mutation_testing:
+        steps += [MutationTestingStep()]  # Optional, very slow
 
     # Landmine scans
     if not options.no_rg:

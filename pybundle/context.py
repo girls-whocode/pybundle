@@ -111,6 +111,11 @@ class RunOptions:
     profile_entry_point: str | None = None
     profile_memory: bool = False
     enable_line_profiler: bool = False
+    
+    # test quality & coverage (v1.4.1)
+    test_flakiness_runs: int = 3
+    slow_test_threshold: float = 1.0
+    enable_mutation_testing: bool = False
 
     strict_paths: bool = False  # Enforce trusted path validation
 
@@ -329,6 +334,9 @@ class BundleContext:
                 "profile_entry_point": o.profile_entry_point,
                 "profile_memory": o.profile_memory,
                 "enable_line_profiler": o.enable_line_profiler,
+                "test_flakiness_runs": o.test_flakiness_runs,
+                "slow_test_threshold": o.slow_test_threshold,
+                "enable_mutation_testing": o.enable_mutation_testing,
                 "error_max_files": o.error_max_files,
                 "context_depth": o.context_depth,
                 "context_max_files": o.context_max_files,
