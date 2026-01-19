@@ -277,6 +277,7 @@ class TypeCoverageStep:
             ".ruff_cache",
             "htmlcov",
             ".coverage",
+            ".pybundle-venv",  # pybundle's venv
         }
 
         for path in root.rglob("*.py"):

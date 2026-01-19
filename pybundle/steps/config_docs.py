@@ -200,6 +200,7 @@ class ConfigDocumentationStep:
             ".pytest_cache",
             ".mypy_cache",
             ".ruff_cache",
+            ".pybundle-venv",  # pybundle's venv
         }
 
         for path in root.rglob("*.py"):
@@ -262,6 +263,7 @@ class ConfigDocumentationStep:
             "artifacts",
             "build",
             "dist",
+            ".pybundle-venv",  # pybundle's venv
         }
 
         for pattern in config_patterns:

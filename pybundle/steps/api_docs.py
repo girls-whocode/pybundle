@@ -92,7 +92,7 @@ class ApiDocsStep:
             f.write(f"Packages processed:  {len(packages)}\n")
             f.write(f"Successful:          {success_count}\n")
             f.write(f"Failed:              {error_count}\n")
-            f.write(f"Output directory:    {output_dir.relative_to(context.bundle_dir)}\n")
+            f.write(f"Output directory:    {output_dir.relative_to(context.workdir)}\n")
             f.write("\n")
 
             if errors:
@@ -158,6 +158,7 @@ class ApiDocsStep:
             ".egg-info",
             "tests",
             "test",
+            ".pybundle-venv",  # pybundle's venv
         }
 
         # Look for directories with __init__.py at root level first

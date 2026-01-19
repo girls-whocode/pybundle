@@ -116,6 +116,7 @@ class LinkValidationStep:
             "artifacts",
             "build",
             "dist",
+            ".pybundle-venv",  # pybundle's venv
         }
 
         for path in root.rglob("*.md"):

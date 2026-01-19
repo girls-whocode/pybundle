@@ -11,6 +11,7 @@ requires-python = ">=3.9"
 
 dependencies = [
   "colorama>=0.4.6",
+  "pdoc>=16.0.0",
 ]
 
 authors = [
