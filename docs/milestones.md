@@ -531,47 +531,65 @@ Roadmap for expanding pybundle's diagnostic capabilities beyond v1.2.x.
 
 ---
 
-## Milestone 12: Framework-Specific Extensions (v2.0.0) PLANNED
+## Milestone 12: Framework-Specific Extensions (v2.0.0) COMPLETED
 
 **Focus:** Deep integration with popular frameworks
 
 **Priority:** LOW (framework-dependent)  
 **Complexity:** HIGH  
-**Target:** Q2 2026
+**Status:** ✅ COMPLETED
 
 ### Features
-````
 
-- **Django System Checks** (`manage.py check --deploy`)
-  - Run Django's built-in checks
-  - Security, deployment best practices
+- **Django System Checks** ✅
+  - Runs `manage.py check` and `manage.py check --deploy`
+  - Parses Django system check output
+  - Validates deployment best practices
+  - Provides deployment readiness checklist
   - Integration: `logs/150_django_checks.txt`
 
-- **FastAPI Integration**
-  - Schema validation (OpenAPI spec generation)
-  - Endpoint documentation completeness
-  - Integration: `meta/150_openapi.json`
+- **FastAPI Integration** ✅
+  - Detects FastAPI app instances and routes
+  - Analyzes endpoint documentation
+  - Checks for response models
+  - Validates OpenAPI schema readiness
+  - Integration: `logs/150_fastapi_schema.txt`
 
-- **Flask Debugging**
-  - Debug mode detection in production
-  - Secret key validation
+- **Flask Debugging** ✅
+  - Detects Flask app instances
+  - Identifies hardcoded secrets
+  - Checks for DEBUG=True in code
+  - Analyzes debug mode configuration
+  - Extracts route definitions
   - Integration: `logs/151_flask_checks.txt`
 
-- **SQLAlchemy Validation**
-  - Model consistency checks
-  - Relationship validation
-  - Integration: `logs/152_sqlalchemy_checks.txt`
+- **SQLAlchemy Validation** ✅
+  - Finds SQLAlchemy model definitions
+  - Validates primary keys and relationships
+  - Analyzes model-to-model connections
+  - Provides best practices for models
+  - Integration: `logs/152_sqlalchemy_validation.txt`
 
 ### CLI Additions
 ```bash
---framework {auto,django,fastapi,flask,none}
---django-manage PATH  # Default: manage.py
+--framework-analysis / --no-framework-analysis
 ```
 
+### Implementation Details
+- Step 1: `DjangoSystemChecksStep` (190 lines) - Django validation and checks
+- Step 2: `FastAPIIntegrationStep` (235 lines) - FastAPI schema and endpoint analysis
+- Step 3: `FlaskDebuggingStep` (315 lines) - Flask security and debug detection
+- Step 4: `SQLAlchemyValidationStep` (330 lines) - SQLAlchemy model validation
+- Integration: profiles.py (conditional with `no_framework_analysis` flag), context.py, cli.py
+- No external dependencies required
+
 ### Success Criteria
-- Framework auto-detection from imports
-- Each framework integration is optional plugin
-- Extensible architecture for community frameworks
+✅ Framework auto-detection from imports  
+✅ Each framework integration is optional plugin  
+✅ Graceful skipping when frameworks not detected  
+✅ All 4 steps tested and working with proper output files  
+✅ Extensible architecture for adding more frameworks  
+✅ Proper integration into analysis profile with flag support  
 
 ---
 
