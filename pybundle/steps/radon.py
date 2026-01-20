@@ -51,39 +51,40 @@ class RadonStep:
         target_path = ctx.root / self.target
 
         # Build exclude patterns to avoid scanning artifacts, venvs, caches
-        # This is CRITICAL - radon will scan everything otherwise, including prior pybundle runs
+        # CRITICAL: Radon scans everything by default, including prior pybundle runs
+        # Use simple patterns without wildcards - radon's --exclude is finicky
         excludes = [
+            # Artifacts from prior pybundle runs (CRITICAL - prevents duplicate reports)
             "artifacts",
-            "artifacts/*",
+            # Virtual environments (all common patterns)
             ".venv",
-            ".venv/*", 
             "venv",
-            "venv/*",
             "env",
-            "env/*",
+            ".env",
             ".freeze-venv",
-            ".freeze-venv/*",
+            ".pybundle-venv",
+            # Also catch custom venv names with glob patterns
+            "*-venv",
+            "*_venv",
+            ".gaslog-venv",
+            # Caches
             "__pycache__",
-            "__pycache__/*",
             ".mypy_cache",
-            ".mypy_cache/*",
             ".pytest_cache",
-            ".pytest_cache/*",
             ".ruff_cache",
-            ".ruff_cache/*",
+            ".tox",
+            ".nox",
+            # Build outputs
             "node_modules",
-            "node_modules/*",
             "dist",
-            "dist/*",
             "build",
-            "build/*",
+            "target",
+            # Version control
             ".git",
-            ".git/*",
         ]
         
-        exclude_args = []
-        for pattern in excludes:
-            exclude_args.extend(["--exclude", pattern])
+        # Radon --exclude takes comma-separated patterns
+        exclude_arg = ",".join(excludes)
 
         # Run cyclomatic complexity check
         cmd_cc = [
@@ -93,7 +94,9 @@ class RadonStep:
             "-s",  # Show complexity score
             "-a",  # Average complexity
             "-nc",  # No color
-        ] + exclude_args
+            "--exclude",
+            exclude_arg,
+        ]
 
         # Run maintainability index check
         cmd_mi = [
@@ -102,7 +105,9 @@ class RadonStep:
             str(target_path),
             "-s",  # Show maintainability index
             "-nc",  # No color
-        ] + exclude_args
+            "--exclude",
+            exclude_arg,
+        ]
 
         try:
             # Collect both metrics in one output file

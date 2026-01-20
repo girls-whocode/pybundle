@@ -97,19 +97,23 @@ class VultureStep:
         # Create FastAPI/framework decorator whitelist if applicable
         whitelist_file = self._create_framework_whitelist(ctx)
         
+        # Build command with ALL OPTIONS FIRST, then paths
+        # This is critical for argparse compatibility
         cmd = [
             vulture,
-            str(target_path),
             "--exclude",
             "*venv*,*.venv*,.pybundle-venv,venv,env,.env,__pycache__,artifacts,build,dist,.git,.tox,node_modules",
             "--min-confidence",
-            "60",  # Configurable confidence threshold
+            "60",
             "--sort-by-size",
         ]
         
-        # Add whitelist if framework decorators detected
+        # Add target path
+        cmd.append(str(target_path))
+        
+        # Add whitelist as a regular path argument (not a flag)
+        # Vulture treats whitelist files as regular Python files to analyze
         if whitelist_file and whitelist_file.exists():
-            cmd.extend(["--make-whitelist"])
             cmd.append(str(whitelist_file))
 
         try:
@@ -148,7 +152,8 @@ class VultureStep:
         if not decorators:
             return None
         
-        whitelist_path = ctx.workdir / "logs" / "vulture_whitelist.py"
+        # Put whitelist in meta/whitelists/ not logs/ to avoid path parsing issues
+        whitelist_path = ctx.workdir / "meta" / "whitelists" / "vulture_framework.py"
         whitelist_path.parent.mkdir(parents=True, exist_ok=True)
         
         with whitelist_path.open("w", encoding="utf-8") as f:
