@@ -64,6 +64,12 @@ from .steps.dockerfile_lint import DockerfileLintStep
 from .steps.dockerignore import DockerigoreStep
 from .steps.container_image import ContainerImageStep
 
+# Configuration & security tools (v2.0.0)
+from .steps.config_validation import ConfigValidationStep
+from .steps.secrets_detection import SecretsDetectionStep
+from .steps.env_completeness import EnvCompletenessStep
+from .steps.security_headers import SecurityHeadersStep
+
 from .policy import AIContextPolicy
 
 
@@ -210,6 +216,15 @@ def _analysis_steps(options: RunOptions) -> list:
             DockerfileLintStep(),
             DockerigoreStep(),
             ContainerImageStep(),
+        ]
+
+    # Configuration & security (v2.0.0)
+    if not options.no_config_security_analysis:
+        steps += [
+            ConfigValidationStep(),
+            SecretsDetectionStep(),
+            EnvCompletenessStep(),
+            SecurityHeadersStep(),
         ]
 
     # Source snapshot and documentation

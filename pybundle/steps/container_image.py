@@ -284,7 +284,7 @@ class ContainerImageStep(Step):
 
         return layers
 
-    def _format_size(self, size_bytes: int) -> str:
+    def _format_size(self, size_bytes: float) -> str:
         """Format bytes into human readable size."""
         for unit in ["B", "KB", "MB", "GB", "TB"]:
             if size_bytes < 1024:

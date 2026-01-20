@@ -141,6 +141,9 @@ class RunOptions:
     no_container_analysis: bool | None = None
     docker_image: str | None = None
 
+    # configuration & security (v2.0.0)
+    no_config_security_analysis: bool | None = None
+
     strict_paths: bool = False  # Enforce trusted path validation
 
     ruff_target: str = "."

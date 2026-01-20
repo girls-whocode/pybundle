@@ -305,6 +305,14 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
         help="Docker image name for analysis (default: auto-detect from docker-compose)",
     )
 
+    # Configuration & security options (v2.0.0)
+    sp.add_argument(
+        "--config-security-analysis", dest="no_config_security_analysis", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-config-security-analysis", dest="no_config_security_analysis", action="store_true", default=None
+    )
+
     # Security options
     sp.add_argument(
         "--strict-paths",
@@ -394,6 +402,7 @@ def _build_options(args) -> RunOptions:
         no_runtime_analysis=getattr(args, "no_runtime_analysis", None),
         no_container_analysis=getattr(args, "no_container_analysis", None),
         docker_image=getattr(args, "docker_image", None),
+        no_config_security_analysis=getattr(args, "no_config_security_analysis", None),
         strict_paths=getattr(args, "strict_paths", False),
         ruff_target=getattr(args, "ruff_target", "."),
         mypy_target=getattr(args, "mypy_target", "."),
