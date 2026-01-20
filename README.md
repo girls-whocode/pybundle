@@ -794,6 +794,22 @@ python -m pybundle ...
 
 to bypass shell caching.
 
+### Release Process
+
+To release a new version:
+
+```bash
+./release.sh --push-release v2.1.0
+```
+
+The script automates:
+- Version updates (pyproject.toml, README.md)
+- Git tagging and pushing
+- GitHub release creation
+- Triggers PyPI publish via CI
+
+See [docs/RELEASE_PROCESS.md](docs/RELEASE_PROCESS.md) for details.
+
 ---
 
 ## 📌 Versioning
