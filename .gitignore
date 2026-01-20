@@ -48,6 +48,9 @@ htmlcov/
 .pybundle_versions/
 .pybundle_metadata/
 .pybundle_settings/
+
+# Milestone development docs (internal only)
+docs/MILESTONE_*.md
 .pybundle_state/
 .pybundle_data/
 .pybundle_configs/

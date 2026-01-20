@@ -79,6 +79,12 @@ For humans, automation, and AI alike.
 * 🛡️ Security scanning (bandit for code issues, pip-audit for dependency CVEs)
 * 🧪 Deterministic output (stable paths, timestamps, schemas)
 * 🔒 Secret-safe (optional redaction)
+* **v2.0.0 NEW:** 22 advanced analysis steps including:
+  - 🔐 Security hardening (secrets detection, security headers)
+  - ⚡ Async/await pattern detection
+  - 📊 Database & ORM optimization
+  - 🏗️ Framework-specific analysis (Django, FastAPI, Flask)
+  - 🐳 Container & deployment analysis
 
 ---
 
@@ -125,7 +131,7 @@ pytest
 pytest-cov
 bandit
 pip-audit
-gwc-pybundle==1.3.1
+gwc-pybundle==2.0.0
 ```
 
 Then install:
