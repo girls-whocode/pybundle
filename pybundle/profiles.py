@@ -75,6 +75,11 @@ from .steps.asyncio_analysis import AsyncioAnalysisStep
 from .steps.blocking_call_detection import BlockingCallDetectionStep
 from .steps.event_loop_patterns import EventLoopPatternsStep
 
+# Database & data layer tools (v2.0.0)
+from .steps.migration_history import MigrationHistoryStep
+from .steps.query_pattern_analysis import QueryPatternAnalysisStep
+from .steps.orm_optimization import ORMOptimizationStep
+
 from .policy import AIContextPolicy
 
 
@@ -238,6 +243,14 @@ def _analysis_steps(options: RunOptions) -> list:
             AsyncioAnalysisStep(),
             BlockingCallDetectionStep(),
             EventLoopPatternsStep(),
+        ]
+
+    # Database & data layer (v2.0.0)
+    if not options.no_db_analysis:
+        steps += [
+            MigrationHistoryStep(),
+            QueryPatternAnalysisStep(),
+            ORMOptimizationStep(),
         ]
 
     # Source snapshot and documentation

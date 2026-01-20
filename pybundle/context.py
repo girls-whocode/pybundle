@@ -147,6 +147,9 @@ class RunOptions:
     # async & modern python (v2.0.0)
     no_async_analysis: bool | None = None
 
+    # database & data layer (v2.0.0)
+    no_db_analysis: bool | None = None
+
     strict_paths: bool = False  # Enforce trusted path validation
 
     ruff_target: str = "."

@@ -321,6 +321,14 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
         "--no-async-analysis", dest="no_async_analysis", action="store_true", default=None
     )
 
+    # Database & data layer options (v2.0.0)
+    sp.add_argument(
+        "--db-analysis", dest="no_db_analysis", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-db-analysis", dest="no_db_analysis", action="store_true", default=None
+    )
+
     # Security options
     sp.add_argument(
         "--strict-paths",
@@ -412,6 +420,7 @@ def _build_options(args) -> RunOptions:
         docker_image=getattr(args, "docker_image", None),
         no_config_security_analysis=getattr(args, "no_config_security_analysis", None),
         no_async_analysis=getattr(args, "no_async_analysis", None),
+        no_db_analysis=getattr(args, "no_db_analysis", None),
         strict_paths=getattr(args, "strict_paths", False),
         ruff_target=getattr(args, "ruff_target", "."),
         mypy_target=getattr(args, "mypy_target", "."),
