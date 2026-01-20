@@ -54,34 +54,27 @@ class InterrogateStep:
 
         target_path = ctx.root / self.target
         
-        # Build comprehensive exclusion list for interrogate
-        # Exclude ALL venvs, caches, and dependency directories
-        exclude_patterns = [
-            "*venv*",  # Catches .venv, venv, .freeze-venv, .gaslog-venv, etc.
-            "*site-packages*",
-            "__pycache__",
-            ".pytest_cache",
-            ".mypy_cache",
-            ".ruff_cache",
-            ".tox",
-            ".nox",
-            "artifacts",
-            "build",
-            "dist",
-            ".git",
-            "node_modules",
-        ]
+        # Find all PROJECT Python files (exclude venvs, site-packages, caches)
+        project_files = []
+        for p in ctx.root.rglob("*.py"):
+            if not should_exclude_from_analysis(p):
+                project_files.append(str(p))
         
+        if not project_files:
+            out.write_text(
+                "no project .py files detected; skipping interrogate\n",
+                encoding="utf-8"
+            )
+            return StepResult(self.name, "SKIP", 0, "no project files")
+        
+        # interrogate on specific files is more reliable than --exclude patterns
         cmd = [
             interrogate,
-            str(target_path),
             "-v",  # Verbose output
             "--fail-under",
             "0",  # Don't fail the step based on coverage percentage
             "--color",
-            "--exclude",
-            ",".join(exclude_patterns),
-        ]
+        ] + project_files
 
         try:
             result = subprocess.run(  # nosec B603 - Using full path from which()

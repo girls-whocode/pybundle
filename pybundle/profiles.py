@@ -396,6 +396,7 @@ def _debug_steps(options: RunOptions) -> list:
     # Source snapshot + repro documentation
     steps += [
         CuratedCopyStep(policy=policy),
+        RoadmapStep(policy=policy),
         ReproMarkdownStep(),
         AIContextStep(),  # Generate AI_CONTEXT.md for AI consumption
         HandoffMarkdownStep(),
