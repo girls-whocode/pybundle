@@ -6,7 +6,7 @@ name = "gwc-pybundle"
 description = "Deterministic Python project context bundling for humans, automation, and AI"
 readme = "README.md"
 license = { file = "LICENSE.md" }
-version = "2.0.1"
+version = "2.1.1"
 requires-python = ">=3.9"
 
 dependencies = [
@@ -43,3 +43,6 @@ exclude = ["artifacts*", ".pybundle*"]
 
 [tool.setuptools]
 include-package-data = false
+
+[project.optional-dependencies]
+dev = ["build", "twine"]
