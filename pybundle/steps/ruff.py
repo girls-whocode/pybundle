@@ -107,5 +107,11 @@ class RuffFormatCheckStep:
         out.write_text(ctx.redact_text(text), encoding="utf-8")
 
         dur = int(time.time() - start)
-        note = "" if cp.returncode == 0 else f"exit={cp.returncode} (format drift)"
-        return StepResult(self.name, "PASS", dur, note)
+        
+        # Exit code 0 = formatted correctly, non-zero = needs formatting
+        if cp.returncode == 0:
+            return StepResult(self.name, "PASS", dur, "")
+        else:
+            # Format drift should be WARN, not PASS - it's actionable
+            note = f"exit={cp.returncode} (format drift detected)"
+            return StepResult(self.name, "WARN", dur, note)

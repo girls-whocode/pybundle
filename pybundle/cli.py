@@ -441,6 +441,14 @@ def _build_options(args) -> RunOptions:
 
 
 def main(argv: list[str] | None = None) -> int:
+    import sys
+    
+    # Capture full command for reproducibility before parsing
+    if argv is None:
+        command_line = ' '.join(sys.argv)
+    else:
+        command_line = 'pybundle ' + ' '.join(argv)
+    
     args = build_parser().parse_args(argv)
 
     if args.cmd == "version":
@@ -478,6 +486,7 @@ def main(argv: list[str] | None = None) -> int:
             keep_workdir=True,
             options=options,
         )
+        ctx.command_used = command_line
 
         if args.json:
             ctx.emit_json(ctx.doctor_report(profile))
@@ -500,6 +509,7 @@ def main(argv: list[str] | None = None) -> int:
         keep_workdir=keep_workdir,
         options=options,
     )
+    ctx.command_used = command_line
 
     rc = run_profile(ctx, profile)
 

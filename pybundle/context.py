@@ -53,6 +53,10 @@ class Tooling:
     # documentation & type quality tools (v1.5.0)
     pdoc: str | None
     markdown_link_check: str | None
+    
+    # security audit tools (commonly used, should be tracked)
+    bandit: str | None
+    pip_audit: str | None
 
     @staticmethod
     def detect(strict_paths: bool = False) -> "Tooling":
@@ -84,6 +88,8 @@ class Tooling:
             line_profiler=which("kernprof", strict=strict_paths),
             pdoc=which("pdoc", strict=strict_paths),
             markdown_link_check=which("markdown-link-check", strict=strict_paths),
+            bandit=which("bandit", strict=strict_paths),
+            pip_audit=which("pip-audit", strict=strict_paths),
         )
 
 
