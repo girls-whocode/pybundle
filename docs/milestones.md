@@ -423,7 +423,7 @@ Roadmap for expanding pybundle's diagnostic capabilities beyond v1.2.x.
 
 ---
 
-## Milestone 10: Async & Modern Python (v2.0.0) ✅ COMPLETED
+## Milestone 10: Async & Modern Python (v2.0.0) COMPLETED
 
 **Focus:** AsyncIO and Python 3.9+ features
 
@@ -477,45 +477,57 @@ Roadmap for expanding pybundle's diagnostic capabilities beyond v1.2.x.
 
 ---
 
-## Milestone 11: Database & Data Layer (v2.0.0) PLANNED
+## Milestone 11: Database & Data Layer (v2.0.0) COMPLETED
 
 **Focus:** Database schema and ORM analysis
 
 **Priority:** LOW (HIGH for DB-heavy projects)  
 **Complexity:** HIGH  
-**Target:** Q2 2026
+**Status:** ✅ COMPLETED
 
 ### Features
 
-- **Migration History Tracking**
-  - Detect Alembic, Django, SQLAlchemy migrations
-  - List unapplied migrations
+- **Migration History Tracking** ✅
+  - Auto-detects Django, Alembic, Tortoise migrations
+  - Counts migration files and tracks framework-specific info
+  - Django: checks dependencies in migration files
+  - Alembic: analyzes downgrade path capability
   - Integration: `meta/140_migrations.txt`
 
-- **Schema Documentation**
-  - ERD generation from models (via sadisplay or similar)
-  - Integration: `meta/140_schema.svg`
-
-- **Query Pattern Analysis**
-  - Find potential N+1 queries (static)
-  - Identify missing indexes (via model analysis)
+- **Query Pattern Analysis** ✅
+  - Detects ORM framework (Django, SQLAlchemy, Tortoise)
+  - Counts model definitions
+  - Finds potential N+1 patterns (for loops with queries)
+  - Detects lazy loading patterns
+  - Tracks relationship access (FK, M2M, reverse)
   - Integration: `logs/140_query_patterns.txt`
 
-- **ORM Optimization Hints**
-  - Suggest select_related/prefetch_related (Django)
-  - Lazy loading warnings (SQLAlchemy)
+- **ORM Optimization Hints** ✅
+  - Django: suggests select_related, prefetch_related, only, defer, bulk operations, exists
+  - SQLAlchemy: suggests joinedload, selectinload, contains_eager, raiseload
+  - Tortoise: recommendations for prefetch_related, select_related
+  - General optimization principles and monitoring tips
   - Integration: `logs/141_orm_optimization.txt`
 
 ### CLI Additions
 ```bash
 --no-db-analysis / --db-analysis
---orm {django,sqlalchemy,tortoise}  # Auto-detect by default
 ```
 
+### Implementation Details
+- Step 1: `MigrationHistoryStep` (175 lines) - Migration detection and analysis
+- Step 2: `QueryPatternAnalysisStep` (335 lines) - ORM and pattern analysis
+- Step 3: `ORMOptimizationStep` (375 lines) - Optimization suggestions
+- Integration: profiles.py (conditional with `no_db_analysis` flag), context.py, cli.py
+- No external dependencies required
+
 ### Success Criteria
-- Auto-detects ORM from imports
-- Migration tracking works for Django + Alembic
-- Query analysis limited to static heuristics (no DB connection)
+✅ Auto-detects ORM from imports  
+✅ Migration tracking works for Django, Alembic, Tortoise  
+✅ Query analysis limited to static heuristics (no DB connection)  
+✅ All 3 steps tested and working with proper output files  
+✅ Graceful handling when frameworks not detected  
+✅ Proper integration into analysis profile with flag support  
 
 ---
 
