@@ -205,8 +205,29 @@ class LinkValidationStep:
                 results[key] = ("SKIP", "curl or requests not available")
             return results
 
-        # Check each link
-        for filepath, url in links:
+        # Limit number of links to check (prevent hanging on large docs)
+        max_links = 50
+        links_to_check = list(links.keys())[:max_links]
+        
+        if len(links) > max_links:
+            # Mark excess links as skipped
+            for key in list(links.keys())[max_links:]:
+                results[key] = ("SKIP", f"Exceeded {max_links} link limit")
+
+        # Check each link with overall timeout protection
+        check_start = time.time()
+        max_check_time = 120  # 2 minutes max for all link checking
+        
+        for filepath, url in links_to_check:
+            # Check if we've exceeded overall time budget
+            if time.time() - check_start > max_check_time:
+                results[(filepath, url)] = ("SKIP", "Overall timeout exceeded")
+                # Mark remaining as skipped
+                remaining_idx = links_to_check.index((filepath, url)) + 1
+                for key in links_to_check[remaining_idx:]:
+                    results[key] = ("SKIP", "Overall timeout exceeded")
+                break
+                
             status, message = self._check_single_link(url, has_curl, has_requests)
             results[(filepath, url)] = (status, message)
 
@@ -223,7 +244,7 @@ class LinkValidationStep:
 
         if has_curl:
             try:
-                # Use curl with HEAD request, follow redirects, 10s timeout
+                # Use curl with HEAD request, follow redirects, shorter timeout
                 result = subprocess.run(
                     [
                         "curl",
@@ -234,13 +255,15 @@ class LinkValidationStep:
                         "/dev/null",  # Discard output
                         "-w",
                         "%{http_code}",  # Write HTTP code
+                        "--connect-timeout",
+                        "3",  # 3 second connection timeout
                         "--max-time",
-                        "10",  # 10 second timeout
+                        "5",  # 5 second total timeout
                         url,
                     ],
                     capture_output=True,
                     text=True,
-                    timeout=15,
+                    timeout=6,  # Python timeout slightly higher than curl's
                 )
 
                 http_code = result.stdout.strip()
@@ -263,7 +286,7 @@ class LinkValidationStep:
                 response = requests.head(
                     url,
                     allow_redirects=True,
-                    timeout=10,
+                    timeout=5,  # Reduced from 10 to 5 seconds
                     headers={"User-Agent": "pybundle-link-checker"},
                 )
 
