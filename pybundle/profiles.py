@@ -70,6 +70,11 @@ from .steps.secrets_detection import SecretsDetectionStep
 from .steps.env_completeness import EnvCompletenessStep
 from .steps.security_headers import SecurityHeadersStep
 
+# Async & modern Python tools (v2.0.0)
+from .steps.asyncio_analysis import AsyncioAnalysisStep
+from .steps.blocking_call_detection import BlockingCallDetectionStep
+from .steps.event_loop_patterns import EventLoopPatternsStep
+
 from .policy import AIContextPolicy
 
 
@@ -225,6 +230,14 @@ def _analysis_steps(options: RunOptions) -> list:
             SecretsDetectionStep(),
             EnvCompletenessStep(),
             SecurityHeadersStep(),
+        ]
+
+    # Async & modern Python (v2.0.0)
+    if not options.no_async_analysis:
+        steps += [
+            AsyncioAnalysisStep(),
+            BlockingCallDetectionStep(),
+            EventLoopPatternsStep(),
         ]
 
     # Source snapshot and documentation

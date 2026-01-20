@@ -144,6 +144,9 @@ class RunOptions:
     # configuration & security (v2.0.0)
     no_config_security_analysis: bool | None = None
 
+    # async & modern python (v2.0.0)
+    no_async_analysis: bool | None = None
+
     strict_paths: bool = False  # Enforce trusted path validation
 
     ruff_target: str = "."
