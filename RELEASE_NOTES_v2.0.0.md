@@ -1,8 +1,8 @@
-# v2.0.0 Release Notes
+# v2.0.1 Release Notes
 
 ## Overview
 
-pybundle v2.0.0 represents a major expansion with **22 new analysis steps** across 7 completed milestones. This release transforms pybundle from a foundational tool into a comprehensive code analysis platform with framework-specific, database, async, and security capabilities.
+pybundle v2.0.1 represents a major expansion with **22 new analysis steps** across 7 completed milestones. This release transforms pybundle from a foundational tool into a comprehensive code analysis platform with framework-specific, database, async, and security capabilities.
 
 ## Major Features
 
