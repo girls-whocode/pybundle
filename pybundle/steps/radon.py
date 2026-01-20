@@ -52,34 +52,50 @@ class RadonStep:
 
         # Build exclude patterns to avoid scanning artifacts, venvs, caches
         # CRITICAL: Radon scans everything by default, including prior pybundle runs
-        # Use simple patterns without wildcards - radon's --exclude is finicky
+        # Note: radon --exclude matches against path components, not full glob patterns
         excludes = [
             # Artifacts from prior pybundle runs (CRITICAL - prevents duplicate reports)
+            "*/artifacts/*",
             "artifacts",
             # Virtual environments (all common patterns)
+            "*/.venv/*",
             ".venv",
+            "*/venv/*",
             "venv",
+            "*/env/*",
             "env",
+            "*/.env/*",
             ".env",
+            "*/.freeze-venv/*",
             ".freeze-venv",
+            "*/.pybundle-venv/*",
             ".pybundle-venv",
-            # Also catch custom venv names with glob patterns
-            "*-venv",
-            "*_venv",
+            "*/.gaslog-venv/*",
             ".gaslog-venv",
             # Caches
+            "*/__pycache__/*",
             "__pycache__",
+            "*/.mypy_cache/*",
             ".mypy_cache",
+            "*/.pytest_cache/*",
             ".pytest_cache",
+            "*/.ruff_cache/*",
             ".ruff_cache",
+            "*/.tox/*",
             ".tox",
+            "*/.nox/*",
             ".nox",
             # Build outputs
+            "*/node_modules/*",
             "node_modules",
+            "*/dist/*",
             "dist",
+            "*/build/*",
             "build",
+            "*/target/*",
             "target",
             # Version control
+            "*/.git/*",
             ".git",
         ]
         

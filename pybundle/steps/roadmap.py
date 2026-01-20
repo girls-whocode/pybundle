@@ -52,11 +52,23 @@ class RoadmapStep:
             max_files=policy.roadmap_max_files,
         )
 
-        # JSON
+        # JSON - ensure always valid even if empty
         out_json_path = ctx.workdir / self.out_json
         out_json_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        graph_dict = graph.to_dict()
+        # If graph is empty/invalid, emit valid fallback JSON
+        if not graph_dict or not graph_dict.get("nodes"):
+            graph_dict = {
+                "nodes": [],
+                "edges": [],
+                "entrypoints": [],
+                "stats": {},
+                "note": "No roadmap data - project structure not detected or all files excluded"
+            }
+        
         out_json_path.write_text(
-            json.dumps(graph.to_dict(), indent=2), encoding="utf-8"
+            json.dumps(graph_dict, indent=2), encoding="utf-8"
         )
 
         # Markdown (policy-driven Mermaid knobs)

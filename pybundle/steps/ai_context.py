@@ -320,11 +320,11 @@ pytest
         db_type = self._detect_database(ctx.root)
         orm = self._detect_orm(ctx.root)
         
-        # Find model files
+        # Find model files (PROJECT scope only - no site-packages)
         model_files = []
         for pattern in ["*model*.py", "*schema*.py"]:
             for p in ctx.root.rglob(pattern):
-                if not any(x in p.parts for x in [".venv", "venv", "__pycache__", "artifacts"]):
+                if not should_exclude_from_analysis(p):
                     rel_path = p.relative_to(ctx.root)
                     model_files.append(f"* `{rel_path}` — Data models/schemas")
                     if len(model_files) >= 3:  # Limit to 3 files
@@ -761,18 +761,19 @@ pip freeze > requirements.txt
         return "* (No migrations detected)"
 
     def _extract_routes(self, root: Path) -> list[str]:
-        """Extract API routes from code."""
+        """Extract API routes from code (PROJECT scope only)."""
         routes = []
         
         for p in root.rglob("*.py"):
-            if any(x in p.parts for x in [".venv", "venv", "__pycache__", "artifacts"]):
+            if should_exclude_from_analysis(p):
                 continue
             try:
                 content = p.read_text(encoding="utf-8", errors="ignore")
                 import re
-                # FastAPI patterns
+                # FastAPI/Flask patterns - match decorator-registered routes
+                # @router.get("/path"), @app.post("/path"), etc.
                 patterns = [
-                    r'@\w+\.(get|post|put|delete|patch)\(["\']([^"\']+)["\']\)',
+                    r'@(?:router|app|api)\.(get|post|put|delete|patch|options|head)\(["\']([^"\']+)["\']\)',
                     r'@app\.route\(["\']([^"\']+)["\']\)',
                 ]
                 for pattern in patterns:

@@ -14,6 +14,24 @@ if TYPE_CHECKING:
     from .profiles import Profile
 
 
+def get_pybundle_version() -> str:
+    """Get pybundle version from pyproject.toml."""
+    try:
+        # Try to find pyproject.toml relative to this file
+        pkg_root = Path(__file__).parent.parent
+        pyproject = pkg_root / "pyproject.toml"
+        
+        if pyproject.exists():
+            import tomllib
+            with open(pyproject, "rb") as f:
+                data = tomllib.load(f)
+                return data.get("project", {}).get("version", "unknown")
+    except Exception:
+        pass
+    
+    return "unknown"
+
+
 def fmt_tool(path: str | None) -> str:
     if path:
         return path
@@ -190,6 +208,7 @@ class BundleContext:
     redact: bool
     keep_workdir: bool
     tools: Tooling
+    version: str = "unknown"  # pybundle version
     results: list["StepResult"] = field(default_factory=list)
     command_used: str = ""
     json_mode: bool = False
@@ -237,6 +256,7 @@ class BundleContext:
         options = options or RunOptions()
         tools = Tooling.detect(strict_paths=options.strict_paths)
         prefix = name_prefix or f"pybundle_{profile_name}_{ts}"
+        version = get_pybundle_version()
 
         return cls(
             root=root,
@@ -258,6 +278,7 @@ class BundleContext:
             keep_workdir=keep_workdir,
             tools=tools,
             json_mode=json_mode,
+            version=version,
         )
 
     def rel(self, p: Path) -> str:
