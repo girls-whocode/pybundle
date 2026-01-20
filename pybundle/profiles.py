@@ -80,6 +80,12 @@ from .steps.migration_history import MigrationHistoryStep
 from .steps.query_pattern_analysis import QueryPatternAnalysisStep
 from .steps.orm_optimization import ORMOptimizationStep
 
+# Framework-specific tools (v2.0.0)
+from .steps.django_checks import DjangoSystemChecksStep
+from .steps.fastapi_integration import FastAPIIntegrationStep
+from .steps.flask_debugging import FlaskDebuggingStep
+from .steps.sqlalchemy_validation import SQLAlchemyValidationStep
+
 from .policy import AIContextPolicy
 
 
@@ -251,6 +257,15 @@ def _analysis_steps(options: RunOptions) -> list:
             MigrationHistoryStep(),
             QueryPatternAnalysisStep(),
             ORMOptimizationStep(),
+        ]
+
+    # Framework-specific tools (v2.0.0)
+    if not options.no_framework_analysis:
+        steps += [
+            DjangoSystemChecksStep(),
+            FastAPIIntegrationStep(),
+            FlaskDebuggingStep(),
+            SQLAlchemyValidationStep(),
         ]
 
     # Source snapshot and documentation
