@@ -59,6 +59,11 @@ from .steps.logging_analysis import LoggingAnalysisStep
 from .steps.call_graph import CallGraphStep
 from .steps.env_var_usage import EnvVarUsageStep
 
+# Container & deployment tools (v2.0.0)
+from .steps.dockerfile_lint import DockerfileLintStep
+from .steps.dockerignore import DockerigoreStep
+from .steps.container_image import ContainerImageStep
+
 from .policy import AIContextPolicy
 
 
@@ -197,6 +202,14 @@ def _analysis_steps(options: RunOptions) -> list:
             LoggingAnalysisStep(),
             CallGraphStep(),
             EnvVarUsageStep(),
+        ]
+
+    # Container & deployment (v2.0.0)
+    if not options.no_container_analysis:
+        steps += [
+            DockerfileLintStep(),
+            DockerigoreStep(),
+            ContainerImageStep(),
         ]
 
     # Source snapshot and documentation

@@ -137,6 +137,10 @@ class RunOptions:
     # runtime analysis (v1.5.2)
     no_runtime_analysis: bool | None = None
 
+    # container & deployment (v2.0.0)
+    no_container_analysis: bool | None = None
+    docker_image: str | None = None
+
     strict_paths: bool = False  # Enforce trusted path validation
 
     ruff_target: str = "."

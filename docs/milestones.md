@@ -321,50 +321,7 @@ Roadmap for expanding pybundle's diagnostic capabilities beyond v1.2.x.
 
 ---
 
-## Milestone 8: Container & Deployment Analysis (v2.0.0) PLANNED
-
-**Focus:** Understanding code behavior at runtime
-
-**Priority:** MEDIUM  
-**Complexity:** HIGH  
-**Target:** Q4 2026
-
-### Features
-
-- **Exception Pattern Tracking**
-  - Static analysis: find all `raise` statements
-  - Categorize exception types used
-  - Integration: `logs/110_exception_patterns.txt`
-
-- **Logging Analysis**
-  - Extract all logging calls (info, warning, error)
-  - Log level distribution
-  - Integration: `logs/111_logging_analysis.txt`
-
-- **Function Call Graph** (`pyan` or similar)
-  - Static call graph generation
-  - Identify orphaned functions
-  - Integration: `meta/110_call_graph.dot` (GraphViz)
-
-- **Environment Variable Usage**
-  - Grep for `os.getenv`, `os.environ` patterns
-  - Document all env vars code expects
-  - Integration: `meta/111_env_vars.txt`
-
-### CLI Additions
-```bash
---no-runtime-analysis / --runtime-analysis
---call-graph-format {dot,svg,png}
-```
-
-### Success Criteria
-- Exception tracking finds >95% of raise statements
-- Call graph works on projects up to 50k LOC
-- Env var detection includes common libraries (click, pydantic)
-
----
-
-## Milestone 8: Container & Deployment Analysis (v1.5.2)
+## Milestone 8: Container & Deployment Analysis (v2.0.0) COMPLETED
 
 **Focus:** Docker and containerization best practices
 
@@ -377,36 +334,43 @@ Roadmap for expanding pybundle's diagnostic capabilities beyond v1.2.x.
 - **Dockerfile Linting** (`hadolint`)
   - Best practice validation
   - Security issue detection
-  - Integration: `logs/90_hadolint.txt`
+  - Multi-stage build analysis
+  - Base image pinning checks
+  - Non-root user validation
+  - HEALTHCHECK configuration
+  - Integration: `logs/105_dockerfile_lint.txt`
 
-- **Container Image Analysis** (Docker-specific)
-  - Layer size breakdown (via `docker history`)
-  - Unused layers identification
-  - Integration: `meta/90_image_layers.txt`
+- **\.dockerignore Effectiveness**
+  - Analyze build context efficiency
+  - Show file count and categories of excluded files
+  - Identify large included files (optimization targets)
+  - Space savings estimation
+  - Integration: `meta/106_dockerignore_analysis.txt`
 
-- **.dockerignore Effectiveness**
-  - Compare .dockerignore with actual build context
-  - Show what's being copied unnecessarily
-  - Integration: `meta/91_dockerignore_analysis.txt`
-
-- **Multi-Stage Build Validation**
-  - Ensure intermediate stages don't leak into final image
-  - Integration: `logs/91_dockerfile_stages.txt`
+- **Container Image Analysis** (Docker-optional)
+  - Image inspection via `docker inspect`
+  - Layer analysis via `docker history`
+  - Size breakdown and layer ranking
+  - Optimization recommendations
+  - Auto-detect image from docker-compose
+  - Integration: `meta/107_container_image.txt`
 
 ### CLI Additions
 ```bash
---no-dockerfile / --dockerfile
---docker-image NAME  # For image analysis
+--container-analysis / --no-container-analysis
+--docker-image NAME  # For image analysis (auto-detect from docker-compose)
 ```
 
 ### Success Criteria
 - Works when Dockerfile exists, skips gracefully otherwise
-- hadolint integration matches existing tool pattern
-- Docker image analysis requires docker CLI
+- .dockerignore effectiveness analysis provides actionable insights
+- Docker image analysis requires docker CLI (optional)
+- All three steps generate reports successfully
+- File exclusion analysis categorizes files by type
 
 ---
 
-## Milestone 9: Configuration & Security Hardening (v1.5.2)
+## Milestone 9: Configuration & Security Hardening (v2.0.0) PLANNED
 
 **Focus:** Advanced security and configuration validation
 
