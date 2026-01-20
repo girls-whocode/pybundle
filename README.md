@@ -79,7 +79,8 @@ For humans, automation, and AI alike.
 * 🛡️ Security scanning (bandit for code issues, pip-audit for dependency CVEs)
 * 🧪 Deterministic output (stable paths, timestamps, schemas)
 * 🔒 Secret-safe (optional redaction)
-* **v2.0.1 NEW:** 22 advanced analysis steps including:
+* **v2.1.0 NEW:** Enhanced AI context, smarter dead code detection, confidence-scored dependency analysis
+* **v2.0.1:** 22 advanced analysis steps including:
   - 🔐 Security hardening (secrets detection, security headers)
   - ⚡ Async/await pattern detection
   - 📊 Database & ORM optimization
