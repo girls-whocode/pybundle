@@ -8,6 +8,7 @@ from pathlib import Path
 from .base import StepResult
 from ..context import BundleContext
 from ..tools import which
+from ..filters import should_exclude_from_analysis
 
 
 def _repo_has_py_files(root: Path) -> bool:
@@ -52,6 +53,25 @@ class InterrogateStep:
             return StepResult(self.name, "SKIP", 0, "no python files")
 
         target_path = ctx.root / self.target
+        
+        # Build comprehensive exclusion list for interrogate
+        # Exclude ALL venvs, caches, and dependency directories
+        exclude_patterns = [
+            "*venv*",  # Catches .venv, venv, .freeze-venv, .gaslog-venv, etc.
+            "*site-packages*",
+            "__pycache__",
+            ".pytest_cache",
+            ".mypy_cache",
+            ".ruff_cache",
+            ".tox",
+            ".nox",
+            "artifacts",
+            "build",
+            "dist",
+            ".git",
+            "node_modules",
+        ]
+        
         cmd = [
             interrogate,
             str(target_path),
@@ -59,6 +79,8 @@ class InterrogateStep:
             "--fail-under",
             "0",  # Don't fail the step based on coverage percentage
             "--color",
+            "--exclude",
+            ",".join(exclude_patterns),
         ]
 
         try:

@@ -179,3 +179,50 @@ def is_excluded_path(
         ):
             return True
     return False
+
+
+def should_exclude_from_analysis(path: Path) -> bool:
+    """Check if path should be excluded from project analysis.
+    
+    This is a comprehensive filter for ALL analysis steps to prevent
+    scanning dependencies, caches, and build artifacts.
+    
+    Use this for: type coverage, docstring coverage, link validation,
+    complexity analysis, and any other metrics that should reflect
+    PROJECT code only, not dependencies.
+    """
+    parts = set(path.parts)
+    
+    # Comprehensive list of dependency/cache/build directories
+    exclude_patterns = {
+        # Virtual environments (all common patterns)
+        ".venv", "venv", "env", ".env",
+        ".pybundle-venv", ".freeze-venv",
+        # Match any venv-like directory (e.g., .gaslog-venv)
+        # Check if any part ends with -venv or starts with venv
+    }
+    
+    # Additional checks for venv-like patterns
+    for part in parts:
+        if part.endswith("-venv") or part.endswith("_venv"):
+            return True
+        if "site-packages" in part:
+            return True
+    
+    # Standard exclusions
+    if parts & {
+        # Caches
+        ".mypy_cache", ".ruff_cache", ".pytest_cache", "__pycache__",
+        ".cache", ".tox", ".nox",
+        # Build outputs
+        "build", "dist", "target", "out", "artifacts",
+        # Version control
+        ".git", ".hg", ".svn",
+        # Dependencies
+        "node_modules",
+        # Other
+        "binaries",
+    }:
+        return True
+    
+    return False

@@ -12,6 +12,7 @@ from typing import List, Tuple
 
 from .base import StepResult
 from ..context import BundleContext
+from ..filters import should_exclude_from_analysis
 
 
 @dataclass
@@ -264,31 +265,12 @@ class TypeCoverageStep:
         return StepResult(self.name, status, int(elapsed), note)
 
     def _find_python_files(self, root: Path) -> List[Path]:
-        """Find all Python source files, excluding common directories."""
+        """Find all Python source files, excluding dependencies/caches/build dirs."""
         python_files = []
-        exclude_dirs = {
-            "__pycache__",
-            ".git",
-            ".tox",
-            "venv",
-            "env",
-            ".venv",
-            ".env",
-            "node_modules",
-            "artifacts",
-            "build",
-            "dist",
-            ".pytest_cache",
-            ".mypy_cache",
-            ".ruff_cache",
-            "htmlcov",
-            ".coverage",
-            ".pybundle-venv",  # pybundle's venv
-        }
 
         for path in root.rglob("*.py"):
-            # Skip if any parent is in exclude_dirs
-            if any(part in exclude_dirs for part in path.parts):
+            # Use comprehensive exclusion filter for PROJECT files only
+            if should_exclude_from_analysis(path):
                 continue
             python_files.append(path)
 

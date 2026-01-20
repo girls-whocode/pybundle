@@ -11,6 +11,7 @@ from dataclasses import dataclass
 
 from .base import StepResult
 from ..context import BundleContext
+from ..filters import should_exclude_from_analysis
 
 
 @dataclass
@@ -102,26 +103,12 @@ class LinkValidationStep:
         return StepResult(self.name, status, int(elapsed), note)
 
     def _find_markdown_files(self, root: Path) -> List[Path]:
-        """Find all markdown files."""
+        """Find all markdown files, excluding dependencies/caches/build dirs."""
         md_files = []
-        exclude_dirs = {
-            "__pycache__",
-            ".git",
-            ".tox",
-            "venv",
-            "env",
-            ".venv",
-            ".env",
-            "node_modules",
-            "artifacts",
-            "build",
-            "dist",
-            ".pybundle-venv",  # pybundle's venv
-        }
 
         for path in root.rglob("*.md"):
-            # Skip if any parent is in exclude_dirs
-            if any(part in exclude_dirs for part in path.parts):
+            # Use comprehensive exclusion filter for PROJECT files only
+            if should_exclude_from_analysis(path):
                 continue
             md_files.append(path)
 
