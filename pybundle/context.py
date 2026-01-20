@@ -134,6 +134,9 @@ class RunOptions:
     no_git_analytics: bool | None = None
     git_blame_depth: int = 100
 
+    # runtime analysis (v1.5.2)
+    no_runtime_analysis: bool | None = None
+
     strict_paths: bool = False  # Enforce trusted path validation
 
     ruff_target: str = "."

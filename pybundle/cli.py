@@ -283,6 +283,14 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
         help="Number of commits to analyze in git blame (default: 100)",
     )
 
+    # Runtime analysis options (v1.5.2)
+    sp.add_argument(
+        "--runtime-analysis", dest="no_runtime_analysis", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-runtime-analysis", dest="no_runtime_analysis", action="store_true", default=None
+    )
+
     # Security options
     sp.add_argument(
         "--strict-paths",
@@ -367,6 +375,9 @@ def _build_options(args) -> RunOptions:
         no_link_check=getattr(args, "no_link_check", None),
         no_api_docs=getattr(args, "no_api_docs", None),
         no_config_docs=getattr(args, "no_config_docs", None),
+        no_git_analytics=getattr(args, "no_git_analytics", None),
+        git_blame_depth=getattr(args, "git_blame_depth", 100),
+        no_runtime_analysis=getattr(args, "no_runtime_analysis", None),
         strict_paths=getattr(args, "strict_paths", False),
         ruff_target=getattr(args, "ruff_target", "."),
         mypy_target=getattr(args, "mypy_target", "."),

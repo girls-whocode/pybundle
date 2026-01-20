@@ -231,7 +231,7 @@ Roadmap for expanding pybundle's diagnostic capabilities beyond v1.2.x.
 
 ---
 
-## Milestone 6: Advanced Git Analytics (v1.5.1) COMPLETED
+## Milestone 6: Advanced Git Analytics (v1.5.2) COMPLETED
 
 **Focus:** Deep git history and code ownership insights
 
@@ -274,7 +274,54 @@ Roadmap for expanding pybundle's diagnostic capabilities beyond v1.2.x.
 
 ---
 
-## Milestone 7: Runtime & Dynamic Analysis (v1.6.0)
+## Milestone 7: Runtime & Dynamic Analysis (v1.5.2) COMPLETED
+
+**Focus:** Static analysis of runtime behavior patterns  
+**Priority:** MEDIUM  
+**Complexity:** MEDIUM  
+**Target:** Q4 2026
+
+### Features
+
+- **Exception Pattern Tracking**
+  - Find all `raise` statements
+  - Categorize exception types (built-in vs custom)
+  - Detect bare raises and exception chaining
+  - Integration: `meta/101_exception_patterns.txt`
+
+- **Logging Analysis**
+  - Extract all logging calls
+  - Log level distribution (debug/info/warning/error/critical)
+  - Identify logger configurations
+  - Integration: `meta/102_logging_analysis.txt`
+
+- **Function Call Graph**
+  - Static call graph generation
+  - Identify orphaned functions (defined but never called)
+  - Most-called functions ranking
+  - Integration: `meta/103_call_graph.txt`
+
+- **Environment Variable Usage**
+  - Track `os.getenv`, `os.environ` patterns
+  - Document required environment variables
+  - Check for `.env.example` file
+  - Integration: `meta/104_env_var_usage.txt`
+
+### CLI Additions
+```bash
+--no-runtime-analysis / --runtime-analysis
+```
+
+### Success Criteria
+- All four runtime analysis reports generate correctly
+- Exception patterns detected across codebase
+- Logging usage and distribution analyzed
+- Call graph identifies orphaned functions
+- Environment variable usage tracked
+
+---
+
+## Milestone 8: Container & Deployment Analysis (v2.0.0) PLANNED
 
 **Focus:** Understanding code behavior at runtime
 
@@ -317,7 +364,7 @@ Roadmap for expanding pybundle's diagnostic capabilities beyond v1.2.x.
 
 ---
 
-## Milestone 8: Container & Deployment Analysis (v1.6.1)
+## Milestone 8: Container & Deployment Analysis (v1.5.2)
 
 **Focus:** Docker and containerization best practices
 
@@ -359,7 +406,7 @@ Roadmap for expanding pybundle's diagnostic capabilities beyond v1.2.x.
 
 ---
 
-## Milestone 9: Configuration & Security Hardening (v1.7.0)
+## Milestone 9: Configuration & Security Hardening (v1.5.2)
 
 **Focus:** Advanced security and configuration validation
 
@@ -401,7 +448,7 @@ Roadmap for expanding pybundle's diagnostic capabilities beyond v1.2.x.
 
 ---
 
-## Milestone 10: Async & Modern Python (v1.7.1)
+## Milestone 10: Async & Modern Python (v1.5.2)
 
 **Focus:** AsyncIO and Python 3.9+ features
 
@@ -443,7 +490,7 @@ Roadmap for expanding pybundle's diagnostic capabilities beyond v1.2.x.
 
 ---
 
-## Milestone 11: Database & Data Layer (v1.8.0)
+## Milestone 11: Database & Data Layer (v1.5.2)
 
 **Focus:** Database schema and ORM analysis
 
@@ -485,7 +532,7 @@ Roadmap for expanding pybundle's diagnostic capabilities beyond v1.2.x.
 
 ---
 
-## Milestone 12: Framework-Specific Extensions (v1.8.1+)
+## Milestone 12: Framework-Specific Extensions (v2.0.0)
 
 **Focus:** Deep integration with popular frameworks
 
@@ -542,8 +589,6 @@ pip install -e .
 git add -A
 git commit -m <PLACE COMMIT INFORMATION HERE>
 git push
-git tag v<VERSION NUMBER>
-git push --tags
 
 
 ### Phasing Strategy

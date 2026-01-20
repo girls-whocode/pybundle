@@ -53,6 +53,12 @@ from .steps.config_docs import ConfigDocumentationStep
 # Git analytics tools (v1.5.1)
 from .steps.git_analytics import GitAnalyticsStep
 
+# Runtime analysis tools (v1.5.2)
+from .steps.exception_patterns import ExceptionPatternsStep
+from .steps.logging_analysis import LoggingAnalysisStep
+from .steps.call_graph import CallGraphStep
+from .steps.env_var_usage import EnvVarUsageStep
+
 from .policy import AIContextPolicy
 
 
@@ -183,6 +189,15 @@ def _analysis_steps(options: RunOptions) -> list:
     # Git analytics (v1.5.1)
     if not options.no_git_analytics:
         steps += [GitAnalyticsStep()]
+
+    # Runtime analysis (v1.5.2)
+    if not options.no_runtime_analysis:
+        steps += [
+            ExceptionPatternsStep(),
+            LoggingAnalysisStep(),
+            CallGraphStep(),
+            EnvVarUsageStep(),
+        ]
 
     # Source snapshot and documentation
     steps += [
