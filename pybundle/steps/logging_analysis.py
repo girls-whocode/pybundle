@@ -38,6 +38,7 @@ class LoggingAnalysisStep(Step):
         }
         logging_configs = []
         logger_names = set()
+        analyzed_files = 0
 
         # Common logging patterns to detect
         logging_import_pattern = re.compile(r"import\s+logging")
@@ -59,6 +60,8 @@ class LoggingAnalysisStep(Step):
                 ]
             ):
                 continue
+
+            analyzed_files += 1
 
             try:
                 source = py_file.read_text(encoding="utf-8", errors="ignore")
@@ -105,7 +108,7 @@ class LoggingAnalysisStep(Step):
             "LOGGING ANALYSIS",
             "=" * 80,
             "",
-            f"Total Python files analyzed: {len(python_files)}",
+            f"Total Python files analyzed: {analyzed_files}",
             f"Total logging calls found: {total_logs}",
             f"Logging configurations found: {len(logging_configs)}",
             f"Unique logger names: {len(logger_names)}",

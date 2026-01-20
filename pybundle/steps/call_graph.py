@@ -30,6 +30,7 @@ class CallGraphStep(Step):
         defined_functions: Dict[str, str] = {}  # func_name -> file:line
         called_functions: Set[str] = set()  # func_name
         function_calls: Dict[str, List[str]] = {}  # func_name -> [called_func, ...]
+        analyzed_files = 0
 
         for py_file in python_files:
             # Skip non-user code
@@ -46,6 +47,8 @@ class CallGraphStep(Step):
                 ]
             ):
                 continue
+
+            analyzed_files += 1
 
             try:
                 source = py_file.read_text(encoding="utf-8", errors="ignore")
@@ -87,7 +90,7 @@ class CallGraphStep(Step):
             "CALL GRAPH ANALYSIS",
             "=" * 80,
             "",
-            f"Total Python files analyzed: {len(python_files)}",
+            f"Total Python files analyzed: {analyzed_files}",
             f"Total functions defined: {total_functions}",
             f"Total function calls: {total_calls}",
             f"Orphaned functions (never called): {len(orphaned)}",

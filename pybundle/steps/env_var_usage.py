@@ -35,6 +35,7 @@ class EnvVarUsageStep(Step):
             "os.environ[]": [],
             "dotenv": [],
         }
+        analyzed_files = 0
 
         # Regex patterns for detection
         getenv_pattern = re.compile(r'os\.getenv\(["\']([^"\']+)["\']')
@@ -57,6 +58,8 @@ class EnvVarUsageStep(Step):
                 ]
             ):
                 continue
+
+            analyzed_files += 1
 
             try:
                 source = py_file.read_text(encoding="utf-8", errors="ignore")
@@ -111,7 +114,7 @@ class EnvVarUsageStep(Step):
             "ENVIRONMENT VARIABLE USAGE ANALYSIS",
             "=" * 80,
             "",
-            f"Total Python files analyzed: {len(python_files)}",
+            f"Total Python files analyzed: {analyzed_files}",
             f"Unique environment variables: {total_vars}",
             f"Total environment variable accesses: {total_accesses}",
             "",

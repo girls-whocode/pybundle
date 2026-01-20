@@ -32,6 +32,7 @@ class ExceptionPatternsStep(Step):
         custom_exceptions: Set[str] = set()
         bare_raises = []  # re-raise without argument
         exception_chaining = []  # raise ... from ...
+        analyzed_files = 0
 
         for py_file in python_files:
             # Skip non-user code
@@ -48,6 +49,8 @@ class ExceptionPatternsStep(Step):
                 ]
             ):
                 continue
+
+            analyzed_files += 1
 
             try:
                 source = py_file.read_text(encoding="utf-8", errors="ignore")
@@ -88,7 +91,7 @@ class ExceptionPatternsStep(Step):
             "EXCEPTION PATTERN ANALYSIS",
             "=" * 80,
             "",
-            f"Total Python files analyzed: {len(python_files)}",
+            f"Total Python files analyzed: {analyzed_files}",
             f"Total exception types found: {len(exception_types)}",
             f"Custom exceptions: {len(custom_exceptions)}",
             f"Bare raises (re-raise): {len(bare_raises)}",
