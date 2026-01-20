@@ -46,8 +46,11 @@ DEFAULT_EXCLUDE_DIRS = {
     ".hg",
     ".svn",
     "venv",
+    "env",  # Added
     ".direnv",
     ".pybundle-venv",
+    ".freeze-venv",  # Added - common in enterprise freeze workflows
+    "site-packages",  # Added - never scan installed packages
     "binaries",
     "out",
     ".svelte-kit",

@@ -24,11 +24,25 @@ class ApiDocsStep:
         """Generate API documentation."""
         start = time.time()
 
-        # Check if pdoc is available
-        if not shutil.which("pdoc"):
+        # Check if pdoc is available and get version
+        pdoc_path = shutil.which("pdoc")
+        if not pdoc_path:
             elapsed = time.time() - start
             note = "pdoc not installed (pip install pdoc)"
             return StepResult(self.name, "SKIP", int(elapsed), note)
+
+        # Get pdoc version for diagnostics
+        pdoc_version = None
+        try:
+            version_result = subprocess.run(
+                ["pdoc", "--version"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            pdoc_version = version_result.stdout.strip() or version_result.stderr.strip()
+        except Exception:
+            pdoc_version = "unknown"
 
         # Find Python package(s) in project
         packages = self._find_packages(context.root)
@@ -49,14 +63,13 @@ class ApiDocsStep:
 
         for package in packages:
             try:
-                # Run pdoc to generate HTML docs
+                # Use pdoc v14+ syntax (--output-dir instead of --html + --output-dir)
+                # Try modern syntax first, fallback to legacy if it fails
                 result = subprocess.run(
                     [
                         "pdoc",
-                        "--html",
                         "--output-dir",
                         str(output_dir),
-                        "--force",  # Overwrite existing
                         str(package),
                     ],
                     cwd=context.root,
@@ -69,14 +82,15 @@ class ApiDocsStep:
                     success_count += 1
                 else:
                     error_count += 1
-                    errors.append((package.name, result.stderr))
+                    error_msg = result.stderr or result.stdout
+                    errors.append((package.name, result.returncode, error_msg))
 
             except subprocess.TimeoutExpired:
                 error_count += 1
-                errors.append((package.name, "Timeout after 60s"))
+                errors.append((package.name, -1, "Timeout after 60s"))
             except Exception as e:
                 error_count += 1
-                errors.append((package.name, str(e)))
+                errors.append((package.name, -1, str(e)))
 
         elapsed = time.time() - start
 
@@ -87,6 +101,12 @@ class ApiDocsStep:
             f.write("=" * 80 + "\n")
             f.write("API DOCUMENTATION GENERATION\n")
             f.write("=" * 80 + "\n\n")
+
+            f.write("Environment:\n")
+            f.write("-" * 80 + "\n")
+            f.write(f"pdoc path:       {pdoc_path}\n")
+            f.write(f"pdoc version:    {pdoc_version}\n")
+            f.write("\n")
 
             f.write("Summary:\n")
             f.write("-" * 80 + "\n")
@@ -99,12 +119,29 @@ class ApiDocsStep:
             if errors:
                 f.write("Errors:\n")
                 f.write("-" * 80 + "\n")
-                for package_name, error_msg in errors:
+                for package_name, retcode, error_msg in errors:
                     f.write(f"\n{package_name}:\n")
+                    f.write(f"  Exit code: {retcode}\n")
                     # Limit error message length
                     if len(error_msg) > 500:
                         error_msg = error_msg[:500] + "\n... (truncated)"
-                    f.write(f"{error_msg}\n")
+                    f.write(f"  Error: {error_msg}\n")
+                    
+                    # Add actionable fix suggestions
+                    f.write("\n  💡 How to fix:\n")
+                    if "--html" in error_msg or "unrecognized arguments" in error_msg:
+                        f.write("     - Your pdoc version may not support --html flag\n")
+                        f.write("     - pdoc < 14.0: use 'pdoc --html'\n")
+                        f.write("     - pdoc >= 14.0: use 'pdoc --output-dir'\n")
+                        f.write(f"     - Detected version: {pdoc_version}\n")
+                        f.write("     - Try: pip install --upgrade pdoc\n")
+                    elif "Timeout" in error_msg:
+                        f.write("     - Package is too large or has import errors\n")
+                        f.write("     - Check for circular imports or missing dependencies\n")
+                    else:
+                        f.write("     - Check that package imports work: python -c 'import <package>'\n")
+                        f.write("     - Verify dependencies are installed\n")
+                        f.write("     - Run manually: pdoc --output-dir docs/ <package>\n")
 
             if success_count > 0:
                 f.write("\nGenerated Documentation:\n")

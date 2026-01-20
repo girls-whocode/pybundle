@@ -77,15 +77,48 @@ def scan_rust_uses(text: str) -> tuple[list[str], list[str]]:
 def detect_entrypoints(root: Path) -> list[EntryPoint]:
     eps: list[EntryPoint] = []
 
-    # Python CLI entry: __main__.py
-    p = root / "src"
-    if p.exists():
-        for main in p.rglob("__main__.py"):
-            eps.append(
-                EntryPoint(
-                    node=_rel(root, main), reason="python __main__.py", confidence=3
-                )
-            )
+    # Python CLI entry: __main__.py (search root and common dirs)
+    for search_path in [root, root / "src", root / "app"]:
+        if search_path.exists():
+            for main in search_path.rglob("__main__.py"):
+                if not _is_under_venv(main) and "site-packages" not in str(main):
+                    eps.append(
+                        EntryPoint(
+                            node=_rel(root, main), reason="python __main__.py", confidence=3
+                        )
+                    )
+
+    # Python: Check pyproject.toml for console_scripts entrypoints
+    pyproject = root / "pyproject.toml"
+    if pyproject.is_file():
+        try:
+            import tomllib
+            with open(pyproject, "rb") as f:
+                data = tomllib.load(f)
+                # PEP 621 project.scripts
+                scripts = data.get("project", {}).get("scripts", {})
+                if scripts:
+                    for script_name, target in scripts.items():
+                        eps.append(
+                            EntryPoint(
+                                node=f"pyproject.toml:scripts.{script_name}",
+                                reason=f"console script -> {target}",
+                                confidence=3
+                            )
+                        )
+                # Poetry scripts
+                poetry_scripts = data.get("tool", {}).get("poetry", {}).get("scripts", {})
+                if poetry_scripts:
+                    for script_name in poetry_scripts:
+                        eps.append(
+                            EntryPoint(
+                                node=f"pyproject.toml:poetry.scripts.{script_name}",
+                                reason="poetry script",
+                                confidence=3
+                            )
+                        )
+        except Exception:
+            pass  # TOML parsing failed, skip
 
     # Rust main.rs (including tauri src-tauri)
     for mr in root.rglob("main.rs"):

@@ -50,7 +50,7 @@ class SecretsDetectionStep(Step):
         ]
 
         if secrets_found["matches"]:
-            lines.append("⚠ POTENTIAL SECRETS DETECTED")
+            lines.append("⚠ POTENTIAL SECRETS DETECTED (pattern-based)")
             lines.append("")
 
             for file_path, details in secrets_found["matches"].items():
@@ -71,7 +71,8 @@ class SecretsDetectionStep(Step):
             lines.append(f"Total files with potential secrets: {len(secrets_found['matches'])}")
             lines.append(f"Total potential secrets: {secrets_found['total_matches']}")
         else:
-            lines.append("✓ No obvious secrets detected")
+            lines.append("✓ No pattern-based secrets detected")
+            lines.append("  (API keys, AWS keys, GitHub tokens, private keys, etc.)")
 
         lines.extend(
             [
@@ -83,13 +84,18 @@ class SecretsDetectionStep(Step):
             ]
         )
 
-        # High entropy strings analysis
+        # High entropy strings analysis (LIMITED OUTPUT)
         high_entropy = secrets_found.get("high_entropy", [])
         if high_entropy:
-            lines.append(f"Found {len(high_entropy)} high-entropy strings (potential secrets):")
+            lines.append(f"Found {len(high_entropy)} high-entropy strings (may include hashes, tokens, UUIDs):")
+            lines.append("")
+            lines.append("NOTE: High-entropy detection produces many false positives.")
+            lines.append("      Focus on pattern-based findings above for actual secrets.")
             lines.append("")
 
-            for item in high_entropy[:20]:
+            # Show only top 10 highest-entropy, not all
+            display_count = min(10, len(high_entropy))
+            for item in high_entropy[:display_count]:
                 lines.append(f"  File: {item['file']}")
                 lines.append(f"  Line: {item['line']}")
                 lines.append(f"  Entropy: {item['entropy']:.3f}")
@@ -100,8 +106,9 @@ class SecretsDetectionStep(Step):
                     lines.append(f"  Value preview: {context}")
                 lines.append("")
 
-            if len(high_entropy) > 20:
-                lines.append(f"  ... and {len(high_entropy) - 20} more high-entropy strings")
+            if len(high_entropy) > display_count:
+                lines.append(f"  ... and {len(high_entropy) - display_count} more (suppressed for readability)")
+                lines.append(f"      Run with --deep-scan to see full entropy analysis")
                 lines.append("")
 
         else:
@@ -152,10 +159,14 @@ class SecretsDetectionStep(Step):
         ) + list(root.rglob("*.yml"))
 
         for py_file in python_files:
-            # Skip venv and cache
+            # Skip venv, cache, and dependency directories (PROJECT SCOPE ONLY)
             if any(
                 part in py_file.parts
-                for part in ["venv", ".venv", "env", "__pycache__", "site-packages"]
+                for part in [
+                    "venv", ".venv", "env", "__pycache__", "site-packages",
+                    ".mypy_cache", ".pytest_cache", ".ruff_cache", ".freeze-venv",
+                    "node_modules", "dist", "build", "target"
+                ]
             ):
                 continue
 
