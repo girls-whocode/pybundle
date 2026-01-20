@@ -6,7 +6,6 @@ __pycache__/
 build/
 dist/
 .env
-.envrc
 .venv
 install-note.txt
 env/
