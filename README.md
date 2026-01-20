@@ -131,7 +131,7 @@ pytest
 pytest-cov
 bandit
 pip-audit
-gwc-pybundle==2.0.1
+gwc-pybundle==2.1.0
 ```
 
 Then install:

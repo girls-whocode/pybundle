@@ -48,6 +48,9 @@ from .steps.mutation_testing import MutationTestingStep
 from .steps.type_coverage import TypeCoverageStep
 from .steps.link_validation import LinkValidationStep
 from .steps.api_docs import ApiDocsStep
+
+# AI context generation (v2.1.0)
+from .steps.ai_context import AIContextStep
 from .steps.config_docs import ConfigDocumentationStep
 
 # Git analytics tools (v1.5.1)
@@ -394,6 +397,7 @@ def _debug_steps(options: RunOptions) -> list:
     steps += [
         CuratedCopyStep(policy=policy),
         ReproMarkdownStep(),
+        AIContextStep(),  # Generate AI_CONTEXT.md for AI consumption
         HandoffMarkdownStep(),
     ]
 

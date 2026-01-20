@@ -54,6 +54,11 @@ class UnusedDependenciesStep:
             # Find unused packages (installed but not imported)
             # Note: This is a heuristic - some packages are used indirectly
             unused = sorted(set(installed_packages) - imported_modules)
+            
+            # Categorize by confidence level
+            likely_unused, maybe_unused = self._categorize_by_confidence(
+                unused, ctx.root
+            )
 
             # Write results
             with out.open("w", encoding="utf-8") as f:
@@ -64,12 +69,21 @@ class UnusedDependenciesStep:
                 f.write(f"Total imported modules: {len(imported_modules)}\n")
                 f.write(f"Potentially unused packages: {len(unused)}\n\n")
 
-                if unused:
-                    f.write("Packages installed but not directly imported:\n")
-                    f.write("(Note: Some may be indirect dependencies or plugins)\n\n")
-                    for pkg in unused:
+                if likely_unused:
+                    f.write("LIKELY UNUSED (high confidence - no obvious indirect usage):\n")
+                    f.write("These packages are good candidates for removal.\n\n")
+                    for pkg in likely_unused:
                         f.write(f"  - {pkg}\n")
-                else:
+                    f.write("\n")
+                
+                if maybe_unused:
+                    f.write("MAYBE UNUSED (lower confidence - might be plugins/indirect deps):\n")
+                    f.write("These may be used indirectly or as plugins. Verify before removing.\n\n")
+                    for pkg in maybe_unused:
+                        f.write(f"  - {pkg}\n")
+                    f.write("\n")
+                
+                if not unused:
                     f.write("No obviously unused packages detected.\n")
 
             elapsed = int((time.time() - start) * 1000)
@@ -126,3 +140,72 @@ class UnusedDependenciesStep:
                 continue
 
         return imported
+    
+    def _categorize_by_confidence(
+        self, unused: list[str], root: Path
+    ) -> tuple[list[str], list[str]]:
+        """Categorize unused packages by confidence level.
+        
+        Returns:
+            (likely_unused, maybe_unused) tuple of package lists
+        """
+        # Packages that are commonly indirect deps or plugins (lower confidence)
+        indirect_patterns = {
+            # Build/dev tools often used indirectly
+            "setuptools", "wheel", "pip", "build",
+            # Testing plugins
+            "pytest-", "coverage", "pluggy",
+            # Type checking stubs
+            "types-", "-stubs",
+            # Common indirect deps
+            "certifi", "charset-normalizer", "idna", "urllib3",
+            "six", "packaging", "pyparsing",
+            # Web framework plugins often auto-discovered
+            "uvicorn", "gunicorn", "hypercorn",
+            # Database drivers (might be dynamically loaded)
+            "psycopg2", "pymysql", "cx-oracle",
+            # Celery/async workers
+            "celery", "redis", "kombu", "amqp",
+        }
+        
+        likely_unused = []
+        maybe_unused = []
+        
+        for pkg in unused:
+            # Check if package matches indirect dependency patterns
+            is_likely_indirect = any(
+                pattern in pkg for pattern in indirect_patterns
+            )
+            
+            # Check if mentioned in config files (pyproject.toml, setup.py, etc.)
+            mentioned_in_config = self._is_mentioned_in_config(pkg, root)
+            
+            if is_likely_indirect or mentioned_in_config:
+                maybe_unused.append(pkg)
+            else:
+                likely_unused.append(pkg)
+        
+        return likely_unused, maybe_unused
+    
+    def _is_mentioned_in_config(self, pkg: str, root: Path) -> bool:
+        """Check if package is mentioned in config files."""
+        config_files = [
+            "pyproject.toml",
+            "setup.py",
+            "setup.cfg",
+            "requirements.txt",
+            "requirements-dev.txt",
+        ]
+        
+        for config_file in config_files:
+            config_path = root / config_file
+            if config_path.exists():
+                try:
+                    content = config_path.read_text(encoding="utf-8", errors="ignore")
+                    # Normalize package name for comparison
+                    if pkg in content or pkg.replace("-", "_") in content:
+                        return True
+                except Exception:
+                    continue
+        
+        return False

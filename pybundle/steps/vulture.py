@@ -26,6 +26,48 @@ def _repo_has_py_files(root: Path) -> bool:
     return False
 
 
+def _detect_framework_decorators(root: Path) -> set[str]:
+    """Detect common framework decorators that should be whitelisted."""
+    decorators = set()
+    
+    # Check for FastAPI
+    for p in root.rglob("*.py"):
+        try:
+            content = p.read_text(encoding="utf-8", errors="ignore")
+            if "from fastapi" in content or "import fastapi" in content:
+                decorators.update([
+                    "@app.get",
+                    "@app.post", 
+                    "@app.put",
+                    "@app.delete",
+                    "@app.patch",
+                    "@router.get",
+                    "@router.post",
+                    "@router.put",
+                    "@router.delete",
+                    "@router.patch",
+                    "@app.on_event",
+                    "@app.middleware",
+                ])
+            if "from flask" in content or "import flask" in content:
+                decorators.update([
+                    "@app.route",
+                    "@app.before_request",
+                    "@app.after_request",
+                    "@app.errorhandler",
+                ])
+            if "from django" in content or "import django" in content:
+                decorators.update([
+                    "@login_required",
+                    "@permission_required",
+                    "@staff_member_required",
+                ])
+        except Exception:
+            continue
+    
+    return decorators
+
+
 @dataclass
 class VultureStep:
     name: str = "vulture"
@@ -51,6 +93,10 @@ class VultureStep:
             return StepResult(self.name, "SKIP", 0, "no python files")
 
         target_path = ctx.root / self.target
+        
+        # Create FastAPI/framework decorator whitelist if applicable
+        whitelist_file = self._create_framework_whitelist(ctx)
+        
         cmd = [
             vulture,
             str(target_path),
@@ -60,6 +106,11 @@ class VultureStep:
             "60",  # Configurable confidence threshold
             "--sort-by-size",
         ]
+        
+        # Add whitelist if framework decorators detected
+        if whitelist_file and whitelist_file.exists():
+            cmd.extend(["--make-whitelist"])
+            cmd.append(str(whitelist_file))
 
         try:
             result = subprocess.run(  # nosec B603 - Using full path from which()
@@ -89,3 +140,23 @@ class VultureStep:
         except Exception as e:
             out.write_text(f"vulture error: {e}\n", encoding="utf-8")
             return StepResult(self.name, "FAIL", 0, str(e))
+    
+    def _create_framework_whitelist(self, ctx: BundleContext) -> Path | None:
+        """Create a temporary whitelist file for framework decorators."""
+        decorators = _detect_framework_decorators(ctx.root)
+        
+        if not decorators:
+            return None
+        
+        whitelist_path = ctx.workdir / "logs" / "vulture_whitelist.py"
+        whitelist_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        with whitelist_path.open("w", encoding="utf-8") as f:
+            f.write("# Auto-generated whitelist for framework decorators\n")
+            f.write("# These patterns are commonly used but appear unused to vulture\n\n")
+            for decorator in sorted(decorators):
+                # Create dummy functions to whitelist the decorator pattern
+                func_name = decorator.replace("@", "").replace(".", "_")
+                f.write(f"def {func_name}(): pass\n")
+        
+        return whitelist_path
