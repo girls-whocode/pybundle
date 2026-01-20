@@ -8,6 +8,7 @@ from pathlib import Path
 
 from .base import StepResult
 from ..context import BundleContext
+from ..filters import should_exclude_from_analysis
 
 
 @dataclass
@@ -87,7 +88,16 @@ class AIContextStep:
 >
 > **Rules**: Prefer facts over vibes. Link to files. Keep it updated.
 
-**Project**: `{project_name}`"""
+**Project**: `{project_name}`
+
+---
+
+**How to interpret this document:**
+
+* **Known Facts** — Extracted directly from code/configs with file:line refs (high confidence)
+* **Inferred** — Pattern matching auto-detection (verify before trusting)
+
+When you see file paths or specific references, treat as known fact. When you see "(detected)" without refs, verify first."""
 
     def _generate_project_overview(self, ctx: BundleContext) -> str:
         """Generate section 0: What this project is."""
@@ -265,12 +275,18 @@ pytest
         required = []
         optional = []
         
-        for var in sorted(env_vars):
+        for var in sorted(env_vars.keys()):
+            refs = env_vars[var]
+            # Show first 3 file:line references
+            ref_str = ", ".join(f"{path}:{line}" for path, line in refs[:3])
+            if len(refs) > 3:
+                ref_str += f" (+{len(refs) - 3} more)"
+            
             # Heuristic: vars with "SECRET", "KEY", "TOKEN" are likely required
             if any(x in var.upper() for x in ["SECRET", "KEY", "TOKEN", "PASSWORD"]):
-                required.append(f"* `{var}` — (detected, verify if required)")
+                required.append(f"* `{var}` — used in [{ref_str}]")
             else:
-                optional.append(f"* `{var}` — (detected)")
+                optional.append(f"* `{var}` — used in [{ref_str}]")
         
         required_section = "\n".join(required) if required else "* (None detected)"
         optional_section = "\n".join(optional) if optional else "* (None detected)"
@@ -502,20 +518,80 @@ pip freeze > requirements.txt
         if (root / "__main__.py").exists():
             entrypoints.append("* `python -m <package>` (via __main__.py)")
         
+        # Check for main app blocks in common locations
+        for pattern in ["main.py", "app.py", "server.py", "*/main.py", "*/app.py"]:
+            for p in root.glob(pattern):
+                if should_exclude_from_analysis(p):
+                    continue
+                try:
+                    content = p.read_text(encoding="utf-8", errors="ignore")
+                    if 'if __name__ == "__main__"' in content:
+                        rel_path = p.relative_to(root)
+                        entrypoints.append(f"* `python {rel_path}` (__main__ block)")
+                except Exception:
+                    pass
+        
+        # Detect FastAPI/uvicorn apps
+        for p in root.rglob("*.py"):
+            if should_exclude_from_analysis(p):
+                continue
+            try:
+                content = p.read_text(encoding="utf-8", errors="ignore")
+                if "FastAPI(" in content:
+                    # Extract variable name
+                    import re
+                    match = re.search(r'(\w+)\s*=\s*FastAPI\(', content)
+                    if match:
+                        app_var = match.group(1)
+                        rel_path = str(p.relative_to(root)).replace("/", ".").replace("\\", ".").replace(".py", "")
+                        entrypoints.append(f"* `uvicorn {rel_path}:{app_var}` (FastAPI)")
+            except Exception:
+                pass
+        
         # Check for console_scripts in pyproject.toml
         pyproject = root / "pyproject.toml"
         if pyproject.exists():
             try:
-                content = pyproject.read_text(encoding="utf-8")
-                if "[project.scripts]" in content or "[tool.poetry.scripts]" in content:
-                    entrypoints.append("* Console scripts (see pyproject.toml)")
+                import tomllib
+                with open(pyproject, "rb") as f:
+                    data = tomllib.load(f)
+                
+                scripts = data.get("project", {}).get("scripts", {})
+                for name, target in scripts.items():
+                    entrypoints.append(f"* `{name}` → `{target}` (console script)")
+                    
+                poetry_scripts = data.get("tool", {}).get("poetry", {}).get("scripts", {})
+                for name, target in poetry_scripts.items():
+                    entrypoints.append(f"* `{name}` → `{target}` (Poetry script)")
             except Exception:
-                pass
+                # Fallback to text search
+                try:
+                    content = pyproject.read_text(encoding="utf-8")
+                    if "[project.scripts]" in content or "[tool.poetry.scripts]" in content:
+                        entrypoints.append("* Console scripts (see pyproject.toml)")
+                except Exception:
+                    pass
         
         return "\n".join(entrypoints) if entrypoints else "* (No entry points detected)"
 
     def _detect_run_command(self, root: Path) -> str:
         """Detect how to run the application."""
+        # Check for FastAPI apps first (most specific)
+        for p in root.rglob("*.py"):
+            if should_exclude_from_analysis(p):
+                continue
+            try:
+                content = p.read_text(encoding="utf-8", errors="ignore")
+                if "FastAPI(" in content:
+                    import re
+                    match = re.search(r'(\w+)\s*=\s*FastAPI\(', content)
+                    if match:
+                        app_var = match.group(1)
+                        rel_path = str(p.relative_to(root)).replace("/", ".").replace("\\", ".").replace(".py", "")
+                        return f"uvicorn {rel_path}:{app_var} --reload"
+            except Exception:
+                pass
+        
         # Check for common patterns
         if (root / "main.py").exists():
             return "python main.py"
@@ -523,10 +599,6 @@ pip freeze > requirements.txt
             return "python app.py"
         if (root / "__main__.py").exists():
             return f"python -m {root.name}"
-        if self._file_exists_in_tree(root, "*uvicorn*.py"):
-            return "uvicorn app.main:app --reload"
-        if self._file_exists_in_tree(root, "*gunicorn*.py"):
-            return "gunicorn app:app"
         
         return "# Run command not auto-detected, see README.md"
 
@@ -589,25 +661,62 @@ pip freeze > requirements.txt
                 continue
         return "* (Logging not detected)"
 
-    def _extract_env_vars(self, root: Path) -> set[str]:
-        """Extract environment variable names from code."""
-        env_vars = set()
+    def _extract_env_vars(self, root: Path) -> dict[str, list[tuple[str, int]]]:
+        """
+        Extract environment variables used in the project with file+line references.
+        Returns dict mapping var name to list of (relative_path, line_number) tuples.
+        Filters out OS/toolchain noise.
+        """
+        # OS/toolchain vars to filter out - these pollute AI context
+        OS_NOISE = {
+            # CI/CD platforms
+            "GITHUB_ACTIONS", "GITHUB_TOKEN", "GITHUB_WORKSPACE", "GITHUB_SHA",
+            "CI", "CONTINUOUS_INTEGRATION", "GITLAB_CI", "CIRCLECI", "TRAVIS",
+            # Testing frameworks
+            "PYTEST_CURRENT_TEST", "PYTEST_VERSION", "PYTEST_TIMEOUT",
+            # Python tooling
+            "PYTHONPATH", "PYTHONHOME", "PYTHONDONTWRITEBYTECODE", "PYTHONUNBUFFERED",
+            "VIRTUAL_ENV", "CONDA_DEFAULT_ENV", "CONDA_PREFIX",
+            # Build/compile
+            "CC", "CXX", "CFLAGS", "CXXFLAGS", "LDFLAGS", "AR", "NM", "RANLIB",
+            # Android SDK (common on dev machines)
+            "ANDROID_HOME", "ANDROID_SDK_ROOT", "ANDROID_NDK_HOME",
+            # System/OS
+            "PATH", "HOME", "USER", "SHELL", "LANG", "LC_ALL", "TZ", "TERM",
+            "PWD", "OLDPWD", "SHLVL", "EDITOR", "PAGER",
+            # SSL/Security debugging
+            "SSLKEYLOGFILE", "SSL_CERT_FILE", "SSL_CERT_DIR",
+            # Package managers
+            "PIP_INDEX_URL", "PIP_EXTRA_INDEX_URL", "NPM_TOKEN",
+            # Display/X11
+            "DISPLAY", "XAUTHORITY", "WAYLAND_DISPLAY",
+        }
+        
+        env_vars: dict[str, list[tuple[str, int]]] = {}
+        
+        # Patterns to detect env var usage
+        import re
+        patterns = [
+            re.compile(r'os\.getenv\(["\']([A-Z_]+)["\']\)'),
+            re.compile(r'os\.environ\[["\']([A-Z_]+)["\']\]'),
+            re.compile(r'os\.environ\.get\(["\']([A-Z_]+)["\']\)'),
+        ]
         
         for p in root.rglob("*.py"):
-            if any(x in p.parts for x in [".venv", "venv", "__pycache__", "artifacts"]):
+            if should_exclude_from_analysis(p):
                 continue
             try:
-                content = p.read_text(encoding="utf-8", errors="ignore")
-                # Look for os.getenv, os.environ patterns
-                import re
-                patterns = [
-                    r'os\.getenv\(["\']([A-Z_]+)["\']\)',
-                    r'os\.environ\[["\']([A-Z_]+)["\']\]',
-                    r'os\.environ\.get\(["\']([A-Z_]+)["\']\)',
-                ]
-                for pattern in patterns:
-                    matches = re.findall(pattern, content)
-                    env_vars.update(matches)
+                with open(p, "r", encoding="utf-8", errors="ignore") as f:
+                    for line_num, line in enumerate(f, start=1):
+                        for pattern in patterns:
+                            for match in pattern.finditer(line):
+                                var_name = match.group(1)
+                                # Filter OS/toolchain noise
+                                if var_name not in OS_NOISE:
+                                    rel_path = str(p.relative_to(root))
+                                    if var_name not in env_vars:
+                                        env_vars[var_name] = []
+                                    env_vars[var_name].append((rel_path, line_num))
             except Exception:
                 continue
         
