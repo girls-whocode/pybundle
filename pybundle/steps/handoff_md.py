@@ -134,8 +134,17 @@ class HandoffMarkdownStep(Step):
                             lines.append(f"  - `{node}`{extra}")
                 else:
                     lines.append("- **Entrypoints:** (none detected)")
-            except Exception:
-                lines.append("- Roadmap JSON present but could not be parsed.")
+            except json.JSONDecodeError as e:
+                # Show EXACTLY why parsing failed - critical for debugging
+                lines.append("- ⚠ Roadmap JSON present but could not be parsed:")
+                lines.append(f"  - Error: {str(e)}")
+                lines.append(f"  - Location: Line {e.lineno}, Column {e.colno}")
+                lines.append(f"  - Raw file included in bundle: `meta/70_roadmap.json`")
+                lines.append(f"  - Try: `python -m json.tool meta/70_roadmap.json` to validate")
+            except Exception as e:
+                lines.append("- ⚠ Roadmap JSON present but could not be parsed:")
+                lines.append(f"  - Error: {type(e).__name__}: {str(e)}")
+                lines.append(f"  - Raw file included in bundle: `meta/70_roadmap.json`")
         else:
             lines.append("- Roadmap not found.")
 

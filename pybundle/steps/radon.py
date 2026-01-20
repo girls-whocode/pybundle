@@ -50,6 +50,41 @@ class RadonStep:
 
         target_path = ctx.root / self.target
 
+        # Build exclude patterns to avoid scanning artifacts, venvs, caches
+        # This is CRITICAL - radon will scan everything otherwise, including prior pybundle runs
+        excludes = [
+            "artifacts",
+            "artifacts/*",
+            ".venv",
+            ".venv/*", 
+            "venv",
+            "venv/*",
+            "env",
+            "env/*",
+            ".freeze-venv",
+            ".freeze-venv/*",
+            "__pycache__",
+            "__pycache__/*",
+            ".mypy_cache",
+            ".mypy_cache/*",
+            ".pytest_cache",
+            ".pytest_cache/*",
+            ".ruff_cache",
+            ".ruff_cache/*",
+            "node_modules",
+            "node_modules/*",
+            "dist",
+            "dist/*",
+            "build",
+            "build/*",
+            ".git",
+            ".git/*",
+        ]
+        
+        exclude_args = []
+        for pattern in excludes:
+            exclude_args.extend(["--exclude", pattern])
+
         # Run cyclomatic complexity check
         cmd_cc = [
             radon,
@@ -58,7 +93,7 @@ class RadonStep:
             "-s",  # Show complexity score
             "-a",  # Average complexity
             "-nc",  # No color
-        ]
+        ] + exclude_args
 
         # Run maintainability index check
         cmd_mi = [
@@ -67,7 +102,7 @@ class RadonStep:
             str(target_path),
             "-s",  # Show maintainability index
             "-nc",  # No color
-        ]
+        ] + exclude_args
 
         try:
             # Collect both metrics in one output file
