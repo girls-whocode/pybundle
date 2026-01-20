@@ -134,6 +134,25 @@ class RunOptions:
     no_git_analytics: bool | None = None
     git_blame_depth: int = 100
 
+    # runtime analysis (v1.5.2)
+    no_runtime_analysis: bool | None = None
+
+    # container & deployment (v2.0.0)
+    no_container_analysis: bool | None = None
+    docker_image: str | None = None
+
+    # configuration & security (v2.0.0)
+    no_config_security_analysis: bool | None = None
+
+    # async & modern python (v2.0.0)
+    no_async_analysis: bool | None = None
+
+    # database & data layer (v2.0.0)
+    no_db_analysis: bool | None = None
+
+    # framework-specific tools (v2.0.0)
+    no_framework_analysis: bool | None = None
+
     strict_paths: bool = False  # Enforce trusted path validation
 
     ruff_target: str = "."

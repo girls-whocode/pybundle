@@ -53,6 +53,39 @@ from .steps.config_docs import ConfigDocumentationStep
 # Git analytics tools (v1.5.1)
 from .steps.git_analytics import GitAnalyticsStep
 
+# Runtime analysis tools (v1.5.2)
+from .steps.exception_patterns import ExceptionPatternsStep
+from .steps.logging_analysis import LoggingAnalysisStep
+from .steps.call_graph import CallGraphStep
+from .steps.env_var_usage import EnvVarUsageStep
+
+# Container & deployment tools (v2.0.0)
+from .steps.dockerfile_lint import DockerfileLintStep
+from .steps.dockerignore import DockerigoreStep
+from .steps.container_image import ContainerImageStep
+
+# Configuration & security tools (v2.0.0)
+from .steps.config_validation import ConfigValidationStep
+from .steps.secrets_detection import SecretsDetectionStep
+from .steps.env_completeness import EnvCompletenessStep
+from .steps.security_headers import SecurityHeadersStep
+
+# Async & modern Python tools (v2.0.0)
+from .steps.asyncio_analysis import AsyncioAnalysisStep
+from .steps.blocking_call_detection import BlockingCallDetectionStep
+from .steps.event_loop_patterns import EventLoopPatternsStep
+
+# Database & data layer tools (v2.0.0)
+from .steps.migration_history import MigrationHistoryStep
+from .steps.query_pattern_analysis import QueryPatternAnalysisStep
+from .steps.orm_optimization import ORMOptimizationStep
+
+# Framework-specific tools (v2.0.0)
+from .steps.django_checks import DjangoSystemChecksStep
+from .steps.fastapi_integration import FastAPIIntegrationStep
+from .steps.flask_debugging import FlaskDebuggingStep
+from .steps.sqlalchemy_validation import SQLAlchemyValidationStep
+
 from .policy import AIContextPolicy
 
 
@@ -183,6 +216,57 @@ def _analysis_steps(options: RunOptions) -> list:
     # Git analytics (v1.5.1)
     if not options.no_git_analytics:
         steps += [GitAnalyticsStep()]
+
+    # Runtime analysis (v1.5.2)
+    if not options.no_runtime_analysis:
+        steps += [
+            ExceptionPatternsStep(),
+            LoggingAnalysisStep(),
+            CallGraphStep(),
+            EnvVarUsageStep(),
+        ]
+
+    # Container & deployment (v2.0.0)
+    if not options.no_container_analysis:
+        steps += [
+            DockerfileLintStep(),
+            DockerigoreStep(),
+            ContainerImageStep(),
+        ]
+
+    # Configuration & security (v2.0.0)
+    if not options.no_config_security_analysis:
+        steps += [
+            ConfigValidationStep(),
+            SecretsDetectionStep(),
+            EnvCompletenessStep(),
+            SecurityHeadersStep(),
+        ]
+
+    # Async & modern Python (v2.0.0)
+    if not options.no_async_analysis:
+        steps += [
+            AsyncioAnalysisStep(),
+            BlockingCallDetectionStep(),
+            EventLoopPatternsStep(),
+        ]
+
+    # Database & data layer (v2.0.0)
+    if not options.no_db_analysis:
+        steps += [
+            MigrationHistoryStep(),
+            QueryPatternAnalysisStep(),
+            ORMOptimizationStep(),
+        ]
+
+    # Framework-specific tools (v2.0.0)
+    if not options.no_framework_analysis:
+        steps += [
+            DjangoSystemChecksStep(),
+            FastAPIIntegrationStep(),
+            FlaskDebuggingStep(),
+            SQLAlchemyValidationStep(),
+        ]
 
     # Source snapshot and documentation
     steps += [

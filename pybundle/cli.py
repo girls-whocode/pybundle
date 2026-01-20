@@ -283,6 +283,60 @@ def add_knobs(sp: argparse.ArgumentParser) -> None:
         help="Number of commits to analyze in git blame (default: 100)",
     )
 
+    # Runtime analysis options (v1.5.2)
+    sp.add_argument(
+        "--runtime-analysis", dest="no_runtime_analysis", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-runtime-analysis", dest="no_runtime_analysis", action="store_true", default=None
+    )
+
+    # Container & deployment options (v2.0.0)
+    sp.add_argument(
+        "--container-analysis", dest="no_container_analysis", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-container-analysis", dest="no_container_analysis", action="store_true", default=None
+    )
+    sp.add_argument(
+        "--docker-image",
+        type=str,
+        default=None,
+        help="Docker image name for analysis (default: auto-detect from docker-compose)",
+    )
+
+    # Configuration & security options (v2.0.0)
+    sp.add_argument(
+        "--config-security-analysis", dest="no_config_security_analysis", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-config-security-analysis", dest="no_config_security_analysis", action="store_true", default=None
+    )
+
+    # Async & modern Python options (v2.0.0)
+    sp.add_argument(
+        "--async-analysis", dest="no_async_analysis", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-async-analysis", dest="no_async_analysis", action="store_true", default=None
+    )
+
+    # Database & data layer options (v2.0.0)
+    sp.add_argument(
+        "--db-analysis", dest="no_db_analysis", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-db-analysis", dest="no_db_analysis", action="store_true", default=None
+    )
+
+    # Framework-specific options (v2.0.0)
+    sp.add_argument(
+        "--framework-analysis", dest="no_framework_analysis", action="store_false", default=None
+    )
+    sp.add_argument(
+        "--no-framework-analysis", dest="no_framework_analysis", action="store_true", default=None
+    )
+
     # Security options
     sp.add_argument(
         "--strict-paths",
@@ -367,6 +421,15 @@ def _build_options(args) -> RunOptions:
         no_link_check=getattr(args, "no_link_check", None),
         no_api_docs=getattr(args, "no_api_docs", None),
         no_config_docs=getattr(args, "no_config_docs", None),
+        no_git_analytics=getattr(args, "no_git_analytics", None),
+        git_blame_depth=getattr(args, "git_blame_depth", 100),
+        no_runtime_analysis=getattr(args, "no_runtime_analysis", None),
+        no_container_analysis=getattr(args, "no_container_analysis", None),
+        docker_image=getattr(args, "docker_image", None),
+        no_config_security_analysis=getattr(args, "no_config_security_analysis", None),
+        no_async_analysis=getattr(args, "no_async_analysis", None),
+        no_db_analysis=getattr(args, "no_db_analysis", None),
+        no_framework_analysis=getattr(args, "no_framework_analysis", None),
         strict_paths=getattr(args, "strict_paths", False),
         ruff_target=getattr(args, "ruff_target", "."),
         mypy_target=getattr(args, "mypy_target", "."),
