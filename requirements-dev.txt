@@ -1,0 +1,32 @@
+# Development dependencies for pybundle
+# For full pybundle functionality: pip install -e .[tools]
+# For developing pybundle itself: pip install -e .[dev]
+# For everything: pip install -e .[all]
+
+# Note: Most analysis tools are now in pyproject.toml [project.optional-dependencies]
+# This file is kept for backward compatibility and quick reference.
+
+# Testing
+pytest>=9.0.2
+
+# Type checking
+mypy>=1.19.1
+mypy_extensions>=1.2.1
+
+# Linting and code quality
+ruff>=0.14.10
+pylint
+radon
+interrogate
+vulture
+
+# Dependency analysis
+pip-licenses
+pipdeptree
+
+# Profiling
+line_profiler
+
+# Build and distribution (for pybundle development)
+build
+twine

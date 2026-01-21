@@ -147,3 +147,49 @@ def get_platform_info() -> dict[str, str]:
         "python_version": sys.version,
         "processor": platform.processor(),
     }
+
+
+def is_windows() -> bool:
+    """Check if running on Windows."""
+    import sys
+    return sys.platform == "win32"
+
+
+def is_unix() -> bool:
+    """Check if running on Unix-like system (Linux, macOS, BSD, etc.)."""
+    import sys
+    return sys.platform in ("linux", "darwin") or sys.platform.startswith(("freebsd", "openbsd"))
+
+
+def get_platform_specific_tool(tool_name: str) -> str | None:
+    """Get platform-specific alternative for a tool if available.
+    
+    For example, on Windows:
+    - 'uname' -> Python's platform module (no direct replacement)
+    - 'rg' -> may need to be installed via chocolatey/scoop
+    
+    Returns the tool name to use, or None if not available on this platform.
+    """
+    import sys
+    
+    # Most Python-based tools work cross-platform
+    python_tools = {
+        "pytest", "mypy", "ruff", "vulture", "radon", 
+        "interrogate", "pylint", "pipdeptree", "pip-licenses",
+        "line_profiler", "pdoc", "bandit", "pip-audit"
+    }
+    
+    if tool_name in python_tools:
+        return tool_name
+    
+    # Tools that need special handling on Windows
+    if sys.platform == "win32":
+        # uname doesn't exist on Windows - use Python's platform module instead
+        if tool_name == "uname":
+            return None  # Handled by get_platform_info()
+        
+        # ripgrep works on Windows but needs separate installation
+        if tool_name == "rg":
+            return "rg.exe" if which("rg.exe") else "rg"
+    
+    return tool_name

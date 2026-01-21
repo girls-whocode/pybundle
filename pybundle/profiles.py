@@ -18,6 +18,8 @@ from .steps.error_refs import ErrorReferencedFilesStep
 from .steps.context_expand import ErrorContextExpandStep
 from .steps.copy_pack import CuratedCopyStep
 from .steps.repro_md import ReproMarkdownStep
+from .steps.platform_info import PlatformInfoStep
+from .tools import is_windows
 from .steps.handoff_md import HandoffMarkdownStep
 from .steps.roadmap import RoadmapStep
 
@@ -299,9 +301,19 @@ def _debug_steps(options: RunOptions) -> list:
         ShellStep(
             "git diff", "meta/01_git_diff.txt", ["git", "diff"], require_cmd="git"
         ),
-        ShellStep(
-            "uname -a", "meta/21_uname.txt", ["uname", "-a"], require_cmd="uname"
-        ),
+    ]
+    
+    # Platform information - use uname on Unix, Python platform module on Windows
+    if not is_windows():
+        steps += [
+            ShellStep(
+                "uname -a", "meta/21_uname.txt", ["uname", "-a"], require_cmd="uname"
+            ),
+        ]
+    # Always include Python-based platform info (complements uname on Unix, replaces it on Windows)
+    steps += [PlatformInfoStep()]
+    
+    steps += [
         ShellStep(
             "python -V",
             "meta/20_python_version.txt",

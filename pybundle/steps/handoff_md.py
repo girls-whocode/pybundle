@@ -51,6 +51,9 @@ class HandoffMarkdownStep(Step):
 
         # filenames fixed to match your repo
         uname = _safe_read(workdir_path / "meta" / "21_uname.txt")
+        platform_info = _safe_read(workdir_path / "meta" / "21_platform_info.txt")
+        # Prefer uname if available, otherwise use platform_info
+        os_info = uname if uname and uname.strip() else platform_info
         pyver = _safe_read(workdir_path / "meta" / "20_python_version.txt")
 
         redact = bool(getattr(ctx, "redact", True))
@@ -86,7 +89,7 @@ class HandoffMarkdownStep(Step):
         lines.append(f"- **Workdir:** {workdir}")
         lines.append("")
         lines.append("## System")
-        lines.append(f"- **OS:** {uname}")
+        lines.append(f"- **OS:** {os_info}")
         lines.append(f"- **Python:** {pyver}")
         lines.append(f"- **Redaction:** {redact_status}")
         lines.append("")
