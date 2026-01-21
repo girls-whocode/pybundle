@@ -139,10 +139,24 @@ def print_tool_info(ctx: Any) -> None:
             trust_marker = "✅" if trusted else "⚠️ "
             print(f"  {name:10} {trust_marker} {path}")
         else:
-            print(f"  {name:10} ❌ <missing>")
+            # Check for Python fallbacks
+            fallback_msg = ""
+            if name == "zip":
+                from .tools import has_python_zipfile
+                if has_python_zipfile():
+                    fallback_msg = " (Python zipfile available as fallback)"
+            elif name == "uname":
+                fallback_msg = " (Python platform module available as fallback)"
+            
+            print(f"  {name:10} ❌ <missing>{fallback_msg}")
 
     if ctx.options.strict_paths:
         print("\n⚠️  STRICT-PATHS MODE ENABLED")
         print("   Only tools in trusted directories are available.")
+    else:
+        print("\n💡 TIP: Tools marked ⚠️ are found on PATH but outside trusted")
+        print("   prefixes. They will be used normally. For strict validation,")
+        print("   use --strict-paths or set PYBUNDLE_TRUSTED_PATHS.")
 
     print("=" * 70)
+

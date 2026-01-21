@@ -14,13 +14,29 @@ def get_trusted_path_prefixes() -> list[str]:
     import sys
 
     if sys.platform == "win32":
-        # Windows system directories
+        # Windows system directories + common dev tool locations
         default_prefixes = [
             "C:\\Windows\\System32\\",
             "C:\\Windows\\system32\\",
             "C:\\Windows\\SysWOW64\\",
             "C:\\Program Files\\",
             "C:\\Program Files (x86)\\",
+            # Git for Windows
+            "C:\\Program Files\\Git\\cmd\\",
+            "C:\\Program Files\\Git\\usr\\bin\\",
+            "C:\\Program Files (x86)\\Git\\cmd\\",
+            "C:\\Program Files (x86)\\Git\\usr\\bin\\",
+            # Package managers
+            "C:\\ProgramData\\chocolatey\\bin\\",
+            # Scoop
+            "C:\\Users\\",  # Scoop installs to %USERPROFILE%\scoop (we catch this via pattern)
+            # MSYS2
+            "C:\\msys64\\usr\\bin\\",
+            "C:\\msys64\\mingw64\\bin\\",
+            "C:\\msys2\\usr\\bin\\",
+            "C:\\msys2\\mingw64\\bin\\",
+            # Python user scripts
+            "C:\\Users\\",  # Python user scripts in AppData (pattern match)
         ]
         path_separator = ";"
     else:
@@ -35,6 +51,7 @@ def get_trusted_path_prefixes() -> list[str]:
             "/snap/bin/",  # Ubuntu snaps
             "/usr/sbin/",
             "/sbin/",
+            "/opt/bin/",  # Custom opt installations
         ]
         path_separator = ":"
 
@@ -55,8 +72,21 @@ def is_path_trusted(tool_path: str | None) -> bool:
 
     # Virtual environment paths are implicitly trusted
     # (they're part of the project context)
-    if ".venv" in tool_path or "venv" in tool_path or ".pybundle-venv" in tool_path:
+    if any(venv in tool_path for venv in [".venv", "venv", ".pybundle-venv"]):
         return True
+
+    # On Windows, check for common dev locations even with case variations
+    if sys.platform == "win32":
+        tool_path_lower = tool_path.lower()
+        # Scoop installs to %USERPROFILE%\scoop\shims\
+        if "\\scoop\\shims\\" in tool_path_lower:
+            return True
+        # Python user scripts in AppData
+        if "\\appdata\\roaming\\python" in tool_path_lower:
+            return True
+        # PowerShell user modules
+        if "\\powershell\\modules\\" in tool_path_lower:
+            return True
 
     trusted_prefixes = get_trusted_path_prefixes()
 
@@ -85,3 +115,35 @@ def which(cmd: str, strict: bool = False) -> str | None:
             return None
 
     return path
+
+def has_python_zipfile() -> bool:
+    """Check if Python's built-in zipfile module can be used as fallback for 'zip'.
+    
+    This is useful on Windows where the zip command may not be available.
+    Returns True if Python zipfile module is available (which is always true for
+    standard Python installations).
+    """
+    try:
+        import zipfile
+        return True
+    except ImportError:
+        return False
+
+
+def get_platform_info() -> dict[str, str]:
+    """Get platform information using Python stdlib (fallback for 'uname').
+    
+    Returns dict with keys like 'system', 'release', 'version', 'machine', etc.
+    This is useful on Windows where uname may not be available.
+    """
+    import platform
+    import sys
+    
+    return {
+        "system": platform.system(),
+        "release": platform.release(),
+        "version": platform.version(),
+        "machine": platform.machine(),
+        "python_version": sys.version,
+        "processor": platform.processor(),
+    }
