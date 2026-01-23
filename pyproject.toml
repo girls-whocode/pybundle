@@ -65,6 +65,8 @@ tools = [
   "vulture",
   "radon",
   "interrogate",
+  "bandit",
+  "pip-audit",
 ]
 
 # Development dependencies for working on pybundle itself
@@ -86,6 +88,8 @@ all = [
   "vulture",
   "radon",
   "interrogate",
+  "bandit",
+  "pip-audit",
   "build",
   "twine",
 ]
