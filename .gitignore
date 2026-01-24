@@ -48,6 +48,9 @@ htmlcov/
 .pybundle_metadata/
 .pybundle_settings/
 
+.ruff_cache/
+.pybundle-venv/
+
 # Milestone development docs (internal only)
 docs/
 TODO.md
